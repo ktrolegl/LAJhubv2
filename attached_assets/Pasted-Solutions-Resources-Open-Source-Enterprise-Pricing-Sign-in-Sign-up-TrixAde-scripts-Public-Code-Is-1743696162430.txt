@@ -1,0 +1,697 @@
+Solutions
+Resources
+Open Source
+Enterprise
+Pricing
+
+Sign in
+Sign up
+TrixAde
+/
+scripts
+Public
+Code
+Issues
+41
+Pull requests
+4
+Actions
+Projects
+Security
+Insights
+TrixAde/scripts
+Go to file
+Name		
+TrixAde
+TrixAde
+Update Library.lua
+c4e57db
+ · 
+2 years ago
+AdoptMeGingerBreadsFarm.lua
+Create AdoptMeGingerBreadsFarm.lua
+4 years ago
+AmongstUsInstantTask.lua
+Rename AmonstUsInstantTask.lua to AmongstUsInstantTask.lua
+3 years ago
+AnimeArtifactMsGatHub.lua
+Create AnimeArtifactMsGatHub.lua
+4 years ago
+AnimeFighting.lua
+Create AnimeFighting.lua
+4 years ago
+AnimeSlashingSimulatorDieHub.lua
+Create AnimeSlashingSimulatorDieHub.lua
+3 years ago
+ApocalypseRising.lua
+Create ApocalypseRising.lua
+4 years ago
+ApocalypseRisingScripts.lua
+Create ApocalypseRisingScripts.lua
+4 years ago
+ArsenalOwlHub.lua
+Create ArsenalOwlHub.lua
+3 years ago
+Asenal-ArsoniaGui.lua
+Create Asenal-ArsoniaGui.lua
+3 years ago
+BackFlipSim.lua
+Create BackFlipSim.lua
+4 years ago
+BgsAztupBrewScript.lua
+Create BgsAztupBrewScript.lua
+4 years ago
+BgsScript.lua
+Create BgsScript.lua
+4 years ago
+BloxBurg.lua
+Create BloxBurg.lua
+4 years ago
+BloxBurgAutoBuild.lua
+Create BloxBurgAutoBuild.lua
+4 years ago
+BloxFruit.lua
+Create BloxFruit.lua
+4 years ago
+Boltshubv5.lua
+Create Boltshubv5.lua
+3 years ago
+BrokenBones.lua
+Create BrokenBones.lua
+4 years ago
+BrokenBonesSimulator.lua
+Create BrokenBonesSimulator.lua
+4 years ago
+Bss-Kocmoc-Lastest-V2.lua
+Create Bss-Kocmoc-Lastest-V2.lua
+3 years ago
+Btools.lua
+Create Btools.lua
+4 years ago
+BubbleGumQoucxHub.lua
+Create BubbleGumQoucxHub.lua
+4 years ago
+ClickerMadnessEasterUpdate.lua
+Update ClickerMadnessEasterUpdate.lua
+3 years ago
+ClickerMadnessTrixHub.lua
+Update ClickerMadnessTrixHub.lua
+3 years ago
+CounterBlox.lua
+Create CounterBlox.lua
+4 years ago
+DaHood-Artic.lua
+Create DaHood-Artic.lua
+3 years ago
+DaHood-DoomWare.lua
+Create DaHood-DoomWare.lua
+3 years ago
+DaHood-LegacyX.lua
+Create DaHood-LegacyX.lua
+3 years ago
+DaHood-LoraX.lua
+Create DaHood-LoraX.lua
+3 years ago
+DaHoodAimLock.lua
+Rename DaHoodAimLockl.lua to DaHoodAimLock.lua
+3 years ago
+DaHoodBunnyX
+Create DaHoodBunnyX
+4 years ago
+DaHoodFocus.lua
+Create DaHoodFocus.lua
+3 years ago
+DaHoodHoodShark.lua
+Create DaHoodHoodShark.lua
+3 years ago
+DaHoodNightX.lua
+Create DaHoodNightX.lua
+4 years ago
+DaHoodR4Ware.lua
+Create DaHoodR4Ware.lua
+4 years ago
+DaHoodTheWare.lua
+Create DaHoodTheWare.lua
+4 years ago
+DabAll.lua
+Create DabAll.lua
+4 years ago
+DarkDexV3.lua
+Create DarkDexV3.lua
+3 years ago
+DeathStar.lua
+Create DeathStar.lua
+4 years ago
+DemonSlayerRpgLoopKillAll.lua
+Create DemonSlayerRpgLoopKillAll.lua
+4 years ago
+DoloTonightConcertEvent.lua
+Create DoloTonightConcertEvent.lua
+3 years ago
+DominusAstra.lua
+Create DominusAstra.lua
+4 years ago
+DonutBakery.lua
+Create DonutBakery.lua
+4 years ago
+DrivingEmpireShawnjbragdon'sUi.lua
+Create DrivingEmpireShawnjbragdon'sUi.lua
+4 years ago
+EZHubPrisonLifePremium.lua
+Create EZHubPrisonLifePremium.lua
+3 years ago
+Energy Assault.lua
+Create Energy Assault.lua
+4 years ago
+EnvEdit.lua
+Create EnvEdit.lua
+3 years ago
+EventScripts.lua
+Create EventScripts.lua
+4 years ago
+FashionAwards2021.lua
+Create FashionAwards2021.lua
+4 years ago
+FeInvFling.lua
+Create FeInvFling.lua
+4 years ago
+FishingFrontier.lua
+Create FishingFrontier.lua
+4 years ago
+FreeDanceUniversal.lua
+Create FreeDanceUniversal.lua
+4 years ago
+GachaOnline.lua
+Create GachaOnline.lua
+4 years ago
+GameCrasherPetSimX.lua
+Create GameCrasherPetSimX.lua
+3 years ago
+Hatching-Simulator-Ultima.lua
+Create Hatching-Simulator-Ultima.lua
+3 years ago
+HoodModdedFocus.lua
+Create HoodModdedFocus.lua
+3 years ago
+JailHack.lua
+Create JailHack.lua
+4 years ago
+JohnDoe.lua
+Create JohnDoe.lua
+4 years ago
+KolgieYba.lua
+Create KolgieYba.lua
+4 years ago
+Library.lua
+Update Library.lua
+2 years ago
+LightningBlade.lua
+Rename LightningBlade..lua to LightningBlade.lua
+4 years ago
+Luckyblock.lua
+Create Luckyblock.lua
+4 years ago
+LumberTycoon2.lua
+Create LumberTycoon2.lua
+4 years ago
+MM2-Xenny-Ware.lua
+Create MM2-Xenny-Ware.lua
+3 years ago
+MagnetSimVgHub.lua
+Create MagnetSimVgHub.lua
+4 years ago
+MercuryLib.lua
+Update MercuryLib.lua
+3 years ago
+Mm2HoldHub.lua
+Create Mm2HoldHub.lua
+3 years ago
+MoonDropFnafSBRobloxHgSkin.lua
+Create MoonDropFnafSBRobloxHgSkin.lua
+3 years ago
+Murder-MisteryII-Tracker-MiniMap.lua
+Create Murder-MisteryII-Tracker-MiniMap.lua
+3 years ago
+MurderMysteryGiveAllWeapons.lua
+Update MurderMysteryGiveAllWeapons.lua
+3 years ago
+MurderMysteryII-Skumminity's Gui.lua
+Create MurderMysteryII-Skumminity's Gui.lua
+3 years ago
+MurderMysteryII-SolarisV2.lua
+Create MurderMysteryII-SolarisV2.lua
+3 years ago
+MurderMysteryIIDrifter'sGui.lua
+Create MurderMysteryIIDrifter'sGui.lua
+3 years ago
+MurderMysteryIIDucky'sGui.lua
+Create MurderMysteryIIDucky'sGui.lua
+3 years ago
+MurderMysteryIIFakeKnife.lua
+Create MurderMysteryIIFakeKnife.lua
+3 years ago
+MurderMysteryIIToxic'sGui
+Create MurderMysteryIIToxic'sGui
+3 years ago
+MuscleLegendsVgHub.lua
+Create MuscleLegendsVgHub.lua
+4 years ago
+NarvaleWarfareScript.lua
+Create NarvaleWarfareScript.lua
+3 years ago
+NeonHub.lua
+Create NeonHub.lua
+3 years ago
+NinjaLegendsGiveAllElements.lua
+Create NinjaLegendsGiveAllElements.lua
+3 years ago
+NinjaTycoonGui.lua
+Create NinjaTycoonGui.lua
+3 years ago
+PetSimXFakeHatch.lua
+Create PetSimXFakeHatch.lua
+3 years ago
+PetSimulator.lua
+Create PetSimulator.lua
+4 years ago
+PhantomeForcesKillAllAutoFarm.lua
+Create PhantomeForcesKillAllAutoFarm.lua
+3 years ago
+PhantomesForcesOpPannel.lua
+Create PhantomesForcesOpPannel.lua
+3 years ago
+Pop-It-Trading-WonderKid.lua
+Create Pop-It-Trading-WonderKid.lua
+3 years ago
+PraefectusDominus.lua
+Create PraefectusDominus.lua
+4 years ago
+PrisonLiefScorpionAdminUpdated_Free.lua
+Create PrisonLiefScorpionAdminUpdated_Free.lua
+4 years ago
+PrisonLifeJmuse'sGui.lua
+Create PrisonLifeJmuse'sGui.lua
+3 years ago
+PrisonLifeNihilizeH4X.lua
+Create PrisonLifeNihilizeH4X.lua
+4 years ago
+PrisonLifeScorpionAdmin5$.lua
+Create PrisonLifeScorpionAdmin5$.lua
+4 years ago
+PyramidScript.lua
+Create PyramidScript.lua
+4 years ago
+RainboxUiLib.lua
+Create RainboxUiLib.lua
+3 years ago
+Reaper2LegoHackGui.lua
+Create Reaper2LegoHackGui.lua
+3 years ago
+RoCitizensFreeGamePass.lua
+Create RoCitizensFreeGamePass.lua
+4 years ago
+RobloxProLeagueTrixhub.lua
+Update RobloxProLeagueTrixhub.lua
+3 years ago
+RoxHub.lua
+Create RoxHub.lua
+4 years ago
+SaberSimNeonHub.lua
+Create SaberSimNeonHub.lua
+3 years ago
+SecretHatchingSimGui.lua
+Create SecretHatchingSimGui.lua
+3 years ago
+SkyWarsFreeMegaVipItems.lua
+Create SkyWarsFreeMegaVipItems.lua
+3 years ago
+SpamBombmm2.lua
+Create SpamBombmm2.lua
+4 years ago
+The Winter Escape.lua
+Create The Winter Escape.lua
+4 years ago
+TheFashionAwards2021.lua
+Create TheFashionAwards2021.lua
+4 years ago
+TheWildWest.lua
+Create TheWildWest.lua
+4 years ago
+ThoseWhoRemain.lua
+Create ThoseWhoRemain.lua
+4 years ago
+ThoseWhoRemainHitBoxExpander.lua
+Update ThoseWhoRemainHitBoxExpander.lua
+3 years ago
+TowerOfMiseryWinFarm.lua
+Create TowerOfMiseryWinFarm.lua
+3 years ago
+TradeTowerZenX.lua
+Create TradeTowerZenX.lua
+3 years ago
+TrixSploit.lua
+Create TrixSploit.lua
+4 years ago
+TrixSploitMM2.lua
+Create TrixSploitMM2.lua
+4 years ago
+VansWorlGetAll_Items.lua
+Create VansWorlGetAll_Items.lua
+4 years ago
+Wizard2PlayerTycoonTrixHub.lua
+Create Wizard2PlayerTycoonTrixHub.lua
+3 years ago
+WorkAtAPizzaPlaceAutoFarmGui.lua
+Create WorkAtAPizzaPlaceAutoFarmGui.lua
+3 years ago
+XennyWare.lua
+Create XennyWare.lua
+4 years ago
+YbaGui.lua
+Create YbaGui.lua
+4 years ago
+adoptme.lua
+Create adoptme.lua
+4 years ago
+animedimension.lua
+Create animedimension.lua
+4 years ago
+animefght.lua
+Create animefght.lua
+4 years ago
+animefighter.lua
+Create animefighter.lua
+4 years ago
+animefighting.lua
+Create animefighting.lua
+4 years ago
+arsenal.lua
+Create arsenal.lua
+4 years ago
+badbusiness.lua
+Create badbusiness.lua
+4 years ago
+bedwars.lua
+Create bedwars.lua
+4 years ago
+bee-swarm.lua
+Create bee-swarm.lua
+4 years ago
+big-paintball.lua
+Create big-paintball.lua
+4 years ago
+blox-fruits.lua
+Create blox-fruits.lua
+4 years ago
+bloxburg.lua
+Create bloxburg.lua
+4 years ago
+boxing-simulator.lua
+Create boxing-simulator.lua
+4 years ago
+break-in.lua
+Create break-in.lua
+4 years ago
+breaking-point.lua
+Create breaking-point.lua
+4 years ago
+broken-bones.lua
+Create broken-bones.lua
+4 years ago
+brook-haven.lua
+Create brook-haven.lua
+4 years ago
+bubble-gum-simulator.lua
+Create bubble-gum-simulator.lua
+4 years ago
+build-a-boat-for-treasure.lua
+Create build-a-boat-for-treasure.lua
+4 years ago
+car-crusher.lua
+Create car-crusher.lua
+4 years ago
+clone-tycooon.lua
+Create clone-tycooon.lua
+4 years ago
+console-f12-logs-all-games.lua
+Update console-f12-logs-all-games.lua
+4 years ago
+counter-blox.lua
+Create counter-blox.lua
+4 years ago
+counterBlox.lua
+Create counterBlox.lua
+4 years ago
+da-hood.lua
+Create da-hood.lua
+4 years ago
+destruction-simulator.lua
+Create destruction-simulator.lua
+4 years ago
+dinosaur-simulator.lua
+Create dinosaur-simulator.lua
+4 years ago
+doomspire-brick-battle.lua
+Create doomspire-brick-battle.lua
+4 years ago
+down-fall.lua
+Update down-fall.lua
+4 years ago
+dungeon-quest.lua
+Create dungeon-quest.lua
+4 years ago
+egg-farm-simulator.lua
+Update egg-farm-simulator.lua
+4 years ago
+epic-minigames.lua
+Create epic-minigames.lua
+4 years ago
+explorer.lua
+Create explorer.lua
+4 years ago
+fnf.lua
+Create fnf.lua
+4 years ago
+free-animation-universal.lua
+Create free-animation-universal.lua
+4 years ago
+free-dance-universal.lua
+Create free-dance-universal.lua
+4 years ago
+fruitcollect.lua
+Create fruitcollect.lua
+4 years ago
+funky-friday.lua
+Create funky-friday.lua
+4 years ago
+hide-and-seek-extreme.lua
+Create hide-and-seek-extreme.lua
+4 years ago
+islands.lua
+Create islands.lua
+4 years ago
+islandssurvival.lua
+Create islandssurvival.lua
+4 years ago
+jailbreak.lua
+Create jailbreak.lua
+4 years ago
+kat.lua
+Update kat.lua
+4 years ago
+kick-off.lua
+Create kick-off.lua
+4 years ago
+king-legacy.lua
+Create king-legacy.lua
+4 years ago
+legends-of-speed.lua
+Update legends-of-speed.lua
+4 years ago
+lucky-block.lua
+Create lucky-block.lua
+4 years ago
+lumber-tycoon.lua
+Create lumber-tycoon.lua
+4 years ago
+mad-city.lua
+Create mad-city.lua
+4 years ago
+mad.lua
+Create mad.lua
+4 years ago
+mall -tycoon.lua
+Create mall -tycoon.lua
+4 years ago
+meep-city.lua
+Create meep-city.lua
+4 years ago
+mega-fun-obby.lua
+Create mega-fun-obby.lua
+4 years ago
+megamarble.lua
+Create megamarble.lua
+4 years ago
+military-tycoon.lua
+Create military-tycoon.lua
+4 years ago
+mining-simulator.lua
+Create mining-simulator.lua
+4 years ago
+mm2.lua
+Create mm2.lua
+4 years ago
+mm2AppoloHub.lua
+Update and rename Mm2Fakeknife.lua to mm2AppoloHub.lua
+3 years ago
+mm2BluePanel.lua
+Create mm2BluePanel.lua
+4 years ago
+mm2GhostHub.lua
+Create mm2GhostHub.lua
+3 years ago
+mm2Haxx.lua
+Create mm2Haxx.lua
+4 years ago
+mm2KinxHub.lua
+Create mm2KinxHub.lua
+3 years ago
+mm2Lx2.0.lua
+Create mm2Lx2.0.lua
+3 years ago
+mm2Niko'sScript.lua
+Create mm2Niko'sScript.lua
+4 years ago
+mm2RedGui.lua
+Create mm2RedGui.lua
+3 years ago
+mm2SolvEducation .lua
+Create mm2SolvEducation .lua
+3 years ago
+mm2Utilities.lua
+Create mm2Utilities.lua
+3 years ago
+murder-mystery-2.lua
+Create murder-mystery-2.lua
+4 years ago
+muscle-legends.lua
+Create muscle-legends.lua
+4 years ago
+my-restaurant.lua
+Create my-restaurant.lua
+4 years ago
+natural-disaster-survival.lua
+Create natural-disaster-survival.lua
+4 years ago
+ninja-legends.lua
+Create ninja-legends.lua
+4 years ago
+ninjalegends2.lua
+Create ninjalegends2.lua
+4 years ago
+paintball.lua
+Create paintball.lua
+4 years ago
+parkour.lua
+Create parkour.lua
+4 years ago
+pet-simulator-x.lua
+Create pet-simulator-x.lua
+4 years ago
+phantom-forces.lua
+Create phantom-forces.lua
+4 years ago
+piggy.lua
+Update piggy.lua
+4 years ago
+pow.lua
+Create pow.lua
+4 years ago
+prison-life.lua
+Update prison-life.lua
+4 years ago
+prsionlife.lua
+Create prsionlife.lua
+4 years ago
+pxtest.lua
+Create pxtest.lua
+2 years ago
+readme.md
+Create readme.md
+4 years ago
+royal-high.lua
+Create royal-high.lua
+4 years ago
+saber-simulator.lua
+Create saber-simulator.lua
+4 years ago
+sabersim.lua
+Create sabersim.lua
+4 years ago
+shark-bite.lua
+Create shark-bite.lua
+4 years ago
+shindo-life.lua
+Create shindo-life.lua
+4 years ago
+skywars.lua
+Create skywars.lua
+4 years ago
+slayer-tycoon.lua
+Create slayer-tycoon.lua
+4 years ago
+speed-run-4.lua
+Create speed-run-4.lua
+4 years ago
+state-of-anarchy.lua
+Create state-of-anarchy.lua
+4 years ago
+stranger-things-starcourt-mall.lua
+Create stranger-things-starcourt-mall.lua
+4 years ago
+strongest-punch-simulator.lua
+Create strongest-punch-simulator.lua
+4 years ago
+strongman-simulator.lua
+Create strongman-simulator.lua
+4 years ago
+strucid.lua
+Create strucid.lua
+4 years ago
+super-hero-tycoon.lua
+Create super-hero-tycoon.lua
+4 years ago
+superheosim.lua
+Create superheosim.lua
+4 years ago
+survive-the-killer.lua
+Create survive-the-killer.lua
+4 years ago
+the-mimic.lua
+Create the-mimic.lua
+4 years ago
+tower-of-hell.lua
+Create tower-of-hell.lua
+4 years ago
+tower-of-misery.lua
+Create tower-of-misery.lua
+4 years ago
+towerofhell.lua
+Create towerofhell.lua
+4 years ago
+tp-tool.lua
+Create tp-tool.lua
+4 years ago
+vans-world.lua
+Create vans-world.lua
+4 years ago
+work-a-pizza-place.lua
+Update work-a-pizza-place.lua
+3 years ago
+your-bizarre-adventure.lua
+Create your-bizarre-adventure.lua
+4 years ago
+zombie-attack.lua
+Create zombie-attack.lua
+4 years ago
+zombie-rush.lua
