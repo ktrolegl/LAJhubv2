@@ -14,16 +14,84 @@
     - Secure key system for authentication
 ]]
 
--- Check for executor compatibility
+-- Enhanced executor compatibility with comprehensive support for all major executors
 local executorFunctions = {
     FileSystem = typeof(readfile) == "function" and typeof(writefile) == "function",
-    HttpRequest = typeof(syn) == "table" and typeof(syn.request) == "function" or typeof(http) == "table" and typeof(http.request) == "function" or typeof(request) == "function" or typeof(http_request) == "function",
-    Execute = typeof(loadstring) == "function",
-    Clipboard = typeof(setclipboard) == "function"
+    HttpRequest = typeof(syn) == "table" and typeof(syn.request) == "function" or 
+                 typeof(http) == "table" and typeof(http.request) == "function" or 
+                 typeof(request) == "function" or 
+                 typeof(http_request) == "function" or
+                 typeof(HttpPost) == "function" or
+                 (typeof(fluxus) == "table" and typeof(fluxus.request) == "function") or
+                 (typeof(delta) == "table" and typeof(delta.request) == "function") or
+                 (typeof(crypt) == "table" and typeof(crypt.request) == "function") or
+                 (KRNL_LOADED == true and typeof(request) == "function") or
+                 (typeof(Oxygen) == "table" and typeof(Oxygen.HttpRequest) == "function"),
+    Execute = typeof(loadstring) == "function" or (typeof(syn) == "table" and typeof(syn.load) == "function"),
+    Clipboard = typeof(setclipboard) == "function" or (typeof(syn) == "table" and typeof(syn.write_clipboard) == "function") or (typeof(Clipboard) == "table" and typeof(Clipboard.set) == "function"),
+    AssetSupport = typeof(getcustomasset) == "function" or typeof(getsynasset) == "function"
 }
 
+-- Check if the executor can run LAJ HUB properly
 if not executorFunctions.Execute then
-    return warn("Your executor does not support loadstring. LAJ HUB cannot run.")
+    local errorMessage = "LAJ HUB requires an executor with loadstring support. Your executor cannot run this script."
+    warn(errorMessage)
+    return
+end
+
+-- Check for mandatory HTTP support
+if not executorFunctions.HttpRequest then
+    local errorMessage = "LAJ HUB requires an executor with HTTP request support.\n"
+    errorMessage = errorMessage .. "Please use Synapse X, KRNL, Fluxus, Delta, or another modern executor."
+    
+    -- Try to display a visual message if possible
+    pcall(function()
+        local messageGui = Instance.new("ScreenGui")
+        messageGui.Name = "LAJHubError"
+        
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(0, 300, 0, 150)
+        frame.Position = UDim2.new(0.5, -150, 0.5, -75)
+        frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        frame.BorderSizePixel = 0
+        frame.Parent = messageGui
+        
+        local title = Instance.new("TextLabel")
+        title.Text = "LAJ HUB ULTIMATE - Compatibility Error"
+        title.Size = UDim2.new(1, 0, 0, 30)
+        title.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+        title.TextColor3 = Color3.fromRGB(255, 255, 255)
+        title.BorderSizePixel = 0
+        title.Font = Enum.Font.SourceSansBold
+        title.TextSize = 18
+        title.Parent = frame
+        
+        local message = Instance.new("TextLabel")
+        message.Text = errorMessage
+        message.Size = UDim2.new(1, -20, 1, -40)
+        message.Position = UDim2.new(0, 10, 0, 35)
+        message.BackgroundTransparency = 1
+        message.TextColor3 = Color3.fromRGB(255, 255, 255)
+        message.TextWrapped = true
+        message.Font = Enum.Font.SourceSans
+        message.TextSize = 14
+        message.Parent = frame
+        
+        -- Attempt to parent to CoreGui or PlayerGui as fallback
+        if syn and syn.protect_gui then
+            syn.protect_gui(messageGui)
+            messageGui.Parent = game:GetService("CoreGui")
+        elseif gethui then
+            messageGui.Parent = gethui()
+        elseif game:GetService("CoreGui") then
+            messageGui.Parent = game:GetService("CoreGui")
+        else
+            messageGui.Parent = game:GetService("Players").LocalPlayer.PlayerGui
+        end
+    end)
+    
+    warn(errorMessage)
+    return
 end
 
 if not game:IsLoaded() then
