@@ -794,7 +794,7 @@ local Window = Rayfield:CreateWindow({
     },
     Discord = {
         Enabled = true,
-        Invite = "lajhubcommunity",
+        Invite = "4mgdcfvAJU",
         RememberJoins = true
     },
     KeySystem = true,
@@ -907,7 +907,7 @@ DashboardTab:CreateButton({
     Info = "Join our community for updates and support",
     Callback = function()
         if setclipboard then
-            setclipboard("discord.gg/lajhubcommunity")
+            setclipboard("https://discord.gg/4mgdcfvAJU")
             LAJ.Log("Info", "Discord invite copied to clipboard")
         else
             LAJ.Log("Warning", "Clipboard function not available")
