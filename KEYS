@@ -40,7 +40,7 @@ local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
 local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
 local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
 local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
-local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails Alpha tab
+local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
 local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
 
 -- Discord link copy button
@@ -121,33 +121,34 @@ BlueLock:CreateButton({
    end,
 })
 
--- Dead Rails scripts with enhanced key bypass
+-- Dead Rails scripts
 DeadRails:CreateButton({
-   Name = "Null Fire",
+   Name = "Infernus",
    Callback = function()
-        -- Load the direct loader that contains the bypass code
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/nullfire_direct_loader.lua", true))()
+        -- Two options:
+        -- 1. Use direct loader with key bypass (more reliable)
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/infernus_direct_loader.lua"))()
+        
+        -- 2. Direct script execution (backup method)
+        --loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/aca362a74eb2f7c5f383969177c26b6b.lua"))()
         
         Rayfield:Notify({
-            Title = "Null Fire",
-            Content = "Loading script with key bypass...",
+            Title = "Dead Rails Script",
+            Content = "Loading Infernus with key bypass...",
             Duration = 3,
             Image = 4483362458,
         })
    end,
 })
 
--- Universal scripts tab for scripts that work in multiple games
--- Add NullFire script (with key bypass)
+-- Universal scripts section with safe scripts
 Universal:CreateButton({
-   Name = "NullFire",
+   Name = "Infinite Yield",
    Callback = function()
-        -- Load the direct loader that contains the bypass code
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/nullfire_direct_loader.lua", true))()
-        
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
         Rayfield:Notify({
-            Title = "NullFire",
-            Content = "Loading NullFire script with key bypass...",
+            Title = "Infinite Yield",
+            Content = "Admin commands loaded!",
             Duration = 3,
             Image = 4483362458,
         })
