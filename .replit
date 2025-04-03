@@ -19,6 +19,10 @@ args = "Lua Script Runner"
 task = "workflow.run"
 args = "script_tester"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Lua Test Runner"
+
 [[workflows.workflow]]
 name = "Lua Script Runner"
 author = "agent"
@@ -46,6 +50,20 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "roblox-player"
+
+[[workflows.workflow]]
+name = "Lua Test Runner"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "lua laj_hub_test.lua"
 
 [deployment]
 run = ["sh", "-c", "lua -v"]
