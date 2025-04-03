@@ -1,5 +1,70 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+-- Ban system configuration
+local BANNED_USERS = {
+    -- Add usernames or user IDs here (as strings)
+    -- "ExampleUsername1",
+    -- "ExampleUsername2",
+    -- 123456789, -- User ID as number
+}
+
+-- Check if the current user is banned
+local function checkIfBanned()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    -- Check by username (case insensitive)
+    for _, bannedUser in ipairs(BANNED_USERS) do
+        if type(bannedUser) == "string" and string.lower(LocalPlayer.Name) == string.lower(bannedUser) then
+            return true
+        end
+        
+        -- Check by user ID
+        if type(bannedUser) == "number" and LocalPlayer.UserId == bannedUser then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Exit and show message if banned
+if checkIfBanned() then
+    game.Players.LocalPlayer:Kick("You have been banned from using LAJ HUB")
+    return
+end
+
+-- Remote ban system via HTTP
+-- This will check an external ban list
+local function checkRemoteBan()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local success, result = pcall(function()
+        return game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/banned_users.txt")
+    end)
+    
+    if success then
+        for line in string.gmatch(result, "[^\r\n]+") do
+            -- Check if line is a number (user ID) or string (username)
+            local userId = tonumber(line)
+            if userId and LocalPlayer.UserId == userId then
+                return true
+            elseif string.lower(LocalPlayer.Name) == string.lower(line) then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
+-- Exit if banned via remote list
+if checkRemoteBan() then
+    game.Players.LocalPlayer:Kick("You have been banned from using LAJ HUB")
+    return
+end
+
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
@@ -42,6 +107,7 @@ local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Imag
 local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
 local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
+local AdminTab = Window:CreateTab("Admin", 4483362458) -- Admin tab for banning users
 
 -- Discord link copy button
 MainTab:CreateButton({
@@ -56,6 +122,79 @@ MainTab:CreateButton({
        })
    end,
 })
+
+-- Admin tools (only visible to admins)
+local admins = {
+    -- Add admin usernames or user IDs here
+    "lajsupport",    -- Example admin username
+    "ktrolegl",      -- Example admin username
+    8250509971,      -- Added admin user ID
+}
+
+-- Check if current user is an admin
+local function isAdmin()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    for _, admin in ipairs(admins) do
+        if type(admin) == "string" and string.lower(LocalPlayer.Name) == string.lower(admin) then
+            return true
+        end
+        
+        if type(admin) == "number" and LocalPlayer.UserId == admin then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- If user is admin, show admin tools
+if isAdmin() then
+    local userToBan = ""
+    
+    AdminTab:CreateInput({
+        Name = "Ban User",
+        PlaceholderText = "Enter username or user ID",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(text)
+            userToBan = text
+        end,
+    })
+    
+    AdminTab:CreateButton({
+        Name = "Ban User",
+        Callback = function()
+            if userToBan ~= "" then
+                -- Attempt to add to remote ban list (would require server implementation)
+                Rayfield:Notify({
+                    Title = "Ban System",
+                    Content = "Attempted to ban user: " .. userToBan,
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+                
+                -- This would ideally send an HTTP request to update a remote ban list
+                -- For now, it's just a notification
+            else
+                Rayfield:Notify({
+                    Title = "Ban System",
+                    Content = "Please enter a username or user ID first",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+            end
+        end,
+    })
+else
+    -- Hide Admin tab if not an admin
+    for i, tab in pairs(Window.Tabs) do
+        if tab.Name == "Admin" then
+            tab.UI.Visible = false
+            break
+        end
+    end
+end
 
 Tab:CreateButton({
    Name = "Psalm",
