@@ -123,14 +123,15 @@ Fin:CreateButton({
    end,
 })
 
--- Basketball Zero script
+-- Basketball Zero script with bypass
 BballZero:CreateButton({
-   Name = "LAJ HUB",
+   Name = "Ball Control",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/LOLking123456/basketballzero1/main/basketball%20zero"))()
+        -- Use the specialized loader for Ball Control to bypass key system
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/ball_control_modified.lua"))()
         Rayfield:Notify({
             Title = "Basketball Zero Script",
-            Content = "Script loaded successfully!",
+            Content = "Ball Control loaded with key bypass!",
             Duration = 3,
             Image = 4483362458,
         })
