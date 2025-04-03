@@ -54,7 +54,7 @@ LAJ.Log = function(type, message)
     end
 end
 
--- Discord webhook function
+-- Discord webhook function compatible with all executors (including Delta)
 LAJ.SendDiscordWebhook = function(message)
     if LAJ.WebhookURL then
         pcall(function()
@@ -75,13 +75,38 @@ LAJ.SendDiscordWebhook = function(message)
             local headers = {["Content-Type"] = "application/json"}
             local finalData = httpService:JSONEncode(data)
             
-            local request = http_request or request or HttpPost or syn.request
-            request({
-                Url = LAJ.WebhookURL,
-                Method = "POST",
-                Headers = headers,
-                Body = finalData
-            })
+            -- Support for all executors including Delta
+            local request_func
+            if syn and syn.request then
+                request_func = syn.request
+            elseif http and http.request then
+                request_func = http.request
+            elseif http_request then
+                request_func = http_request
+            elseif request then
+                request_func = request
+            elseif HttpPost then
+                request_func = HttpPost
+            elseif fluxus and fluxus.request then
+                request_func = fluxus.request
+            elseif delta and delta.request then
+                request_func = delta.request
+            elseif KRNL_LOADED and request then
+                request_func = request
+            elseif crypt and crypt.request then
+                request_func = crypt.request
+            end
+            
+            if request_func then
+                request_func({
+                    Url = LAJ.WebhookURL,
+                    Method = "POST",
+                    Headers = headers,
+                    Body = finalData
+                })
+            else
+                print("Warning: No HTTP request function found for your executor")
+            end
         end)
     end
 end
@@ -119,9 +144,38 @@ LAJ.LoadScript = function(url, name)
         writefile("LAJHub_History.json", game:GetService("HttpService"):JSONEncode(LAJ.History))
     end
     
-    -- Execute with advanced error handling
+    -- Execute with advanced error handling (compatible with all executors)
     local success, result = pcall(function()
-        return loadstring(game:HttpGet(url))()
+        local content
+        -- Support for different HTTP request methods across executors
+        if syn and syn.request then
+            content = game:HttpGet(url)
+        elseif http and http.request then
+            content = game:HttpGet(url)
+        elseif request then
+            content = game:HttpGet(url)
+        elseif HttpPost then
+            content = game:HttpGet(url)
+        elseif fluxus and fluxus.request then
+            local res = fluxus.request({
+                Url = url,
+                Method = "GET"
+            })
+            content = res.Body
+        elseif delta and delta.request then
+            local res = delta.request({
+                Url = url,
+                Method = "GET"
+            })
+            content = res.Body
+        elseif KRNL_LOADED then
+            content = game:HttpGet(url)
+        else
+            -- Default to standard HttpGet
+            content = game:HttpGet(url)
+        end
+        
+        return loadstring(content)()
     end)
     
     if success then
