@@ -1,0 +1,52 @@
+modules = ["lua"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Lua Script Runner"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "script_tester"
+
+[[workflows.workflow]]
+name = "Lua Script Runner"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "lua roblox_exploit_hub.lua"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "script_tester"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "roblox-player"
+
+[deployment]
+run = ["sh", "-c", "lua roblox_exploit_hub.lua"]
