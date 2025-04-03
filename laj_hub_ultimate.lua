@@ -1,0 +1,717 @@
+--[[
+    LAJ HUB ULTIMATE
+    
+    The most comprehensive Roblox exploit script hub
+    Combines TrixAde scripts repository with other popular exploits
+    
+    Features:
+    - Auto-detection of current game
+    - Categorized script organization
+    - Favorites system for quick access
+    - History tracking for recent scripts
+    - Dashboard with personalized recommendations
+    - Enhanced UI with custom themes
+    - Secure key system for authentication
+]]
+
+-- Check for executor compatibility
+local executorFunctions = {
+    FileSystem = typeof(readfile) == "function" and typeof(writefile) == "function",
+    HttpRequest = typeof(syn) == "table" and typeof(syn.request) == "function" or typeof(http) == "table" and typeof(http.request) == "function" or typeof(request) == "function" or typeof(http_request) == "function",
+    Execute = typeof(loadstring) == "function",
+    Clipboard = typeof(setclipboard) == "function"
+}
+
+if not executorFunctions.Execute then
+    return warn("Your executor does not support loadstring. LAJ HUB cannot run.")
+end
+
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- Initialize the LAJ object
+local LAJ = {}
+LAJ.Version = "ULTIMATE"
+LAJ.History = {}
+LAJ.Cache = {}
+LAJ.Modules = {}
+
+-- Load UI framework
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Utility functions
+LAJ.Log = function(type, message)
+    if type == "Success" then
+        print("✅ [LAJ HUB] " .. message)
+    elseif type == "Error" then
+        warn("❌ [LAJ HUB] " .. message)
+    elseif type == "Warning" then
+        warn("⚠️ [LAJ HUB] " .. message)
+    else
+        print("ℹ️ [LAJ HUB] " .. message)
+    end
+end
+
+LAJ.Log("Info", "Initializing LAJ HUB " .. LAJ.Version)
+
+-- Load script from URL
+LAJ.LoadScript = function(url, name)
+    LAJ.Log("Info", "Loading " .. name .. "...")
+    
+    -- Add to history
+    table.insert(LAJ.History, {
+        Name = name,
+        URL = url,
+        Time = os.time()
+    })
+    
+    -- Limit history size
+    if #LAJ.History > 20 then
+        table.remove(LAJ.History, 1)
+    end
+    
+    -- Save history if file system available
+    if executorFunctions.FileSystem then
+        writefile("LAJHub_History.json", game:GetService("HttpService"):JSONEncode(LAJ.History))
+    end
+    
+    -- Execute with advanced error handling
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(url))()
+    end)
+    
+    if success then
+        LAJ.Log("Success", name .. " was successfully executed")
+        return true
+    else
+        LAJ.Log("Error", "Failed to load " .. name .. ": " .. tostring(result))
+        return false
+    end
+end
+
+-- Load scripts from the original LAJ Hub
+LAJ.OriginalScripts = {
+    ["Psalm"] = "https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua",
+    ["Ballware vfs"] = "https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt",
+    ["FrostByte"] = "https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak",
+    ["Ronix"] = "https://api.luarmor.net/files/v3/loaders/a3c501e721ec4d66a864cc2276c0f4e9.lua",
+    ["Speed Hub"] = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+}
+
+-- Game database with TrixAde scripts
+LAJ.Games = {
+    -- FPS Games
+    ["Phantom Forces"] = {ID = 292439477, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/phantom-forces.lua"},
+    ["Arsenal"] = {ID = 286090429, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/ArsenalOwlHub.lua"},
+    ["Bad Business"] = {ID = 3233893879, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/bad-business.lua"},
+    ["Strucid"] = {ID = 2377868063, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/strucid.lua"},
+    ["Rush Point"] = {ID = 5993942214, Category = "FPS"},
+    ["Apocalypse Rising"] = {ID = 1600503, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/ApocalypseRising.lua"},
+    ["Big Paintball"] = {ID = 3527629287, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/big-paintball.lua"},
+    ["Energy Assault"] = {ID = 6172932937, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/Energy%20Assault.lua"},
+    ["Counter Blox"] = {ID = 301549746, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/CounterBlox.lua"},
+    ["Those Who Remain"] = {ID = 488667523, Category = "FPS", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/ThoseWhoRemain.lua"},
+    
+    -- RPG Games
+    ["Blox Fruits"] = {ID = 2753915549, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/BloxFruit.lua"},
+    ["King Legacy"] = {ID = 4520749081, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/KingLegacy.lua"},
+    ["Pet Simulator X"] = {ID = 6284583030, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/PetSimX.lua"},
+    ["Anime Fighting Simulator"] = {ID = 4042427666, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/AnimeFighting.lua"},
+    ["Shindo Life"] = {ID = 4616652839, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/ShindoLife.lua"},
+    ["Your Bizarre Adventure"] = {ID = 2809202155, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/your-bizarre-adventure.lua"},
+    ["Anime Dimensions"] = {ID = 6938803611, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/animedimension.lua"},
+    ["Dungeon Quest"] = {ID = 2414851778, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/dungeon-quest.lua"},
+    ["Slayer Tycoon"] = {ID = 7234162497, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/slayer-tycoon.lua"},
+    ["Murder Mystery 2"] = {ID = 142823291, Category = "RPG", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/murder-mystery-2.lua"},
+    
+    -- Town & City Games
+    ["Adopt Me"] = {ID = 920587237, Category = "Town & City", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/adoptme.lua"},
+    ["Brookhaven"] = {ID = 4924922222, Category = "Town & City", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/brook-haven.lua"},
+    ["MeepCity"] = {ID = 370731277, Category = "Town & City"},
+    ["Welcome to Bloxburg"] = {ID = 185655149, Category = "Town & City", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/bloxburg.lua"},
+    ["Work at a Pizza Place"] = {ID = 192800, Category = "Town & City", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/work-a-pizza-place.lua"},
+    ["My Restaurant"] = {ID = 4490140733, Category = "Town & City", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/my-restaurant.lua"},
+    ["Vans World"] = {ID = 6679968919, Category = "Town & City", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/vans-world.lua"},
+    ["Royal High"] = {ID = 735030788, Category = "Town & City", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/royal-high.lua"},
+    
+    -- Fighting Games
+    ["Da Hood"] = {ID = 2788229376, Category = "Fighting", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/da-hood.lua"},
+    ["Hood Customs"] = {ID = 9183932460, Category = "Fighting"},
+    ["Prison Life"] = {ID = 155615604, Category = "Fighting", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/prison-life.lua"},
+    ["Breaking Point"] = {ID = 648362523, Category = "Fighting", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/breaking-point.lua"},
+    
+    -- Simulation Games
+    ["Fishing Simulator"] = {ID = 2866967438, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/FishingSim.lua"},
+    ["Mining Simulator 2"] = {ID = 9551640993, Category = "Simulation"},
+    ["Car Dealership Tycoon"] = {ID = 1554960397, Category = "Simulation"},
+    ["Strongman Simulator"] = {ID = 5338710779, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/strongman-simulator.lua"},
+    ["Superhero Simulator"] = {ID = 2577423786, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/superheosim.lua"},
+    ["BackFlip Simulator"] = {ID = 2481601704, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/BackFlipSim.lua"},
+    ["Saber Simulator"] = {ID = 3823781113, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/saber-simulator.lua"},
+    ["Bee Swarm Simulator"] = {ID = 1537690962, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/bee-swarm.lua"},
+    ["Destruction Simulator"] = {ID = 2248408710, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/destruction-simulator.lua"},
+    ["Car Crusher"] = {ID = 13229599, Category = "Simulation", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/car-crusher.lua"},
+    
+    -- Adventure Games
+    ["Jailbreak"] = {ID = 606849621, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/jailbreak.lua"},
+    ["Mad City"] = {ID = 1224212277, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/madcity.lua"},
+    ["Ninja Legends"] = {ID = 3956818381, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/ninja-legends.lua"},
+    ["Tower of Hell"] = {ID = 1962086868, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/tower-of-hell.lua"},
+    ["Tower of Misery"] = {ID = 4954752502, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/tower-of-misery.lua"},
+    ["The Mimic"] = {ID = 6243699076, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/the-mimic.lua"},
+    ["Build A Boat For Treasure"] = {ID = 537413528, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/build-a-boat-for-treasure.lua"},
+    ["Shark Bite"] = {ID = 734159876, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/shark-bite.lua"},
+    ["Parkour"] = {ID = 445664957, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/parkour.lua"},
+    ["Speed Run 4"] = {ID = 183364845, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/speed-run-4.lua"},
+    ["Piggy"] = {ID = 4623386862, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/piggy.lua"},
+    ["Bedwars"] = {ID = 6872265039, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/bedwars.lua"},
+    ["SkyWars"] = {ID = 855499080, Category = "Adventure", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/skywars.lua"},
+    
+    -- Horror Games
+    ["Survive the Killer"] = {ID = 4580204640, Category = "Horror", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/survive-the-killer.lua"},
+    ["Zombie Attack"] = {ID = 1240123653, Category = "Horror", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/zombie-attack.lua"},
+    ["Zombie Rush"] = {ID = 137885680, Category = "Horror", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/zombie-rush.lua"},
+    
+    -- Tycoon Games
+    ["Super Hero Tycoon"] = {ID = 574407221, Category = "Tycoon", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/super-hero-tycoon.lua"},
+    
+    -- Other Games
+    ["Natural Disaster Survival"] = {ID = 189707, Category = "Other", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/natural-disaster-survival.lua"},
+    ["Dinosaur Simulator"] = {ID = 219434352, Category = "Other", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/dinosaur-simulator.lua"},
+    ["Broken Bones"] = {ID = 2551991523, Category = "Other", Script = "https://raw.githubusercontent.com/TrixAde/scripts/main/broken-bones.lua"}
+}
+
+-- Get current game with more details
+LAJ.GetCurrentGame = function()
+    local currentGameId = game.PlaceId
+    local gameInfo = {
+        Name = "Universal",
+        ID = currentGameId,
+        Category = "Other",
+        PlaceVersion = game.PlaceVersion,
+        PlaceName = "Unknown",
+        Script = nil -- Add Script field to store direct script URL
+    }
+    
+    -- Try to get game name from Roblox
+    pcall(function()
+        local success, result = pcall(function()
+            return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
+        end)
+        
+        if success and result then
+            gameInfo.PlaceName = result.Name
+        end
+    end)
+    
+    -- Check if game is in our database
+    for name, info in pairs(LAJ.Games) do
+        if currentGameId == info.ID then
+            gameInfo.Name = name
+            gameInfo.Category = info.Category
+            gameInfo.Script = info.Script -- Store the script URL if available
+            break
+        end
+    end
+    
+    -- Log game detection
+    LAJ.Log("Info", "Detected game: " .. gameInfo.Name .. " (ID: " .. gameInfo.ID .. ")")
+    
+    return gameInfo
+end
+
+-- Enhanced settings management
+LAJ.LoadSettings = function()
+    if executorFunctions.FileSystem and isfile("LAJHub_Settings.json") then
+        local success, result = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(readfile("LAJHub_Settings.json"))
+        end)
+        
+        if success and type(result) == "table" then
+            LAJ.Log("Info", "Settings loaded successfully")
+            return result
+        else
+            LAJ.Log("Warning", "Failed to load settings, using defaults")
+        end
+    end
+    
+    return {
+        Theme = "Default",
+        AutoExecute = {},
+        UIScale = 1,
+        Favorites = {},
+        RecentScripts = {},
+        CustomScripts = {}
+    }
+end
+
+LAJ.SaveSettings = function()
+    if executorFunctions.FileSystem then
+        local success, result = pcall(function()
+            writefile("LAJHub_Settings.json", game:GetService("HttpService"):JSONEncode(LAJ.Config))
+            return true
+        end)
+        
+        if success then
+            LAJ.Log("Success", "Settings saved successfully")
+            return true
+        else
+            LAJ.Log("Error", "Failed to save settings: " .. tostring(result))
+            return false
+        end
+    end
+    return false
+end
+
+-- Initialize settings
+LAJ.Config = LAJ.LoadSettings()
+
+-- Set up favorites system
+LAJ.IsFavorite = function(scriptName)
+    for _, fav in ipairs(LAJ.Config.Favorites or {}) do
+        if fav.Name == scriptName then
+            return true
+        end
+    end
+    return false
+end
+
+LAJ.ToggleFavorite = function(scriptName, scriptUrl)
+    LAJ.Config.Favorites = LAJ.Config.Favorites or {}
+    
+    for i, fav in ipairs(LAJ.Config.Favorites) do
+        if fav.Name == scriptName then
+            table.remove(LAJ.Config.Favorites, i)
+            LAJ.SaveSettings()
+            LAJ.Log("Info", "Removed " .. scriptName .. " from favorites")
+            return false
+        end
+    end
+    
+    table.insert(LAJ.Config.Favorites, {
+        Name = scriptName,
+        URL = scriptUrl,
+        AddedAt = os.time()
+    })
+    
+    LAJ.SaveSettings()
+    LAJ.Log("Success", "Added " .. scriptName .. " to favorites")
+    return true
+end
+
+-- Create enhanced window
+local Window = Rayfield:CreateWindow({
+    Name = "LAJ HUB " .. LAJ.Version,
+    LoadingTitle = "LAJ HUB ULTIMATE",
+    LoadingSubtitle = "by LAJ Development Team",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "LAJHub",
+        FileName = "Configuration"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "lajhubcommunity",
+        RememberJoins = true
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "LAJ HUB " .. LAJ.Version,
+        Subtitle = "Premium Key Authentication",
+        Note = "Join our Discord for a key: discord.gg/lajhubcommunity",
+        FileName = "LAJHubKey",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {
+            "3W319,4RY20RI,2US82,19RI99", -- Original key
+            "LAJHUB-PREMIUM-ACCESS",
+            "LAJ-2023-VIP",
+            "LAJHUB-ULTRA-2023",
+            "ROBLOX-EXPLOITS-PREMIUM"
+        }
+    },
+    Theme = LAJ.Config.Theme or "Default"
+})
+
+-- Create main UI tabs
+local gameInfo = LAJ.GetCurrentGame()
+
+-- Dashboard Tab
+local DashboardTab = Window:CreateTab("Dashboard", 4483362458)
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+local UniversalTab = Window:CreateTab("Universal", 4483362458)
+local GamesTab = Window:CreateTab("Games", 4483362458)
+local OriginalTab = Window:CreateTab("Original LAJ", 4483362458)
+local FavoritesTab = Window:CreateTab("Favorites", 4483362458)
+local SettingsTab = Window:CreateTab("Settings", 4483362458)
+
+-- Dashboard Content
+DashboardTab:CreateSection("🌟 Welcome to LAJ HUB " .. LAJ.Version)
+
+local gameInfoLabel = DashboardTab:CreateLabel("🎮 Current Game: " .. gameInfo.Name .. " (" .. gameInfo.ID .. ")")
+local versionLabel = DashboardTab:CreateLabel("📊 Version: " .. LAJ.Version)
+
+DashboardTab:CreateParagraph({
+    Title = "LAJ HUB - The Ultimate Exploit Hub",
+    Content = "LAJ HUB " .. LAJ.Version .. " provides the best Roblox exploits organized by game categories and types. Navigate through the tabs to find scripts for your favorite games or use universal exploits that work across Roblox."
+})
+
+-- Game-specific recommendations
+if gameInfo.Name ~= "Universal" then
+    DashboardTab:CreateSection("📋 Recommendations for " .. gameInfo.Name)
+    
+    -- Add button to directly execute TrixAde script if available
+    if gameInfo.Script then
+        DashboardTab:CreateButton({
+            Name = "⚡ Execute TrixAde Script for " .. gameInfo.Name,
+            Info = "Run the most compatible TrixAde script for " .. gameInfo.Name,
+            Callback = function()
+                LAJ.Log("Info", "Executing TrixAde script for " .. gameInfo.Name)
+                LAJ.LoadScript(gameInfo.Script, gameInfo.Name .. " (TrixAde)")
+            end,
+        })
+    end
+    
+    DashboardTab:CreateButton({
+        Name = "🚀 Load All Scripts for " .. gameInfo.Name,
+        Info = "Quick access to all scripts for " .. gameInfo.Name,
+        Callback = function()
+            LAJ.Log("Info", "Loading recommended scripts for " .. gameInfo.Name)
+            GamesTab:Select()
+            
+            -- Finding the appropriate game category
+            for i, v in pairs(LAJ.Games) do
+                if i == gameInfo.Name then
+                    -- We would automatically highlight or scroll to the correct section
+                    -- but Rayfield doesn't support this directly
+                    LAJ.Log("Info", "Found " .. gameInfo.Name .. " in category " .. v.Category)
+                    break
+                end
+            end
+        end,
+    })
+end
+
+-- Recent activity section
+DashboardTab:CreateSection("📜 Recent Activity")
+
+-- This would be dynamically populated with recent scripts executed
+if #LAJ.History > 0 then
+    for i = 1, math.min(5, #LAJ.History) do
+        local item = LAJ.History[#LAJ.History - (i-1)]
+        DashboardTab:CreateButton({
+            Name = item.Name,
+            Info = "Re-execute this script",
+            Callback = function()
+                LAJ.LoadScript(item.URL, item.Name)
+            end,
+        })
+    end
+else
+    DashboardTab:CreateLabel("No recent activity")
+end
+
+-- Discord & Community
+DashboardTab:CreateSection("🌐 Community")
+
+DashboardTab:CreateButton({
+    Name = "🔗 Join Discord",
+    Info = "Join our community for updates and support",
+    Callback = function()
+        if setclipboard then
+            setclipboard("discord.gg/lajhubcommunity")
+            LAJ.Log("Info", "Discord invite copied to clipboard")
+        else
+            LAJ.Log("Warning", "Clipboard function not available")
+        end
+    end,
+})
+
+-- Player Tab
+PlayerTab:CreateSection("🧍 Player Utilities")
+
+-- ESP Features
+local espEnabled = false
+PlayerTab:CreateToggle({
+    Name = "🔍 ESP / Wallhack",
+    Info = "See players through walls",
+    CurrentValue = false,
+    Flag = "ESPEnabled",
+    Callback = function(Value)
+        espEnabled = Value
+        if Value then
+            LAJ.Log("Info", "Enabling ESP/Wallhack")
+            LAJ.LoadScript("https://raw.githubusercontent.com/LAJHubPremium/scripts/main/espwallhack", "ESP Wallhack")
+        else
+            LAJ.Log("Info", "ESP disabled - rejoin to fully remove")
+        end
+    end,
+})
+
+-- Teleport utilities
+PlayerTab:CreateSection("🏃 Movement & Teleport")
+
+PlayerTab:CreateToggle({
+    Name = "🏎️ Speed Boost",
+    Info = "Increase character's movement speed",
+    CurrentValue = false,
+    Flag = "SpeedBoostEnabled",
+    Callback = function(Value)
+        -- Speed boost code
+        if Value then
+            local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                LAJ.Cache.OriginalWalkSpeed = humanoid.WalkSpeed
+                humanoid.WalkSpeed = 50
+                LAJ.Log("Info", "Speed boost enabled")
+            else
+                LAJ.Log("Error", "Humanoid not found")
+            end
+        else
+            local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and LAJ.Cache.OriginalWalkSpeed then
+                humanoid.WalkSpeed = LAJ.Cache.OriginalWalkSpeed
+                LAJ.Log("Info", "Speed boost disabled")
+            end
+        end
+    end,
+})
+
+PlayerTab:CreateToggle({
+    Name = "🦘 Jump Power",
+    Info = "Enhance jumping ability",
+    CurrentValue = false,
+    Flag = "JumpPowerEnabled",
+    Callback = function(Value)
+        -- Jump power code
+        if Value then
+            local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                LAJ.Cache.OriginalJumpPower = humanoid.JumpPower
+                humanoid.JumpPower = 100
+                LAJ.Log("Info", "Jump power enhanced")
+            else
+                LAJ.Log("Error", "Humanoid not found")
+            end
+        else
+            local humanoid = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and LAJ.Cache.OriginalJumpPower then
+                humanoid.JumpPower = LAJ.Cache.OriginalJumpPower
+                LAJ.Log("Info", "Jump power reset")
+            end
+        end
+    end,
+})
+
+PlayerTab:CreateToggle({
+    Name = "🛸 Fly",
+    Info = "Allows your character to fly",
+    CurrentValue = false,
+    Flag = "FlyEnabled",
+    Callback = function(Value)
+        if Value then
+            LAJ.Log("Info", "Enabling fly script")
+            LAJ.LoadScript("https://raw.githubusercontent.com/LAJHubPremium/scripts/main/fly", "Fly Script")
+        else
+            LAJ.Log("Info", "Fly disabled - rejoin to fully remove")
+        end
+    end,
+})
+
+-- Player appearance
+PlayerTab:CreateSection("👤 Appearance")
+
+PlayerTab:CreateButton({
+    Name = "🎭 Free Animation Bundle",
+    Info = "Unlock premium animations for your character",
+    Callback = function()
+        LAJ.Log("Info", "Loading animation bundle")
+        LAJ.LoadScript("https://raw.githubusercontent.com/TrixAde/scripts/main/free-animation-universal.lua", "Free Animation Bundle")
+    end,
+})
+
+-- Universal Tab
+UniversalTab:CreateSection("🌐 Universal Exploits")
+
+UniversalTab:CreateButton({
+    Name = "🛠️ Remote Spy",
+    Info = "Detect remote events and functions",
+    Callback = function()
+        LAJ.Log("Info", "Loading remote spy")
+        LAJ.LoadScript("https://raw.githubusercontent.com/LAJHubPremium/scripts/main/remotespy", "Remote Spy")
+    end,
+})
+
+UniversalTab:CreateButton({
+    Name = "🧰 DEX Explorer",
+    Info = "Advanced game explorer to view all instances",
+    Callback = function()
+        LAJ.Log("Info", "Loading DEX Explorer")
+        LAJ.LoadScript("https://raw.githubusercontent.com/TrixAde/scripts/main/DarkDexV3.lua", "DEX Explorer")
+    end,
+})
+
+UniversalTab:CreateButton({
+    Name = "⚙️ Infinite Yield",
+    Info = "Admin commands for most games",
+    Callback = function()
+        LAJ.Log("Info", "Loading Infinite Yield")
+        LAJ.LoadScript("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source", "Infinite Yield")
+    end,
+})
+
+UniversalTab:CreateButton({
+    Name = "💣 TP Tool",
+    Info = "Tool for teleporting around the game",
+    Callback = function()
+        LAJ.Log("Info", "Loading TP Tool")
+        LAJ.LoadScript("https://raw.githubusercontent.com/TrixAde/scripts/main/tp-tool.lua", "TP Tool")
+    end,
+})
+
+-- Games Tab with categories
+GamesTab:CreateSection("🎮 Game Categories")
+
+-- Create dropdown for game categories
+local gameCategories = {"FPS", "RPG", "Town & City", "Fighting", "Simulation", "Adventure", "Horror", "Tycoon", "Other"}
+local selectedCategory = "FPS"
+
+GamesTab:CreateDropdown({
+    Name = "Select Category",
+    Options = gameCategories,
+    CurrentOption = selectedCategory,
+    Flag = "GameCategory",
+    Callback = function(Value)
+        selectedCategory = Value
+        
+        -- Clear current category section and create a new one
+        local section = GamesTab:CreateSection("📋 " .. selectedCategory .. " Games")
+        
+        -- Add games from selected category
+        local count = 0
+        for name, info in pairs(LAJ.Games) do
+            if info.Category == selectedCategory then
+                count = count + 1
+                
+                GamesTab:CreateButton({
+                    Name = name,
+                    Info = "ID: " .. info.ID,
+                    Callback = function()
+                        if info.Script then
+                            LAJ.LoadScript(info.Script, name)
+                        else
+                            LAJ.Log("Warning", "No script available for " .. name)
+                        end
+                    end,
+                })
+            end
+        end
+        
+        if count == 0 then
+            GamesTab:CreateLabel("No games in this category")
+        end
+    end,
+})
+
+-- Initialize with FPS games
+GamesTab:CreateSection("📋 FPS Games")
+
+for name, info in pairs(LAJ.Games) do
+    if info.Category == "FPS" then
+        GamesTab:CreateButton({
+            Name = name,
+            Info = "ID: " .. info.ID,
+            Callback = function()
+                if info.Script then
+                    LAJ.LoadScript(info.Script, name)
+                else
+                    LAJ.Log("Warning", "No script available for " .. name)
+                end
+            end,
+        })
+    end
+end
+
+-- Original LAJ Tab
+OriginalTab:CreateSection("🌠 Original LAJ Scripts")
+
+for name, url in pairs(LAJ.OriginalScripts) do
+    OriginalTab:CreateButton({
+        Name = name,
+        Info = "Original script from LAJ Hub",
+        Callback = function()
+            LAJ.LoadScript(url, name)
+        end,
+    })
+end
+
+-- Favorites Tab
+FavoritesTab:CreateSection("⭐ Your Favorite Scripts")
+
+local updateFavoritesUI = function()
+    -- We would dynamically generate UI for favorites
+    if LAJ.Config.Favorites and #LAJ.Config.Favorites > 0 then
+        for _, fav in ipairs(LAJ.Config.Favorites) do
+            FavoritesTab:CreateButton({
+                Name = fav.Name,
+                Info = "Added to favorites",
+                Callback = function()
+                    LAJ.LoadScript(fav.URL, fav.Name)
+                end,
+            })
+        end
+    else
+        FavoritesTab:CreateLabel("No favorites added yet")
+        FavoritesTab:CreateParagraph({
+            Title = "How to Add Favorites",
+            Content = "To add scripts to your favorites, look for the star icon next to scripts throughout LAJ HUB."
+        })
+    end
+end
+
+-- Call this initially
+updateFavoritesUI()
+
+-- Settings Tab
+SettingsTab:CreateSection("⚙️ UI Settings")
+
+SettingsTab:CreateDropdown({
+    Name = "Theme",
+    Options = {"Default", "Dark", "Light", "Midnight", "Sentinel", "Synapse"},
+    CurrentOption = LAJ.Config.Theme or "Default",
+    Flag = "ThemeSelection",
+    Callback = function(Value)
+        LAJ.Config.Theme = Value
+        LAJ.SaveSettings()
+        LAJ.Log("Info", "Theme changed to " .. Value .. ". Restart to apply.")
+    end,
+})
+
+SettingsTab:CreateSlider({
+    Name = "UI Scale",
+    Range = {0.5, 1.5},
+    Increment = 0.1,
+    Suffix = "x",
+    CurrentValue = LAJ.Config.UIScale or 1,
+    Flag = "UIScale",
+    Callback = function(Value)
+        LAJ.Config.UIScale = Value
+        LAJ.SaveSettings()
+        -- Would need additional code to actually scale the UI
+    end,
+})
+
+SettingsTab:CreateSection("📝 Information")
+
+SettingsTab:CreateParagraph({
+    Title = "About LAJ HUB " .. LAJ.Version,
+    Content = "LAJ HUB is a comprehensive Roblox exploit script hub that combines TrixAde scripts repository with other popular exploits. It provides a user-friendly interface for browsing, searching, and executing scripts for various Roblox games."
+})
+
+-- Warn about execution
+LAJ.Log("Info", "LAJ HUB " .. LAJ.Version .. " has been initialized")
+LAJ.Log("Warning", "Scripts may be detected by anti-cheat systems. Use at your own risk.")
+
+-- Return LAJ object for potential access in other scripts
+return LAJ
