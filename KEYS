@@ -40,6 +40,8 @@ local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
 local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
 local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
 local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
+local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails Alpha tab
+local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
 
 -- Discord link copy button
 MainTab:CreateButton({
@@ -113,6 +115,39 @@ BlueLock:CreateButton({
         Rayfield:Notify({
             Title = "Blue Lock Rivals Script",
             Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Dead Rails scripts with enhanced key bypass
+DeadRails:CreateButton({
+   Name = "Null Fire",
+   Callback = function()
+        -- Load the direct loader that contains the bypass code
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/nullfire_direct_loader.lua", true))()
+        
+        Rayfield:Notify({
+            Title = "Null Fire",
+            Content = "Loading script with key bypass...",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Universal scripts tab for scripts that work in multiple games
+-- Add NullFire script (with key bypass)
+Universal:CreateButton({
+   Name = "NullFire",
+   Callback = function()
+        -- Load the direct loader that contains the bypass code
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/nullfire_direct_loader.lua", true))()
+        
+        Rayfield:Notify({
+            Title = "NullFire",
+            Content = "Loading NullFire script with key bypass...",
             Duration = 3,
             Image = 4483362458,
         })
