@@ -91,38 +91,13 @@ Fin:CreateButton({
    end,
 })
 
--- Basketball Zero scripts
+-- Basketball Zero script
 BballZero:CreateButton({
-   Name = "Basketball Zero GUI",
+   Name = "LAJ HUB",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/LOLking123456/basketballzero1/main/basketball%20zero"))()
-   end,
-})
-
-BballZero:CreateButton({
-   Name = "Hoopz GUI",
-   Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Lukakashub/hoopzgui/main/mainscript"))()
-   end,
-})
-
-BballZero:CreateButton({
-   Name = "LuArmor Script",
-   Callback = function()
-        --[[
-        WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-        ]]
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
-   end,
-})
-
--- Ball Control script without key validation
-BlueLock:CreateButton({
-   Name = "Ball Control",
-   Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/nocturnal631/Main/refs/heads/main/Control%20ball%20script"))()
         Rayfield:Notify({
-            Title = "Ball Control Script",
+            Title = "Basketball Zero Script",
             Content = "Script loaded successfully!",
             Duration = 3,
             Image = 4483362458,
@@ -130,24 +105,16 @@ BlueLock:CreateButton({
    end,
 })
 
--- Blue Lock Rivals scripts
+-- Blue Lock Rivals script
 BlueLock:CreateButton({
-   Name = "Blue Lock OP",
+   Name = "LAJ HUB",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/skooisky/Blue-Lock-Rivals/main/Main.lua"))()
-   end,
-})
-
-BlueLock:CreateButton({
-   Name = "Egg Hub",
-   Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Tykzio/Eggs-Hub/main/Main"))()
-   end,
-})
-
-BlueLock:CreateButton({
-   Name = "Maik Hub",
-   Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Maiku-S/Roblox-Projects/main/Blue%20Lock%20Rivals.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/nocturnal631/Main/refs/heads/main/Control%20ball%20script"))()
+        Rayfield:Notify({
+            Title = "Blue Lock Rivals Script",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
