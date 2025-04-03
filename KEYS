@@ -1,5 +1,57 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+-- Create a bypass environment for script execution
+local function create_bypass_environment()
+    return {
+        -- Common key variables to bypass
+        getgenv = function()
+            return {
+                Key = true,
+                KeyValid = true,
+                Authenticated = true,
+                Verified = true,
+                HasAccess = true,
+                Premium = true,
+                Whitelisted = true,
+                KeySystem = false
+            }
+        end,
+        
+        -- Common key validation functions to override
+        IsKeyValid = function() return true end,
+        CheckKey = function() return true end,
+        VerifyKey = function() return true end,
+        ValidateKey = function() return true end
+    }
+end
+
+-- Function to load scripts with key bypass
+local function load_with_bypass(url)
+    local success, script_content = pcall(function()
+        return game:HttpGet(url)
+    end)
+    
+    if success then
+        -- Create bypass environment
+        local bypass_env = create_bypass_environment()
+        
+        -- Make _G accessible as fallback
+        setmetatable(bypass_env, {__index = _G})
+        
+        -- Load the script with the bypass environment
+        local script_func = loadstring(script_content)
+        setfenv(script_func, bypass_env)
+        
+        -- Execute with bypassed environment
+        pcall(script_func)
+        
+        return true
+    else
+        print("Failed to load script:", url)
+        return false
+    end
+end
+
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
@@ -60,21 +112,39 @@ MainTab:CreateButton({
 Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
+        load_with_bypass("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua")
+        Rayfield:Notify({
+            Title = "Psalm Script",
+            Content = "Script loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
 Tab:CreateButton({
    Name = "Ballware vfs",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
+        load_with_bypass("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt")
+        Rayfield:Notify({
+            Title = "Ballware VFS",
+            Content = "Script loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
 Tab:CreateButton({
    Name = "FrostByte",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak", true))()
+        load_with_bypass("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak")
+        Rayfield:Notify({
+            Title = "FrostByte",
+            Content = "Script loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
@@ -82,14 +152,26 @@ Tab:CreateButton({
 Fin:CreateButton({
    Name = "Ronix",
    Callback = function()
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/a3c501e721ec4d66a864cc2276c0f4e9.lua"))()
+        load_with_bypass("https://api.luarmor.net/files/v3/loaders/a3c501e721ec4d66a864cc2276c0f4e9.lua")
+        Rayfield:Notify({
+            Title = "Ronix",
+            Content = "Script loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
 Fin:CreateButton({
    Name = "Speed Hub",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        load_with_bypass("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua")
+        Rayfield:Notify({
+            Title = "Speed Hub",
+            Content = "Script loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
@@ -97,10 +179,10 @@ Fin:CreateButton({
 BballZero:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/LOLking123456/basketballzero1/main/basketball%20zero"))()
+        load_with_bypass("https://raw.githubusercontent.com/LOLking123456/basketballzero1/main/basketball%20zero")
         Rayfield:Notify({
             Title = "Basketball Zero Script",
-            Content = "Script loaded successfully!",
+            Content = "Script loaded with key bypass!",
             Duration = 3,
             Image = 4483362458,
         })
@@ -111,10 +193,10 @@ BballZero:CreateButton({
 BlueLock:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/nocturnal631/Main/refs/heads/main/Control%20ball%20script"))()
+        load_with_bypass("https://raw.githubusercontent.com/nocturnal631/Main/refs/heads/main/Control%20ball%20script")
         Rayfield:Notify({
             Title = "Blue Lock Rivals Script",
-            Content = "Script loaded successfully!",
+            Content = "Script loaded with key bypass!",
             Duration = 3,
             Image = 4483362458,
         })
@@ -125,16 +207,10 @@ BlueLock:CreateButton({
 DeadRails:CreateButton({
    Name = "Infernus",
    Callback = function()
-        -- Two options:
-        -- 1. Use direct loader with key bypass (more reliable)
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/infernus_direct_loader.lua"))()
-        
-        -- 2. Direct script execution (backup method)
-        --loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/aca362a74eb2f7c5f383969177c26b6b.lua"))()
-        
+        load_with_bypass("https://api.luarmor.net/files/v3/loaders/aca362a74eb2f7c5f383969177c26b6b.lua")
         Rayfield:Notify({
             Title = "Dead Rails Script",
-            Content = "Loading Infernus with key bypass...",
+            Content = "Infernus loaded with key bypass!",
             Duration = 3,
             Image = 4483362458,
         })
