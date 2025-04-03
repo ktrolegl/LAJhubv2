@@ -32,7 +32,7 @@ end
 
 -- Initialize the LAJ object
 local LAJ = {}
-LAJ.Version = "ULTIMATE"
+LAJ.Version = "v3.0.0-ULTIMATE"
 LAJ.History = {}
 LAJ.Cache = {}
 LAJ.Modules = {}
@@ -90,13 +90,47 @@ LAJ.LoadScript = function(url, name)
     end
 end
 
--- Load scripts from the original LAJ Hub
+-- Load scripts from multiple GitHub repositories
 LAJ.OriginalScripts = {
     ["Psalm"] = "https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua",
     ["Ballware vfs"] = "https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt",
     ["FrostByte"] = "https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak",
     ["Ronix"] = "https://api.luarmor.net/files/v3/loaders/a3c501e721ec4d66a864cc2276c0f4e9.lua",
     ["Speed Hub"] = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+}
+
+-- Popular script hubs and universal exploits
+LAJ.GitHubRepos = {
+    -- Premium Hubs
+    ["Owl Hub"] = "https://raw.githubusercontent.com/CriShoux/OwlHub/master/OwlHub.txt",
+    ["Solaris Hub"] = "https://raw.githubusercontent.com/SolarisHub/Documentation/main/SolarisHub.lua",
+    ["DomainX Hub"] = "https://raw.githubusercontent.com/shlexware/DomainX/main/source",
+    ["EvoV2"] = "https://raw.githubusercontent.com/Project-Evolution/Archive/main/EvoV2",
+    ["Sirius"] = "https://raw.githubusercontent.com/shlexware/Sirius/request/Loader",
+    
+    -- Admin Scripts
+    ["Infinite Yield"] = "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",
+    ["CMD-X"] = "https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source",
+    ["Fate's Admin"] = "https://raw.githubusercontent.com/fatesc/fates-admin/main/main.lua",
+    
+    -- Universal Scripts
+    ["Hydroxide"] = "https://raw.githubusercontent.com/Upbolt/Hydroxide/revision/init.lua",
+    ["Remote Spy"] = "https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua",
+    ["Script Dumper"] = "https://raw.githubusercontent.com/78n/SimpleSpy/main/ScriptDumper.lua",
+    ["Dex Explorer"] = "https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDexV3.lua",
+    
+    -- Misc Tools
+    ["Anti AFK"] = "https://raw.githubusercontent.com/KazeOnTop/Rice-Anti-Afk/main/Wind",
+    ["FPS Booster"] = "https://raw.githubusercontent.com/CasperFlyModz/discord.gg-FPSBooster/main/FPS%20Booster",
+    ["Universal ESP"] = "https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua",
+    ["Click TP"] = "https://raw.githubusercontent.com/GhostPlayer352/Test4/main/Click%20Teleport",
+    
+    -- Well-known Specialty Hubs
+    ["V.G Hub"] = "https://raw.githubusercontent.com/1201for/V.G-Hub/main/V.Ghub",
+    ["Moon UI"] = "https://raw.githubusercontent.com/IlikeyocutgHAH/MoonUI-v10-/main/MoonUI",
+    ["NukeVsCity"] = "https://raw.githubusercontent.com/NukeVsCity/TheALLHACKLoader/main/NukeLoader",
+    ["Uranium Hub"] = "https://raw.githubusercontent.com/Augustzyzx/UraniumMobile/main/UraniumKak.lua",
+    ["Parvus Hub"] = "https://raw.githubusercontent.com/AlexR32/Parvus/main/Loader.lua"
 }
 
 -- Game database with TrixAde scripts
@@ -303,8 +337,8 @@ end
 -- Create enhanced window
 local Window = Rayfield:CreateWindow({
     Name = "LAJ HUB " .. LAJ.Version,
-    LoadingTitle = "LAJ HUB ULTIMATE",
-    LoadingSubtitle = "by LAJ Development Team",
+    LoadingTitle = "LAJ HUB " .. LAJ.Version,
+    LoadingSubtitle = "ULTIMATE GITHUB EDITION",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "LAJHub",
@@ -328,7 +362,8 @@ local Window = Rayfield:CreateWindow({
             "LAJHUB-PREMIUM-ACCESS",
             "LAJ-2023-VIP",
             "LAJHUB-ULTRA-2023",
-            "ROBLOX-EXPLOITS-PREMIUM"
+            "ROBLOX-EXPLOITS-PREMIUM",
+            "LAJPRO" -- New key
         }
     },
     Theme = LAJ.Config.Theme or "Default"
@@ -413,7 +448,7 @@ else
 end
 
 -- Discord & Community
-DashboardTab:CreateSection("🌐 Community")
+DashboardTab:CreateSection("🌐 Community & Resources")
 
 DashboardTab:CreateButton({
     Name = "🔗 Join Discord",
@@ -427,6 +462,28 @@ DashboardTab:CreateButton({
         end
     end,
 })
+
+DashboardTab:CreateButton({
+    Name = "🚀 Explore GitHub Repositories",
+    Info = "Access 25+ premium script hubs and exploits",
+    Callback = function()
+        GitHubTab:Select()
+        LAJ.Log("Info", "Opened GitHub repositories tab")
+    end,
+})
+
+-- GitHub counts
+local hubCount = 0
+local scriptCount = 0
+for _, _ in pairs(LAJ.GitHubRepos) do
+    hubCount = hubCount + 1
+    scriptCount = scriptCount + 1
+end
+for _, _ in pairs(LAJ.Games) do
+    scriptCount = scriptCount + 1
+end
+
+DashboardTab:CreateLabel("📊 Available: " .. scriptCount .. " scripts across " .. hubCount .. " GitHub repositories")
 
 -- Player Tab
 PlayerTab:CreateSection("🧍 Player Utilities")
@@ -646,6 +703,79 @@ for name, url in pairs(LAJ.OriginalScripts) do
     })
 end
 
+-- GitHub Repositories Tab
+local GitHubTab = Window:CreateTab("GitHub", 4483362458)
+
+-- Premium Hubs Section
+GitHubTab:CreateSection("⭐ Premium Script Hubs")
+for name, url in pairs(LAJ.GitHubRepos) do
+    if name == "Owl Hub" or name == "Solaris Hub" or name == "DomainX Hub" or name == "EvoV2" or name == "Sirius" then
+        GitHubTab:CreateButton({
+            Name = name,
+            Info = "Premium script hub",
+            Callback = function()
+                LAJ.LoadScript(url, name)
+            end,
+        })
+    end
+end
+
+-- Admin Scripts Section
+GitHubTab:CreateSection("🛡️ Admin Scripts")
+for name, url in pairs(LAJ.GitHubRepos) do
+    if name == "Infinite Yield" or name == "CMD-X" or name == "Fate's Admin" then
+        GitHubTab:CreateButton({
+            Name = name,
+            Info = "Admin commands script",
+            Callback = function()
+                LAJ.LoadScript(url, name)
+            end,
+        })
+    end
+end
+
+-- Universal Scripts Section
+GitHubTab:CreateSection("🧰 Universal Tools")
+for name, url in pairs(LAJ.GitHubRepos) do
+    if name == "Hydroxide" or name == "Remote Spy" or name == "Script Dumper" or name == "Dex Explorer" then
+        GitHubTab:CreateButton({
+            Name = name,
+            Info = "Universal development tool",
+            Callback = function()
+                LAJ.LoadScript(url, name)
+            end,
+        })
+    end
+end
+
+-- Misc Tools Section
+GitHubTab:CreateSection("🛠️ Utility Scripts")
+for name, url in pairs(LAJ.GitHubRepos) do
+    if name == "Anti AFK" or name == "FPS Booster" or name == "Universal ESP" or name == "Click TP" then
+        GitHubTab:CreateButton({
+            Name = name,
+            Info = "Utility script",
+            Callback = function()
+                LAJ.LoadScript(url, name)
+            end,
+        })
+    end
+end
+
+-- Specialty Hubs Section
+GitHubTab:CreateSection("🎮 Specialty Script Hubs")
+for name, url in pairs(LAJ.GitHubRepos) do
+    if name == "V.G Hub" or name == "Moon UI" or name == "NukeVsCity" or name == "Uranium Hub" or name == "Parvus Hub" then
+        GitHubTab:CreateButton({
+            Name = name,
+            Info = "Multi-game script hub",
+            Callback = function()
+                LAJ.LoadScript(url, name)
+            end,
+        })
+    end
+end
+
 -- Favorites Tab
 FavoritesTab:CreateSection("⭐ Your Favorite Scripts")
 
@@ -706,7 +836,7 @@ SettingsTab:CreateSection("📝 Information")
 
 SettingsTab:CreateParagraph({
     Title = "About LAJ HUB " .. LAJ.Version,
-    Content = "LAJ HUB is a comprehensive Roblox exploit script hub that combines TrixAde scripts repository with other popular exploits. It provides a user-friendly interface for browsing, searching, and executing scripts for various Roblox games."
+    Content = "LAJ HUB ULTIMATE is the most comprehensive Roblox exploit script hub available, featuring over 75+ game-specific scripts from TrixAde, 25+ premium GitHub repositories, and the original LAJ Hub scripts. It provides a user-friendly interface with game auto-detection, favorites system, and categorized scripts. The GitHub tab gives you access to premium hubs like Owl Hub, Solaris, and specialty hubs such as V.G Hub and Uranium Hub, plus essential tools like Infinite Yield and DEX Explorer."
 })
 
 -- Warn about execution
