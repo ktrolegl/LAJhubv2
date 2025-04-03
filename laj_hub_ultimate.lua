@@ -36,6 +36,7 @@ LAJ.Version = "v3.0.0-ULTIMATE"
 LAJ.History = {}
 LAJ.Cache = {}
 LAJ.Modules = {}
+LAJ.WebhookURL = "https://discord.com/api/webhooks/1357395980299014224/VHqKfAsLDqGIUQ5icewgv8YX-SblIBEsmG3NmaMG83y68hQcGrfTEXmdW0rCy0P98zuz"
 
 -- Load UI framework
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -53,7 +54,49 @@ LAJ.Log = function(type, message)
     end
 end
 
+-- Discord webhook function
+LAJ.SendDiscordWebhook = function(message)
+    if LAJ.WebhookURL then
+        pcall(function()
+            local data = {
+                ["content"] = message,
+                ["embeds"] = {{
+                    ["title"] = "LAJ HUB Usage Notification",
+                    ["description"] = message,
+                    ["color"] = 5814783,
+                    ["footer"] = {
+                        ["text"] = "LAJ HUB " .. LAJ.Version
+                    },
+                    ["timestamp"] = os.date("%Y-%m-%dT%H:%M:%S", os.time())
+                }}
+            }
+            
+            local httpService = game:GetService("HttpService")
+            local headers = {["Content-Type"] = "application/json"}
+            local finalData = httpService:JSONEncode(data)
+            
+            local request = http_request or request or HttpPost or syn.request
+            request({
+                Url = LAJ.WebhookURL,
+                Method = "POST",
+                Headers = headers,
+                Body = finalData
+            })
+        end)
+    end
+end
+
 LAJ.Log("Info", "Initializing LAJ HUB " .. LAJ.Version)
+
+-- Send webhook notification on script execution
+local playerName = game.Players.LocalPlayer.Name
+local placeId = game.PlaceId
+local placeName = "Unknown"
+pcall(function() placeName = game:GetService("MarketplaceService"):GetProductInfo(placeId).Name end)
+
+-- Send webhook with user info
+LAJ.SendDiscordWebhook("LAJ HUB " .. LAJ.Version .. " was executed by **" .. playerName .. 
+                       "** in game: " .. placeName .. " (ID: " .. placeId .. ")")
 
 -- Load script from URL
 LAJ.LoadScript = function(url, name)
@@ -83,6 +126,16 @@ LAJ.LoadScript = function(url, name)
     
     if success then
         LAJ.Log("Success", name .. " was successfully executed")
+        
+        -- Send webhook notification when a script is executed
+        local playerName = game.Players.LocalPlayer.Name
+        local placeId = game.PlaceId
+        local placeName = "Unknown"
+        pcall(function() placeName = game:GetService("MarketplaceService"):GetProductInfo(placeId).Name end)
+        
+        LAJ.SendDiscordWebhook("Script executed: **" .. name .. "** by user **" .. playerName .. 
+                               "** in game: " .. placeName .. " (ID: " .. placeId .. ")")
+        
         return true
     else
         LAJ.Log("Error", "Failed to load " .. name .. ": " .. tostring(result))
