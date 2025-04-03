@@ -781,11 +781,12 @@ LAJ.ToggleFavorite = function(scriptName, scriptUrl)
     return true
 end
 
--- Create enhanced window
+-- Create enhanced window with modern design inspired by Orion UI
 local Window = Rayfield:CreateWindow({
     Name = "LAJ HUB " .. LAJ.Version,
     LoadingTitle = "LAJ HUB " .. LAJ.Version,
     LoadingSubtitle = "ULTIMATE GITHUB EDITION",
+    LoadingIcon = "rbxassetid://10618644218", -- Modern loading icon
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "LAJHub",
@@ -798,7 +799,7 @@ local Window = Rayfield:CreateWindow({
     },
     KeySystem = true,
     KeySettings = {
-        Title = "LAJ HUB " .. LAJ.Version,
+        Title = "LAJ HUB " .. LAJ.Version .. " | PREMIUM",
         Subtitle = "Premium Key Authentication",
         Note = "Enter the key: LAJPRO",
         FileName = "LAJHubKey",
@@ -808,20 +809,29 @@ local Window = Rayfield:CreateWindow({
             "LAJPRO" -- Only key
         }
     },
-    Theme = LAJ.Config.Theme or "Default"
+    Theme = LAJ.Config.Theme or "Midnight", -- Sleek dark theme
+    UIColor = Color3.fromRGB(49, 100, 231) -- Modern blue accent color
 })
 
--- Create main UI tabs
+-- Create main UI tabs with improved icons
 local gameInfo = LAJ.GetCurrentGame()
 
--- Dashboard Tab
-local DashboardTab = Window:CreateTab("Dashboard", 4483362458)
-local PlayerTab = Window:CreateTab("Player", 4483362458)
-local UniversalTab = Window:CreateTab("Universal", 4483362458)
-local GamesTab = Window:CreateTab("Games", 4483362458)
-local OriginalTab = Window:CreateTab("Original LAJ", 4483362458)
-local FavoritesTab = Window:CreateTab("Favorites", 4483362458)
-local SettingsTab = Window:CreateTab("Settings", 4483362458)
+-- Dashboard Tab (Home icon)
+local DashboardTab = Window:CreateTab("Dashboard", 6026568198)
+-- Player Tab (Character icon)
+local PlayerTab = Window:CreateTab("Player", 6034287522)
+-- Universal Tab (Globe icon)
+local UniversalTab = Window:CreateTab("Universal", 6031280882)
+-- Games Tab (Controller icon)
+local GamesTab = Window:CreateTab("Games", 6031763426)
+-- Original LAJ Tab (Star icon)
+local OriginalTab = Window:CreateTab("Original LAJ", 6031225809)
+-- Favorites Tab (Heart icon)
+local FavoritesTab = Window:CreateTab("Favorites", 6034509993)
+-- Settings Tab (Gear icon)
+local SettingsTab = Window:CreateTab("Settings", 6031280882)
+-- GitHub Tab (Code icon)
+local GitHubTab = Window:CreateTab("GitHub", 6022668888)
 
 -- Dashboard Content
 DashboardTab:CreateSection("🌟 Welcome to LAJ HUB " .. LAJ.Version)
@@ -1145,8 +1155,7 @@ for name, url in pairs(LAJ.OriginalScripts) do
     })
 end
 
--- GitHub Repositories Tab
-local GitHubTab = Window:CreateTab("GitHub", 4483362458)
+-- GitHub Repositories Tab was already created above with better icon
 
 -- Premium Hubs Section
 GitHubTab:CreateSection("⭐ Premium Script Hubs")
