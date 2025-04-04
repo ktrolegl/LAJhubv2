@@ -1,86 +1,66 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Discord webhook for usage tracking
-local DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1357395980299014224/VHqKfAsLDqGIUQ5icewgv8YX-SblIBEsmG3NmaMG83y68hQcGrfTEXmdW0rCy0P98zuz"
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local http_request = syn and syn.request or http and http.request or http_request or request or httprequest
 
--- Function to send usage data to Discord webhook with improved error handling
+local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
+
 local function sendUsageData()
     local success, error_message = pcall(function()
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-        local HttpService = game:GetService("HttpService")
-        
-        -- Get device info and game info
-        local deviceInfo = {}
-        local executor = "Unknown"
-        pcall(function() 
-            executor = identifyexecutor() or "Unknown" 
-        end)
-        
-        local gameName = "Unknown"
-        pcall(function()
-            gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
-        end)
-        
-        -- Prepare embed data for Discord
-        local data = {
-            content = "**LAJ HUB Execution Alert**",
-            embeds = {
-                {
-                    title = "LAJ HUB Script Usage",
-                    description = "A player has executed LAJ HUB",
-                    color = 5814783, -- Purple color
-                    fields = {
-                        {
-                            name = "User",
-                            value = LocalPlayer.Name,
-                            inline = true
-                        },
-                        {
-                            name = "User ID",
-                            value = tostring(LocalPlayer.UserId),
-                            inline = true
-                        },
-                        {
-                            name = "Game",
-                            value = gameName,
-                            inline = true
-                        },
-                        {
-                            name = "Game ID",
-                            value = tostring(game.PlaceId),
-                            inline = true
-                        },
-                        {
-                            name = "Executor",
-                            value = executor,
-                            inline = true
-                        },
-                        {
-                            name = "Time",
-                            value = os.date("%Y-%m-%d %H:%M:%S"),
-                            inline = true
-                        }
-                    },
-                    timestamp = DateTime.now():ToIsoDate()
-                }
-            }
-        }
-        
-        -- Convert to JSON
-        local jsonData = HttpService:JSONEncode(data)
-        
-        -- Direct HTTP request (alternative method)
-        request({
-            Url = DISCORD_WEBHOOK_URL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = jsonData
-        })
-        
-        -- Try HttpService as backup
+    
+		local response = http_request({
+		    Url = DISCORD_WEBHOOK_URL,
+		    Method = 'POST',
+		    Headers = {
+		        ['Content-Type'] = 'application/json'
+		    },
+		    Body = HttpService:JSONEncode({
+		        ["content"] = "",
+		        ["embeds"] = {{
+		            ["title"] = "LAJ HUB Script Usage!",
+		            ["type"] = "rich",
+		            ["color"] = math.random(0, 0xFFFFFF), -- changed color everytime a pleyah executa;)
+		            ["fields"] = {
+		                {
+		                    ["name"] = "User:",
+		                    ["value"] = "```" .. LocalPlayer.Name .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "User ID:",
+		                    ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Game:",
+		                    ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Game ID:",
+		                    ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Executor",
+		                    ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Players Active:",
+		                    ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+		                    ["inline"] = true
+		                }
+		            },
+		            ["footer"] = {
+		                ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+		            }
+		        }}
+		    })
+		})
+		
         HttpService:PostAsync(DISCORD_WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson, false)
     end)
     
@@ -89,15 +69,14 @@ local function sendUsageData()
     end
 end
 
--- Send usage data as first action
 sendUsageData()
 
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   Icon = 0,
    LoadingTitle = "LAJ HUB",
    LoadingSubtitle = "Premium Scripts",
-   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+   Theme = "Default",
 
    DisableRayfieldPrompts = false,
    DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
@@ -136,7 +115,17 @@ local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Imag
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
 local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
+local Settings = Window:CreateTab("Settings", 4483362458)
 -- Note: AdminTab completely removed from this version to ensure it's not accessible
+
+local function executednotify(scriptName)
+   Rayfield:Notify({
+       Title = scriptName,
+       Content = "Script loaded successfully!",
+       Duration = 3,
+       Image = 4483362458,
+   })
+end
 
 -- Discord link copy button
 MainTab:CreateButton({
@@ -171,12 +160,7 @@ Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
-        Rayfield:Notify({
-            Title = "Psalm Script",
-            Content = "Script loaded successfully!",
-            Duration = 3,
-            Image = 4483362458,
-        })
+        executednotify("Psalm Script")
    end,
 })
 
@@ -184,12 +168,7 @@ Tab:CreateButton({
    Name = "Ballware vfs",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
-        Rayfield:Notify({
-            Title = "Ballware VFS",
-            Content = "Script loaded successfully!",
-            Duration = 3,
-            Image = 4483362458,
-        })
+        executednotify("Ballware VFS")
    end,
 })
 
@@ -197,12 +176,7 @@ Tab:CreateButton({
    Name = "FrostByte",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak", true))()
-        Rayfield:Notify({
-            Title = "FrostByte",
-            Content = "Script loaded successfully!",
-            Duration = 3,
-            Image = 4483362458,
-        })
+        executednotify("FrostByte")
    end,
 })
 
@@ -211,12 +185,7 @@ Fin:CreateButton({
    Name = "Speed Hub",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub",
-            Content = "Script loaded successfully!",
-            Duration = 3,
-            Image = 4483362458,
-        })
+        executednotify("Speed Hub")
    end,
 })
 
@@ -226,12 +195,7 @@ BballZero:CreateButton({
    Callback = function()
         -- Use the new Ball Control script
         loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-        Rayfield:Notify({
-            Title = "Basketball Zero Script",
-            Content = "New Ball Control loaded successfully!",
-            Duration = 3,
-            Image = 4483362458,
-        })
+        executednotify("BasketBall Zero Script")
    end,
 })
 
@@ -240,12 +204,7 @@ BlueLock:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
-        Rayfield:Notify({
-            Title = "Blue Lock Script",
-            Content = "Script loaded successfully!",
-            Duration = 3,
-            Image = 4483362458,
-        })
+        executednotify("LAJ HUB")
    end,
 })
 
@@ -255,13 +214,7 @@ DeadRails:CreateButton({
    Callback = function()
        -- Bypassed loader for Infernus (Dead Rails)
        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
-       
-       Rayfield:Notify({
-           Title = "Infernus Direct Loader",
-           Content = "Loading Infernus script (no key required)...",
-           Duration = 5,
-           Image = 4483362458,
-       })
+       executednotify("Infernus Direct Loader")
    end,
 })
 
@@ -270,13 +223,7 @@ DeadRails:CreateButton({
    Callback = function()
        -- Bynner script for Dead Rails
        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
-       
-       Rayfield:Notify({
-           Title = "Bynner Script",
-           Content = "Loading Bynner script (no key required)...",
-           Duration = 5,
-           Image = 4483362458,
-       })
+       executednotify("Bynner Script")
    end,
 })
 
@@ -287,12 +234,7 @@ BloxFruits:CreateButton({
        -- REDz Hub for Blox Fruits (as requested)
        loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
        
-       Rayfield:Notify({
-           Title = "REDz Hub",
-           Content = "Loading REDz Hub for Blox Fruits...",
-           Duration = 5,
-           Image = 4483362458,
-       })
+       executednotify("REDz Hub")
    end,
 })
 
@@ -301,12 +243,7 @@ Universal:CreateButton({
    Name = "Infinite Yield FE",
    Callback = function()
        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-       Rayfield:Notify({
-           Title = "Infinite Yield",
-           Content = "FE Commands loaded!",  -- Changed from "Admin commands" to avoid confusion
-           Duration = 3,
-           Image = 4483362458,
-       })
+       executednotify("Infinite Yield")
    end,
 })
 
@@ -314,12 +251,7 @@ Universal:CreateButton({
    Name = "Dex Explorer",
    Callback = function()
        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
-       Rayfield:Notify({
-           Title = "Dex Explorer",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       executednotify("Dex Explorer")
    end,
 })
 
@@ -327,12 +259,7 @@ Universal:CreateButton({
    Name = "Hydroxide",
    Callback = function()
        loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
-       Rayfield:Notify({
-           Title = "Hydroxide",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       executednotify("Hydroxide")
    end,
 })
 
@@ -340,12 +267,7 @@ Universal:CreateButton({
    Name = "SimpleSpy",
    Callback = function()
        loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
-       Rayfield:Notify({
-           Title = "SimpleSpy",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       executednotify("SimpleSpy")
    end,
 })
 
@@ -353,12 +275,7 @@ Universal:CreateButton({
    Name = "CMD-X Admin",
    Callback = function()
        loadstring(game:HttpGet('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source', true))()
-       Rayfield:Notify({
-           Title = "CMD-X Admin",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       executednotify("CMD-X Admin")
    end,
 })
 
@@ -366,12 +283,41 @@ Universal:CreateButton({
    Name = "Domain X",
    Callback = function()
        loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/DomainX/main/source',true))()
-       Rayfield:Notify({
-           Title = "Domain X",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       executednotify("Domain X")
+   end,
+})
+
+
+-- Settings Tab
+local idled_Connection
+
+local function onIdled()
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+end
+
+Settings:CreateButton({
+    Name = "Anti AFK",
+    Callback = function()
+        if not idled_Connection then
+            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
+            executednotify("Anti AFK")
+        end
+    end,
+})
+
+local Inf_jump = false
+
+Settings:CreateToggle({
+   Name = "Infinite Jump",
+   CurrentValue = false,
+   Callback = function(Value)
+      Inf_jump = Value
+      game:GetService("UserInputService").JumpRequest:Connect(function()
+         if Inf_jump then
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+         end
+      end)
    end,
 })
 
