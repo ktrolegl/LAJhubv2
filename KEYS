@@ -311,7 +311,6 @@ local admins = {
     "lajsupport",    -- Example admin username
     "ktrolegl",      -- Example admin username
     8250509971,      -- Added admin user ID
-    4483033083,      -- Added admin user ID
 }
 
 -- Check if current user is an admin
@@ -332,7 +331,7 @@ local function isAdmin()
     return false
 end
 
--- If user is admin, show admin tools
+-- Only admins can access admin tools
 if isAdmin() then
     local userToBan = ""
     local userToUnban = ""
