@@ -1,5 +1,12 @@
--- LAJ HUB Key System - Modern UI
--- Custom UI key verification with GitHub tracking
+--[[
+    LAJ HUB - Combined Script with Key System
+    
+    This script contains both the key system and the main functionality.
+    It prevents bypassing by combining everything into one script.
+]]
+
+-- Determine if the key system has already been passed
+local _G.LAJHubKeyVerified = _G.LAJHubKeyVerified or false
 
 -- Services
 local Players = game:GetService("Players")
@@ -13,7 +20,7 @@ local Mouse = Player:GetMouse()
 
 -- Configuration (edit these)
 local VALID_KEYS = {
-    "LAJPRO",
+    "LAJPRO123",
     "LAJVIP456",
     "LAJHUB789"
 }
@@ -23,9 +30,6 @@ local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
 -- Discord webhook for tracking (reversed for obfuscation)
 local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
-
--- GitHub script URL (where your main script is hosted)
-local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/KEYS"
 
 -- Request function for different executors
 local request = syn and syn.request or http and http.request or http_request or request or httprequest
@@ -109,18 +113,323 @@ local function verifyKey(key)
     return false
 end
 
--- Function to load the main script
-local function loadMainScript()
-    local success, error_message = pcall(function()
-        loadstring(game:HttpGet(SCRIPT_URL))()
-    end)
+-- ===== MAIN SCRIPT FUNCTION =====
+-- This is the main LAJ HUB functionality that runs after key verification
+local function runMainScript()
+    -- Mark as verified to prevent needing key verification again
+    _G.LAJHubKeyVerified = true
     
-    if not success then
-        warn("Failed to load main script: " .. tostring(error_message))
+    -- Main LAJ HUB script code starts here
+    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local HttpService = game:GetService("HttpService")
+    local http_request = syn and syn.request or http and http.request or http_request or request or httprequest
+
+    -- Create a main Window
+    local Window = Rayfield:CreateWindow({
+       Name = "LAJ HUB",
+       Icon = 0,
+       LoadingTitle = "LAJ HUB",
+       LoadingSubtitle = "Premium Scripts",
+       Theme = "Default",
+
+       DisableRayfieldPrompts = false,
+       DisableBuildWarnings = false, 
+
+       ConfigurationSaving = {
+          Enabled = true,
+          FolderName = "LAJHub", 
+          FileName = "LAJHubConfig"
+       },
+
+       Discord = {
+          Enabled = true, 
+          Invite = "4mgdcfvAJU", 
+          RememberJoins = true 
+       },
+
+       -- Key system is handled by our custom UI
+       KeySystem = false,
+    })
+
+    -- Create a main tab for important utilities
+    local MainTab = Window:CreateTab("Main", 4483362458) -- Title, Image
+    local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
+    local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
+    local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
+    local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
+    local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
+    local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
+    local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
+    local Settings = Window:CreateTab("Settings", 4483362458)
+
+    local function executednotify(scriptName)
+       Rayfield:Notify({
+           Title = scriptName,
+           Content = "Script loaded successfully!",
+           Duration = 3,
+           Image = 4483362458,
+       })
     end
+
+    -- Discord link copy button
+    MainTab:CreateButton({
+       Name = "Copy Discord Link",
+       Callback = function()
+           setclipboard("https://discord.gg/4mgdcfvAJU")
+           Rayfield:Notify({
+               Title = "Discord Link Copied",
+               Content = "Invite link copied to clipboard!",
+               Duration = 3,
+               Image = 4483362458,
+           })
+       end,
+    })
+
+    -- Da Strike Tab scripts
+    Tab:CreateButton({
+       Name = "Psalm",
+       Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
+            executednotify("Psalm Script")
+       end,
+    })
+
+    Tab:CreateButton({
+       Name = "Ballware vfs",
+       Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
+            executednotify("Ballware VFS")
+       end,
+    })
+
+    Tab:CreateButton({
+       Name = "FrostByte",
+       Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak", true))()
+            executednotify("FrostByte")
+       end,
+    })
+
+    -- Fisch Tab
+    Fin:CreateButton({
+       Name = "Speed Hub",
+       Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+            executednotify("Speed Hub")
+       end,
+    })
+
+    -- Basketball Zero script with bypass
+    BballZero:CreateButton({
+       Name = "Ball Control",
+       Callback = function()
+            -- Use the new Ball Control script
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+            executednotify("BasketBall Zero Script")
+       end,
+    })
+
+    -- Blue Lock Rivals script
+    BlueLock:CreateButton({
+       Name = "LAJ HUB",
+       Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
+            executednotify("LAJ HUB")
+       end,
+    })
+
+    -- Dead Rails Tab
+    DeadRails:CreateButton({
+       Name = "Infernus Direct Loader (No Key)",
+       Callback = function()
+           -- Bypassed loader for Infernus (Dead Rails)
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
+           executednotify("Infernus Direct Loader")
+       end,
+    })
+
+    DeadRails:CreateButton({
+       Name = "Bynner (No Key)",
+       Callback = function()
+           -- Bynner script for Dead Rails
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
+           executednotify("Bynner Script")
+       end,
+    })
+
+    -- Blox Fruits Tab (Updated)
+    BloxFruits:CreateButton({
+       Name = "REDz Hub",
+       Callback = function()
+           -- REDz Hub for Blox Fruits (as requested)
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
+           
+           executednotify("REDz Hub")
+       end,
+    })
+
+    -- Universal Tab
+    Universal:CreateButton({
+       Name = "Infinite Yield FE",
+       Callback = function()
+           loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+           executednotify("Infinite Yield")
+       end,
+    })
+
+    Universal:CreateButton({
+       Name = "Dex Explorer",
+       Callback = function()
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
+           executednotify("Dex Explorer")
+       end,
+    })
+
+    Universal:CreateButton({
+       Name = "Hydroxide",
+       Callback = function()
+           loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+           executednotify("Hydroxide")
+       end,
+    })
+
+    Universal:CreateButton({
+       Name = "SimpleSpy",
+       Callback = function()
+           loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+           executednotify("SimpleSpy")
+       end,
+    })
+
+    Universal:CreateButton({
+       Name = "CMD-X Admin",
+       Callback = function()
+           loadstring(game:HttpGet('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source', true))()
+           executednotify("CMD-X Admin")
+       end,
+    })
+
+    Universal:CreateButton({
+       Name = "Domain X",
+       Callback = function()
+           loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/DomainX/main/source',true))()
+           executednotify("Domain X")
+       end,
+    })
+
+
+    -- Settings Tab
+    local idled_Connection
+
+    local function onIdled()
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+    end
+
+    Settings:CreateButton({
+        Name = "Anti AFK",
+        Callback = function()
+            if not idled_Connection then
+                idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
+                executednotify("Anti AFK")
+            end
+        end,
+    })
+
+    local Inf_jump = false
+
+    Settings:CreateToggle({
+       Name = "Infinite Jump",
+       CurrentValue = false,
+       Callback = function(Value)
+          Inf_jump = Value
+          game:GetService("UserInputService").JumpRequest:Connect(function()
+             if Inf_jump then
+                game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+             end
+          end)
+       end,
+    })
+
+    -- Credit section
+    local creditSection = MainTab:CreateSection("Credits")
+
+    MainTab:CreateLabel("Created by LAJ Hub Team")
+    MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
+    MainTab:CreateLabel("Script Version: 4.0 (Modified)")
+    
+    -- Send usage data to webhook
+    local function sendUsageData()
+        local success, error_message = pcall(function()
+        
+                    local response = http_request({
+                        Url = WEBHOOK_URL,
+                        Method = 'POST',
+                        Headers = {
+                            ['Content-Type'] = 'application/json'
+                        },
+                        Body = HttpService:JSONEncode({
+                            ["content"] = "",
+                            ["embeds"] = {{
+                                ["title"] = "LAJ HUB Script Usage!",
+                                ["type"] = "rich",
+                                ["color"] = math.random(0, 0xFFFFFF), -- changed color everytime a pleyah executa;)
+                                ["fields"] = {
+                                    {
+                                        ["name"] = "User:",
+                                        ["value"] = "```" .. LocalPlayer.Name .. "```",
+                                        ["inline"] = true
+                                    },
+                                    {
+                                        ["name"] = "User ID:",
+                                        ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
+                                        ["inline"] = true
+                                    },
+                                    {
+                                        ["name"] = "Game:",
+                                        ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+                                        ["inline"] = true
+                                    },
+                                    {
+                                        ["name"] = "Game ID:",
+                                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                                        ["inline"] = true
+                                    },
+                                    {
+                                        ["name"] = "Executor",
+                                        ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
+                                        ["inline"] = true
+                                    },
+                                    {
+                                        ["name"] = "Players Active:",
+                                        ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                                        ["inline"] = true
+                                    }
+                                },
+                                ["footer"] = {
+                                    ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+                                }
+                            }}
+                        })
+                    })
+                    
+        end)
+        
+        if not success then
+            warn("Failed to send webhook: " .. tostring(error_message))
+        end
+    end
+
+    -- Send usage data when script is executed
+    sendUsageData()
+    
+    -- End of main script
 end
 
--- Creating UI Elements
+-- Creating UI Elements for Key System
 local function createKeySystemUI()
     -- Check if UI already exists and remove it
     if CoreGui:FindFirstChild("LAJHubKeySystem") then
@@ -560,8 +869,8 @@ local function createKeySystemUI()
             -- Destroy key UI
             ScreenGui:Destroy()
             
-            -- Load main script
-            loadMainScript()
+            -- Run the main script
+            runMainScript()
         else
             StatusLabel.Text = "Invalid key! Please try again."
             StatusLabel.TextColor3 = Theme.ErrorColor
@@ -597,9 +906,15 @@ local function createKeySystemUI()
     end
 end
 
--- Start key system
-createKeySystemUI()
-
--- Debug information
-print("LAJ HUB Key System Loaded")
-print("Waiting for key verification...")
+-- Start key system or main script based on verification status
+if _G.LAJHubKeyVerified then
+    -- Already verified, run main script directly
+    runMainScript()
+else
+    -- Not verified, show key system UI
+    createKeySystemUI()
+    
+    -- Debug information
+    print("LAJ HUB Key System Loaded")
+    print("Waiting for key verification...")
+end
