@@ -1,99 +1,13 @@
--- LAJ Hub Direct Loader (Kavo UI Version)
--- This script can be executed directly in Roblox without saving it locally
+-- LAJ Hub - Kavo UI Version (Simple)
+-- This can be directly copy-pasted into your executor
 
--- Load the Kavo UI Library
-loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-
--- Define all variables and functions
-local Library = KavoUi
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local http_request = syn and syn.request or http and http.request or http_request or request or httprequest
-
-local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
-
-local function sendUsageData()
-    local success, error_message = pcall(function()
-        local response = http_request({
-            Url = DISCORD_WEBHOOK_URL,
-            Method = 'POST',
-            Headers = {
-                ['Content-Type'] = 'application/json'
-            },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{
-                    ["title"] = "LAJ HUB Script Usage!",
-                    ["type"] = "rich",
-                    ["color"] = math.random(0, 0xFFFFFF),
-                    ["fields"] = {
-                        {
-                            ["name"] = "User:",
-                            ["value"] = "```" .. LocalPlayer.Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "User ID:",
-                            ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game:",
-                            ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID:",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Executor",
-                            ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Players Active:",
-                            ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
-                            ["inline"] = true
-                        }
-                    },
-                    ["footer"] = {
-                        ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
-                    }
-                }}
-            })
-        })
-    end)
-    
-    if not success then
-        warn("Failed to send webhook: " .. tostring(error_message))
-    end
-end
-
--- Function to create notification
-local function notify(title, text, duration)
-    duration = duration or 5
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Duration = duration
-    })
-end
-
--- Function to be called after a script is executed
-local function executednotify(scriptName)
-    notify(scriptName, "Script loaded successfully!", 3)
-end
-
--- Send usage data
-pcall(sendUsageData)
+-- Load Kavo UI Library
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 
 -- Create main window
 local Window = Library.CreateLib("LAJ HUB", "Ocean")
 
--- Create all the tabs
+-- Create tabs
 local MainTab = Window:NewTab("Main")
 local DaStrikeTab = Window:NewTab("Da Strike")
 local FischTab = Window:NewTab("Fisch")
@@ -104,6 +18,20 @@ local BloxFruitsTab = Window:NewTab("Blox Fruits")
 local UniversalTab = Window:NewTab("Universal")
 local SettingsTab = Window:NewTab("Settings")
 
+-- Create notifications function
+local function notify(title, text, duration)
+    duration = duration or 5
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = duration
+    })
+end
+
+local function executednotify(scriptName)
+    notify(scriptName, "Script loaded successfully!", 3)
+end
+
 -- Main Tab Sections
 local MainSection = MainTab:NewSection("LAJ Hub")
 local CreditsSection = MainTab:NewSection("Credits")
@@ -112,12 +40,6 @@ local CreditsSection = MainTab:NewSection("Credits")
 MainSection:NewButton("Copy Discord Link", "Copy the Discord invite link to clipboard", function()
     setclipboard("https://discord.gg/4mgdcfvAJU")
     notify("Discord Link Copied", "Invite link copied to clipboard!", 3)
-end)
-
--- Create a button to manually trigger webhook
-MainSection:NewButton("Test Webhook", "Test the webhook functionality", function()
-    sendUsageData()
-    notify("Webhook Test", "Attempted to send webhook notification!", 3)
 end)
 
 -- Da Strike Tab Section
@@ -147,7 +69,6 @@ FischSection:NewButton("Speed Hub", "Execute Speed Hub script", function()
 end)
 
 FischSection:NewButton("Luarmor Script (No Key)", "Execute Luarmor Script for Fisch", function()
-    -- Luarmor script for Fisch
     loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/578c696a8d914279642068745713a73e.lua"))()
     executednotify("Luarmor Script")
 end)
@@ -156,7 +77,6 @@ end)
 local BballZeroSection = BballZeroTab:NewSection("Basketball Zero Scripts")
 
 BballZeroSection:NewButton("Ball Control", "Execute Ball Control script", function()
-    -- Use the new Ball Control script
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/main/laj_hub_test.lua"))()
     executednotify("BasketBall Zero Script")
 end)
@@ -173,19 +93,16 @@ end)
 local DeadRailsSection = DeadRailsTab:NewSection("Dead Rails Scripts")
 
 DeadRailsSection:NewButton("Infernus Direct Loader (No Key)", "Execute Infernus Direct Loader", function()
-    -- Bypassed loader for Infernus (Dead Rails)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
     executednotify("Infernus Direct Loader")
 end)
 
 DeadRailsSection:NewButton("SpineWare (No Key)", "Execute SpineWare script", function()
-    -- SpineWare Universal Loader for Dead Rails
     loadstring(game:HttpGet("https://raw.githubusercontent.com/SpineWare/UniversalLoader/main/Load"))()
     executednotify("SpineWare Loader")
 end)
 
 DeadRailsSection:NewButton("Luarmor Script (No Key)", "Execute Luarmor Script for Dead Rails", function()
-    -- Luarmor script for Dead Rails
     loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/578c696a8d914279642068745713a73e.lua"))()
     executednotify("Luarmor Script")
 end)
@@ -194,7 +111,6 @@ end)
 local BloxFruitsSection = BloxFruitsTab:NewSection("Blox Fruits Scripts")
 
 BloxFruitsSection:NewButton("REDz Hub", "Execute REDz Hub script", function()
-    -- REDz Hub for Blox Fruits (as requested)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
     executednotify("REDz Hub")
 end)
@@ -261,5 +177,8 @@ end)
 -- Credit section
 CreditsSection:NewLabel("Created by LAJ Hub Team")
 CreditsSection:NewLabel("Discord: discord.gg/4mgdcfvAJU")
-CreditsSection:NewLabel("Script Version: 4.0 (Modified)")
+CreditsSection:NewLabel("Script Version: 4.0 (Kavo UI)")
 CreditsSection:NewLabel("* All features now accessible to everyone!")
+
+print("LAJ Hub with Kavo UI loaded successfully!")
+print("Discord: discord.gg/4mgdcfvAJU")
