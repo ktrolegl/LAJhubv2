@@ -280,31 +280,16 @@ DeadRails:CreateButton({
    end,
 })
 
--- Blox Fruits Tab
+-- Blox Fruits Tab (Updated)
 BloxFruits:CreateButton({
-   Name = "Solix Hub (No Key)",
+   Name = "REDz Hub",
    Callback = function()
-       -- Key bypass for Solix Hub (Blox Fruits)
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/solix_key_bypass/refs/heads/main/solix_key_bypass.lua"))()
+       -- REDz Hub for Blox Fruits (as requested)
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
        
        Rayfield:Notify({
-           Title = "Solix Hub",
-           Content = "Loading Solix Hub (no key required)...",
-           Duration = 5,
-           Image = 4483362458,
-       })
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MTriet Hub (No Key)",
-   Callback = function()
-       -- MTriet Hub for Blox Fruits
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bfscripts/refs/heads/main/mtriet_hub.lua"))()
-       
-       Rayfield:Notify({
-           Title = "MTriet Hub",
-           Content = "Loading MTriet Hub (no key required)...",
+           Title = "REDz Hub",
+           Content = "Loading REDz Hub for Blox Fruits...",
            Duration = 5,
            Image = 4483362458,
        })
@@ -404,4 +389,5 @@ print("1. Completely removed all admin-only code and restrictions")
 print("2. Removed the Admin tab entirely (not just hiding it)")
 print("3. Removed all ban system code")
 print("4. Removed key system")
-print("5. All features now accessible to all users")
+print("5. Replaced Blox Fruits scripts with REDz Hub")
+print("6. All features now accessible to all users")
