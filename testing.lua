@@ -115,25 +115,11 @@ local Window = Rayfield:CreateWindow({
    KeySettings = {
       Title = "LAJ HUB", 
       Subtitle = "Key System",
-      Note = "Join our Discord server to get the key\n\nClick the button below to copy our Discord link",
+      Note = "Join our Discord server to get the key: https://discord.gg/4mgdcfvAJU\n\n1. Copy the Discord link above\n2. Join our server\n3. Get the key in the #key channel\n4. Enter key: LAJ2025",
       FileName = "LAJHubKey",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = {"LAJ2025"},
-      Actions = {
-         {
-            Text = "Copy Discord Link",
-            OnPress = function()
-               setclipboard("https://discord.gg/4mgdcfvAJU")
-               Rayfield:Notify({
-                  Title = "Discord Link Copied!",
-                  Content = "Join our server to get the key!",
-                  Duration = 3,
-                  Image = 4483362458,
-               })
-            end
-         }
-      }
+      Key = {"LAJ2025"}
    }
 })
 
