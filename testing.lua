@@ -115,11 +115,53 @@ local Window = Rayfield:CreateWindow({
    KeySettings = {
       Title = "LAJ HUB", 
       Subtitle = "Key System",
-      Note = "Join our Discord server to get the key: https://discord.gg/4mgdcfvAJU",
+      Note = "Join our Discord server to get the key",
       FileName = "LAJHubKey",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = {"LAJ2025"}
+      Key = {"LAJ2025"},
+      KeyCallback = function()
+         -- This creates a button in the key system UI itself
+         local KeyUIFrame = game:GetService("CoreGui").RayfieldKey
+         if KeyUIFrame then
+            local CopyButton = Instance.new("TextButton")
+            CopyButton.Size = UDim2.new(0, 200, 0, 40)
+            CopyButton.Position = UDim2.new(0.5, -100, 0.8, 0)
+            CopyButton.AnchorPoint = Vector2.new(0, 0)
+            CopyButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            CopyButton.BorderSizePixel = 0
+            CopyButton.Text = "Copy Discord Link"
+            CopyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            CopyButton.Font = Enum.Font.GothamBold
+            CopyButton.TextSize = 16
+            CopyButton.Parent = KeyUIFrame
+            
+            -- Make it look nicer with rounded corners
+            local UICorner = Instance.new("UICorner")
+            UICorner.CornerRadius = UDim.new(0, 6)
+            UICorner.Parent = CopyButton
+            
+            -- Add hover effect
+            CopyButton.MouseEnter:Connect(function()
+                CopyButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            end)
+            
+            CopyButton.MouseLeave:Connect(function()
+                CopyButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            end)
+            
+            -- Add click functionality
+            CopyButton.MouseButton1Click:Connect(function()
+                setclipboard("https://discord.gg/4mgdcfvAJU")
+                -- Create a small notification effect
+                CopyButton.Text = "Discord Link Copied!"
+                CopyButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+                wait(1.5)
+                CopyButton.Text = "Copy Discord Link"
+                CopyButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            end)
+         end
+      end
    }
 })
 
