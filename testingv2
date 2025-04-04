@@ -1,101 +1,67 @@
---[[
-    LAJ HUB - Combined Script with Key System
-    
-    This script contains both the key system and the main functionality.
-    It prevents bypassing by combining everything into one script.
-]]
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Determine if the key system has already been passed
-local _G.LAJHubKeyVerified = _G.LAJHubKeyVerified or false
-
--- Services
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
-local CoreGui = game:GetService("CoreGui")
+local http_request = syn and syn.request or http and http.request or http_request or request or httprequest
 
--- Variables
-local Player = Players.LocalPlayer
-local Mouse = Player:GetMouse()
+local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
--- Configuration (edit these)
-local VALID_KEYS = {
-    "LAJPRO123",
-    "LAJVIP456",
-    "LAJHUB789"
-}
-
--- Discord server link
-local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
-
--- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
-
--- Request function for different executors
-local request = syn and syn.request or http and http.request or http_request or request or httprequest
-
--- UI Colors
-local Theme = {
-    Background = Color3.fromRGB(35, 35, 35),
-    DarkBackground = Color3.fromRGB(25, 25, 25),
-    TextColor = Color3.fromRGB(255, 255, 255),
-    AccentColor = Color3.fromRGB(65, 105, 225),
-    ErrorColor = Color3.fromRGB(220, 60, 60),
-    SuccessColor = Color3.fromRGB(60, 220, 60)
-}
-
--- Function to log key usage via webhook
-local function logKeyUsage(key, success)
+local function sendUsageData()
     local success, error_message = pcall(function()
-        request({
-            Url = WEBHOOK_URL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{
-                    ["title"] = success and "LAJ HUB Key Used Successfully" or "Failed Key Attempt",
-                    ["color"] = success and 65280 or 16711680,
-                    ["fields"] = {
-                        {
-                            ["name"] = "User",
-                            ["value"] = "```" .. Player.Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "User ID",
-                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Key Used",
-                            ["value"] = "```" .. key .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game",
-                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Executor",
-                            ["value"] = "```" .. (identifyexecutor and identifyexecutor() or "Unknown") .. "```",
-                            ["inline"] = true
-                        }
-                    },
-                    ["footer"] = {
-                        ["text"] = "Key Usage Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
-                    }
-                }}
-            })
-        })
+    
+		local response = http_request({
+		    Url = DISCORD_WEBHOOK_URL,
+		    Method = 'POST',
+		    Headers = {
+		        ['Content-Type'] = 'application/json'
+		    },
+		    Body = HttpService:JSONEncode({
+		        ["content"] = "",
+		        ["embeds"] = {{
+		            ["title"] = "LAJ HUB Script Usage!",
+		            ["type"] = "rich",
+		            ["color"] = math.random(0, 0xFFFFFF), -- changed color everytime a pleyah executa;)
+		            ["fields"] = {
+		                {
+		                    ["name"] = "User:",
+		                    ["value"] = "```" .. LocalPlayer.Name .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "User ID:",
+		                    ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Game:",
+		                    ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Game ID:",
+		                    ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Executor",
+		                    ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
+		                    ["inline"] = true
+		                },
+		                {
+		                    ["name"] = "Players Active:",
+		                    ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+		                    ["inline"] = true
+		                }
+		            },
+		            ["footer"] = {
+		                ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+		            }
+		        }}
+		    })
+		})
+		
+        HttpService:PostAsync(DISCORD_WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson, false)
     end)
     
     if not success then
@@ -103,818 +69,271 @@ local function logKeyUsage(key, success)
     end
 end
 
--- Function to verify a key
-local function verifyKey(key)
-    for _, validKey in ipairs(VALID_KEYS) do
-        if key == validKey then
-            return true
-        end
-    end
-    return false
+sendUsageData()
+
+local Window = Rayfield:CreateWindow({
+   Name = "LAJ HUB",
+   Icon = 0,
+   LoadingTitle = "LAJ HUB",
+   LoadingSubtitle = "Premium Scripts",
+   Theme = "Default",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "LAJHub", -- Create a custom folder for your hub/game
+      FileName = "LAJHubConfig"
+   },
+
+   Discord = {
+      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "4mgdcfvAJU", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   -- Key system disabled so everyone can use it
+   KeySystem = false,
+   KeySettings = {
+      Title = "LAJ HUB", 
+      Subtitle = "Key System",
+      Note = "Join our Discord server: https://discord.gg/4mgdcfvAJU",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"LAJPRO"} -- Single key for all users
+   }
+})
+
+-- Create a main tab for important utilities
+local MainTab = Window:CreateTab("Main", 4483362458) -- Title, Image
+local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
+local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
+local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
+local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
+local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
+local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
+local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
+local Settings = Window:CreateTab("Settings", 4483362458)
+-- Note: AdminTab completely removed from this version to ensure it's not accessible
+
+local function executednotify(scriptName)
+   Rayfield:Notify({
+       Title = scriptName,
+       Content = "Script loaded successfully!",
+       Duration = 3,
+       Image = 4483362458,
+   })
 end
 
--- ===== MAIN SCRIPT FUNCTION =====
--- This is the main LAJ HUB functionality that runs after key verification
-local function runMainScript()
-    -- Mark as verified to prevent needing key verification again
-    _G.LAJHubKeyVerified = true
-    
-    -- Main LAJ HUB script code starts here
-    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local HttpService = game:GetService("HttpService")
-    local http_request = syn and syn.request or http and http.request or http_request or request or httprequest
-
-    -- Create a main Window
-    local Window = Rayfield:CreateWindow({
-       Name = "LAJ HUB",
-       Icon = 0,
-       LoadingTitle = "LAJ HUB",
-       LoadingSubtitle = "Premium Scripts",
-       Theme = "Default",
-
-       DisableRayfieldPrompts = false,
-       DisableBuildWarnings = false, 
-
-       ConfigurationSaving = {
-          Enabled = true,
-          FolderName = "LAJHub", 
-          FileName = "LAJHubConfig"
-       },
-
-       Discord = {
-          Enabled = true, 
-          Invite = "4mgdcfvAJU", 
-          RememberJoins = true 
-       },
-
-       -- Key system is handled by our custom UI
-       KeySystem = false,
-    })
-
-    -- Create a main tab for important utilities
-    local MainTab = Window:CreateTab("Main", 4483362458) -- Title, Image
-    local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
-    local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
-    local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
-    local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
-    local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
-    local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
-    local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
-    local Settings = Window:CreateTab("Settings", 4483362458)
-
-    local function executednotify(scriptName)
+-- Discord link copy button
+MainTab:CreateButton({
+   Name = "Copy Discord Link",
+   Callback = function()
+       setclipboard("https://discord.gg/4mgdcfvAJU")
        Rayfield:Notify({
-           Title = scriptName,
-           Content = "Script loaded successfully!",
+           Title = "Discord Link Copied",
+           Content = "Invite link copied to clipboard!",
            Duration = 3,
            Image = 4483362458,
        })
-    end
+   end,
+})
 
-    -- Discord link copy button
-    MainTab:CreateButton({
-       Name = "Copy Discord Link",
-       Callback = function()
-           setclipboard("https://discord.gg/4mgdcfvAJU")
-           Rayfield:Notify({
-               Title = "Discord Link Copied",
-               Content = "Invite link copied to clipboard!",
-               Duration = 3,
-               Image = 4483362458,
-           })
-       end,
-    })
+-- Create a button to manually trigger webhook
+MainTab:CreateButton({
+   Name = "Test Webhook",
+   Callback = function()
+       sendUsageData()
+       Rayfield:Notify({
+           Title = "Webhook Test",
+           Content = "Attempted to send webhook notification!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
 
-    -- Da Strike Tab scripts
-    Tab:CreateButton({
-       Name = "Psalm",
-       Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
-            executednotify("Psalm Script")
-       end,
-    })
+-- Da Strike Tab scripts
+Tab:CreateButton({
+   Name = "Psalm",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
+        executednotify("Psalm Script")
+   end,
+})
 
-    Tab:CreateButton({
-       Name = "Ballware vfs",
-       Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
-            executednotify("Ballware VFS")
-       end,
-    })
+Tab:CreateButton({
+   Name = "Ballware vfs",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
+        executednotify("Ballware VFS")
+   end,
+})
 
-    Tab:CreateButton({
-       Name = "FrostByte",
-       Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak", true))()
-            executednotify("FrostByte")
-       end,
-    })
+Tab:CreateButton({
+   Name = "FrostByte",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak", true))()
+        executednotify("FrostByte")
+   end,
+})
 
-    -- Fisch Tab
-    Fin:CreateButton({
-       Name = "Speed Hub",
-       Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-            executednotify("Speed Hub")
-       end,
-    })
+-- Fisch Tab
+Fin:CreateButton({
+   Name = "Speed Hub",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        executednotify("Speed Hub")
+   end,
+})
 
-    -- Basketball Zero script with bypass
-    BballZero:CreateButton({
-       Name = "Ball Control",
-       Callback = function()
-            -- Use the new Ball Control script
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-            executednotify("BasketBall Zero Script")
-       end,
-    })
+-- Basketball Zero script with bypass
+BballZero:CreateButton({
+   Name = "Ball Control",
+   Callback = function()
+        -- Use the new Ball Control script
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+        executednotify("BasketBall Zero Script")
+   end,
+})
 
-    -- Blue Lock Rivals script
-    BlueLock:CreateButton({
-       Name = "LAJ HUB",
-       Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
-            executednotify("LAJ HUB")
-       end,
-    })
+-- Blue Lock Rivals script
+BlueLock:CreateButton({
+   Name = "LAJ HUB",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
+        executednotify("LAJ HUB")
+   end,
+})
 
-    -- Dead Rails Tab
-    DeadRails:CreateButton({
-       Name = "Infernus Direct Loader (No Key)",
-       Callback = function()
-           -- Bypassed loader for Infernus (Dead Rails)
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
-           executednotify("Infernus Direct Loader")
-       end,
-    })
+-- Dead Rails Tab
+DeadRails:CreateButton({
+   Name = "Infernus Direct Loader (No Key)",
+   Callback = function()
+       -- Bypassed loader for Infernus (Dead Rails)
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
+       executednotify("Infernus Direct Loader")
+   end,
+})
 
-    DeadRails:CreateButton({
-       Name = "Bynner (No Key)",
-       Callback = function()
-           -- Bynner script for Dead Rails
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
-           executednotify("Bynner Script")
-       end,
-    })
+DeadRails:CreateButton({
+   Name = "Bynner (No Key)",
+   Callback = function()
+       -- Bynner script for Dead Rails
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
+       executednotify("Bynner Script")
+   end,
+})
 
-    -- Blox Fruits Tab (Updated)
-    BloxFruits:CreateButton({
-       Name = "REDz Hub",
-       Callback = function()
-           -- REDz Hub for Blox Fruits (as requested)
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
-           
-           executednotify("REDz Hub")
-       end,
-    })
+-- Blox Fruits Tab (Updated)
+BloxFruits:CreateButton({
+   Name = "REDz Hub",
+   Callback = function()
+       -- REDz Hub for Blox Fruits (as requested)
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
+       
+       executednotify("REDz Hub")
+   end,
+})
 
-    -- Universal Tab
-    Universal:CreateButton({
-       Name = "Infinite Yield FE",
-       Callback = function()
-           loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-           executednotify("Infinite Yield")
-       end,
-    })
+-- Universal Tab
+Universal:CreateButton({
+   Name = "Infinite Yield FE",
+   Callback = function()
+       loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+       executednotify("Infinite Yield")
+   end,
+})
 
-    Universal:CreateButton({
-       Name = "Dex Explorer",
-       Callback = function()
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
-           executednotify("Dex Explorer")
-       end,
-    })
+Universal:CreateButton({
+   Name = "Dex Explorer",
+   Callback = function()
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
+       executednotify("Dex Explorer")
+   end,
+})
 
-    Universal:CreateButton({
-       Name = "Hydroxide",
-       Callback = function()
-           loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
-           executednotify("Hydroxide")
-       end,
-    })
+Universal:CreateButton({
+   Name = "Hydroxide",
+   Callback = function()
+       loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+       executednotify("Hydroxide")
+   end,
+})
 
-    Universal:CreateButton({
-       Name = "SimpleSpy",
-       Callback = function()
-           loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
-           executednotify("SimpleSpy")
-       end,
-    })
+Universal:CreateButton({
+   Name = "SimpleSpy",
+   Callback = function()
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+       executednotify("SimpleSpy")
+   end,
+})
 
-    Universal:CreateButton({
-       Name = "CMD-X Admin",
-       Callback = function()
-           loadstring(game:HttpGet('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source', true))()
-           executednotify("CMD-X Admin")
-       end,
-    })
+Universal:CreateButton({
+   Name = "CMD-X Admin",
+   Callback = function()
+       loadstring(game:HttpGet('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source', true))()
+       executednotify("CMD-X Admin")
+   end,
+})
 
-    Universal:CreateButton({
-       Name = "Domain X",
-       Callback = function()
-           loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/DomainX/main/source',true))()
-           executednotify("Domain X")
-       end,
-    })
+Universal:CreateButton({
+   Name = "Domain X",
+   Callback = function()
+       loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/DomainX/main/source',true))()
+       executednotify("Domain X")
+   end,
+})
 
 
-    -- Settings Tab
-    local idled_Connection
+-- Settings Tab
+local idled_Connection
 
-    local function onIdled()
-        game:GetService("VirtualUser"):CaptureController()
-        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
-    end
-
-    Settings:CreateButton({
-        Name = "Anti AFK",
-        Callback = function()
-            if not idled_Connection then
-                idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
-                executednotify("Anti AFK")
-            end
-        end,
-    })
-
-    local Inf_jump = false
-
-    Settings:CreateToggle({
-       Name = "Infinite Jump",
-       CurrentValue = false,
-       Callback = function(Value)
-          Inf_jump = Value
-          game:GetService("UserInputService").JumpRequest:Connect(function()
-             if Inf_jump then
-                game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-             end
-          end)
-       end,
-    })
-
-    -- Credit section
-    local creditSection = MainTab:CreateSection("Credits")
-
-    MainTab:CreateLabel("Created by LAJ Hub Team")
-    MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
-    MainTab:CreateLabel("Script Version: 4.0 (Modified)")
-    
-    -- Send usage data to webhook
-    local function sendUsageData()
-        local success, error_message = pcall(function()
-        
-                    local response = http_request({
-                        Url = WEBHOOK_URL,
-                        Method = 'POST',
-                        Headers = {
-                            ['Content-Type'] = 'application/json'
-                        },
-                        Body = HttpService:JSONEncode({
-                            ["content"] = "",
-                            ["embeds"] = {{
-                                ["title"] = "LAJ HUB Script Usage!",
-                                ["type"] = "rich",
-                                ["color"] = math.random(0, 0xFFFFFF), -- changed color everytime a pleyah executa;)
-                                ["fields"] = {
-                                    {
-                                        ["name"] = "User:",
-                                        ["value"] = "```" .. LocalPlayer.Name .. "```",
-                                        ["inline"] = true
-                                    },
-                                    {
-                                        ["name"] = "User ID:",
-                                        ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
-                                        ["inline"] = true
-                                    },
-                                    {
-                                        ["name"] = "Game:",
-                                        ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
-                                        ["inline"] = true
-                                    },
-                                    {
-                                        ["name"] = "Game ID:",
-                                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                                        ["inline"] = true
-                                    },
-                                    {
-                                        ["name"] = "Executor",
-                                        ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
-                                        ["inline"] = true
-                                    },
-                                    {
-                                        ["name"] = "Players Active:",
-                                        ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
-                                        ["inline"] = true
-                                    }
-                                },
-                                ["footer"] = {
-                                    ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
-                                }
-                            }}
-                        })
-                    })
-                    
-        end)
-        
-        if not success then
-            warn("Failed to send webhook: " .. tostring(error_message))
-        end
-    end
-
-    -- Send usage data when script is executed
-    sendUsageData()
-    
-    -- End of main script
+local function onIdled()
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
 end
 
--- Creating UI Elements for Key System
-local function createKeySystemUI()
-    -- Check if UI already exists and remove it
-    if CoreGui:FindFirstChild("LAJHubKeySystem") then
-        CoreGui:FindFirstChild("LAJHubKeySystem"):Destroy()
-    end
-    
-    -- Main ScreenGui
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "LAJHubKeySystem"
-    ScreenGui.Parent = CoreGui
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    -- Main Frame
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 400, 0, 300) -- Slightly increased height for Discord button
-    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-    MainFrame.BackgroundColor3 = Theme.Background
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Parent = ScreenGui
-    
-    -- Apply corner radius
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 6)
-    MainCorner.Parent = MainFrame
-    
-    -- Title Bar
-    local TitleBar = Instance.new("Frame")
-    TitleBar.Name = "TitleBar"
-    TitleBar.Size = UDim2.new(1, 0, 0, 30)
-    TitleBar.Position = UDim2.new(0, 0, 0, 0)
-    TitleBar.BackgroundColor3 = Theme.DarkBackground
-    TitleBar.BorderSizePixel = 0
-    TitleBar.Parent = MainFrame
-    
-    local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 6)
-    TitleCorner.Parent = TitleBar
-    
-    -- Fix corners
-    local TitleCornerFix = Instance.new("Frame")
-    TitleCornerFix.Name = "TitleCornerFix"
-    TitleCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
-    TitleCornerFix.Position = UDim2.new(0, 0, 0.5, 0)
-    TitleCornerFix.BackgroundColor3 = Theme.DarkBackground
-    TitleCornerFix.BorderSizePixel = 0
-    TitleCornerFix.Parent = TitleBar
-    
-    -- Make the title bar draggable
-    local dragging
-    local dragInput
-    local dragStart
-    local startPos
-    
-    local function updateInput(input)
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-    
-    TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = MainFrame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+Settings:CreateButton({
+    Name = "Anti AFK",
+    Callback = function()
+        if not idled_Connection then
+            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
+            executednotify("Anti AFK")
         end
-    end)
-    
-    TitleBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-    
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            updateInput(input)
-        end
-    end)
-    
-    -- Title
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Name = "TitleLabel"
-    TitleLabel.Size = UDim2.new(1, -60, 1, 0)
-    TitleLabel.Position = UDim2.new(0, 10, 0, 0)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = "LAJ HUB - Key System"
-    TitleLabel.TextColor3 = Theme.TextColor
-    TitleLabel.TextSize = 16
-    TitleLabel.Font = Enum.Font.SourceSansBold
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.Parent = TitleBar
-    
-    -- Close Button
-    local CloseButton = Instance.new("TextButton")
-    CloseButton.Name = "CloseButton"
-    CloseButton.Size = UDim2.new(0, 24, 0, 24)
-    CloseButton.Position = UDim2.new(1, -28, 0, 3)
-    CloseButton.BackgroundColor3 = Theme.ErrorColor
-    CloseButton.Text = "×"
-    CloseButton.TextColor3 = Theme.TextColor
-    CloseButton.TextSize = 18
-    CloseButton.Font = Enum.Font.SourceSansBold
-    CloseButton.Parent = TitleBar
-    
-    local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(0, 4)
-    CloseCorner.Parent = CloseButton
-    
-    CloseButton.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
-    
-    -- Minimize Button
-    local MinimizeButton = Instance.new("TextButton")
-    MinimizeButton.Name = "MinimizeButton"
-    MinimizeButton.Size = UDim2.new(0, 24, 0, 24)
-    MinimizeButton.Position = UDim2.new(1, -56, 0, 3)
-    MinimizeButton.BackgroundColor3 = Theme.Background
-    MinimizeButton.Text = "-"
-    MinimizeButton.TextColor3 = Theme.TextColor
-    MinimizeButton.TextSize = 18
-    MinimizeButton.Font = Enum.Font.SourceSansBold
-    MinimizeButton.Parent = TitleBar
-    
-    local MinimizeCorner = Instance.new("UICorner")
-    MinimizeCorner.CornerRadius = UDim.new(0, 4)
-    MinimizeCorner.Parent = MinimizeButton
-    
-    -- Tab system
-    local TabContainer = Instance.new("Frame")
-    TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(0, 80, 1, -30)
-    TabContainer.Position = UDim2.new(0, 0, 0, 30)
-    TabContainer.BackgroundColor3 = Theme.DarkBackground
-    TabContainer.BorderSizePixel = 0
-    TabContainer.Parent = MainFrame
-    
-    local TabContainerCorner = Instance.new("UICorner")
-    TabContainerCorner.CornerRadius = UDim.new(0, 6)
-    TabContainerCorner.Parent = TabContainer
-    
-    -- Fix tab container corners
-    local TabCornerFix = Instance.new("Frame")
-    TabCornerFix.Name = "TabCornerFix"
-    TabCornerFix.Size = UDim2.new(0.5, 0, 1, 0)
-    TabCornerFix.Position = UDim2.new(0.5, 0, 0, 0)
-    TabCornerFix.BackgroundColor3 = Theme.DarkBackground
-    TabCornerFix.BorderSizePixel = 0
-    TabCornerFix.Parent = TabContainer
-    
-    -- Main Tab
-    local MainTab = Instance.new("TextButton")
-    MainTab.Name = "MainTab"
-    MainTab.Size = UDim2.new(1, 0, 0, 30)
-    MainTab.Position = UDim2.new(0, 0, 0, 10)
-    MainTab.BackgroundColor3 = Theme.AccentColor
-    MainTab.Text = "Tab 1"
-    MainTab.TextColor3 = Theme.TextColor
-    MainTab.TextSize = 14
-    MainTab.Font = Enum.Font.SourceSansBold
-    MainTab.BorderSizePixel = 0
-    MainTab.Parent = TabContainer
-    
-    local MainTabCorner = Instance.new("UICorner")
-    MainTabCorner.CornerRadius = UDim.new(0, 4)
-    MainTabCorner.Parent = MainTab
-    
-    -- Content Area
-    local ContentArea = Instance.new("Frame")
-    ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -90, 1, -40)
-    ContentArea.Position = UDim2.new(0, 85, 0, 35)
-    ContentArea.BackgroundTransparency = 1
-    ContentArea.BorderSizePixel = 0
-    ContentArea.Parent = MainFrame
-    
-    -- Key input elements
-    local KeyLabel = Instance.new("TextLabel")
-    KeyLabel.Name = "KeyLabel"
-    KeyLabel.Size = UDim2.new(1, 0, 0, 20)
-    KeyLabel.Position = UDim2.new(0, 0, 0, 10)
-    KeyLabel.BackgroundTransparency = 1
-    KeyLabel.Text = "Enter your key:"
-    KeyLabel.TextColor3 = Theme.TextColor
-    KeyLabel.TextSize = 14
-    KeyLabel.Font = Enum.Font.SourceSans
-    KeyLabel.TextXAlignment = Enum.TextXAlignment.Left
-    KeyLabel.Parent = ContentArea
-    
-    local KeyInput = Instance.new("TextBox")
-    KeyInput.Name = "KeyInput"
-    KeyInput.Size = UDim2.new(1, 0, 0, 35)
-    KeyInput.Position = UDim2.new(0, 0, 0, 35)
-    KeyInput.BackgroundColor3 = Theme.DarkBackground
-    KeyInput.PlaceholderText = "Enter your LAJ HUB key here..."
-    KeyInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
-    KeyInput.Text = ""
-    KeyInput.TextColor3 = Theme.TextColor
-    KeyInput.TextSize = 14
-    KeyInput.Font = Enum.Font.SourceSans
-    KeyInput.BorderSizePixel = 0
-    KeyInput.ClearTextOnFocus = false
-    KeyInput.Parent = ContentArea
-    
-    local KeyInputCorner = Instance.new("UICorner")
-    KeyInputCorner.CornerRadius = UDim.new(0, 4)
-    KeyInputCorner.Parent = KeyInput
-    
-    -- Button for key verification
-    local VerifyButton = Instance.new("TextButton")
-    VerifyButton.Name = "VerifyButton"
-    VerifyButton.Size = UDim2.new(1, 0, 0, 35)
-    VerifyButton.Position = UDim2.new(0, 0, 0, 80)
-    VerifyButton.BackgroundColor3 = Theme.AccentColor
-    VerifyButton.Text = "Verify Key"
-    VerifyButton.TextColor3 = Theme.TextColor
-    VerifyButton.TextSize = 16
-    VerifyButton.Font = Enum.Font.SourceSansBold
-    VerifyButton.BorderSizePixel = 0
-    VerifyButton.Parent = ContentArea
-    
-    local VerifyCorner = Instance.new("UICorner")
-    VerifyCorner.CornerRadius = UDim.new(0, 4)
-    VerifyCorner.Parent = VerifyButton
-    
-    -- Status label
-    local StatusLabel = Instance.new("TextLabel")
-    StatusLabel.Name = "StatusLabel"
-    StatusLabel.Size = UDim2.new(1, 0, 0, 20)
-    StatusLabel.Position = UDim2.new(0, 0, 0, 125)
-    StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Text = ""
-    StatusLabel.TextColor3 = Theme.TextColor
-    StatusLabel.TextSize = 14
-    StatusLabel.Font = Enum.Font.SourceSans
-    StatusLabel.Parent = ContentArea
-    
-    -- Discord information
-    local DiscordLabel = Instance.new("TextLabel")
-    DiscordLabel.Name = "DiscordLabel"
-    DiscordLabel.Size = UDim2.new(1, 0, 0, 20)
-    DiscordLabel.Position = UDim2.new(0, 0, 0, 155)
-    DiscordLabel.BackgroundTransparency = 1
-    DiscordLabel.Text = "Need a key? Join our Discord:"
-    DiscordLabel.TextColor3 = Theme.TextColor
-    DiscordLabel.TextSize = 14
-    DiscordLabel.Font = Enum.Font.SourceSans
-    DiscordLabel.TextXAlignment = Enum.TextXAlignment.Left
-    DiscordLabel.Parent = ContentArea
-    
-    -- Discord Button
-    local DiscordButton = Instance.new("TextButton")
-    DiscordButton.Name = "DiscordButton"
-    DiscordButton.Size = UDim2.new(1, 0, 0, 35)
-    DiscordButton.Position = UDim2.new(0, 0, 0, 180)
-    DiscordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord color
-    DiscordButton.Text = "Join Discord for Key"
-    DiscordButton.TextColor3 = Theme.TextColor
-    DiscordButton.TextSize = 16
-    DiscordButton.Font = Enum.Font.SourceSansBold
-    DiscordButton.BorderSizePixel = 0
-    DiscordButton.Parent = ContentArea
-    
-    local DiscordCorner = Instance.new("UICorner")
-    DiscordCorner.CornerRadius = UDim.new(0, 4)
-    DiscordCorner.Parent = DiscordButton
-    
-    DiscordButton.MouseButton1Click:Connect(function()
-        setclipboard(DISCORD_LINK)
-        StatusLabel.Text = "Discord link copied to clipboard!"
-        StatusLabel.TextColor3 = Theme.SuccessColor
-        
-        -- Create a notification
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Discord Link Copied",
-            Text = "Paste it in your browser to join!",
-            Duration = 5
-        })
-    end)
-    
-    -- Toggle (like in the image)
-    local ToggleLabel = Instance.new("TextLabel")
-    ToggleLabel.Name = "ToggleLabel"
-    ToggleLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ToggleLabel.Position = UDim2.new(0, 0, 0, 225)
-    ToggleLabel.BackgroundTransparency = 1
-    ToggleLabel.Text = "This is a toggle!"
-    ToggleLabel.TextColor3 = Theme.TextColor
-    ToggleLabel.TextSize = 14
-    ToggleLabel.Font = Enum.Font.SourceSans
-    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ToggleLabel.Parent = ContentArea
-    
-    local ToggleButton = Instance.new("Frame")
-    ToggleButton.Name = "ToggleButton"
-    ToggleButton.Size = UDim2.new(0, 40, 0, 20)
-    ToggleButton.Position = UDim2.new(1, -40, 0, 225)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    ToggleButton.BorderSizePixel = 0
-    ToggleButton.Parent = ContentArea
-    
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 10)
-    ToggleCorner.Parent = ToggleButton
-    
-    local ToggleCircle = Instance.new("Frame")
-    ToggleCircle.Name = "ToggleCircle"
-    ToggleCircle.Size = UDim2.new(0, 16, 0, 16)
-    ToggleCircle.Position = UDim2.new(0, 2, 0, 2)
-    ToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-    ToggleCircle.BorderSizePixel = 0
-    ToggleCircle.Parent = ToggleButton
-    
-    local ToggleCircleCorner = Instance.new("UICorner")
-    ToggleCircleCorner.CornerRadius = UDim.new(1, 0)
-    ToggleCircleCorner.Parent = ToggleCircle
-    
-    local toggleEnabled = false
-    
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            toggleEnabled = not toggleEnabled
-            
-            local newPosition = toggleEnabled and UDim2.new(1, -18, 0, 2) or UDim2.new(0, 2, 0, 2)
-            local newColor = toggleEnabled and Theme.AccentColor or Color3.fromRGB(60, 60, 60)
-            
-            TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = newPosition}):Play()
-            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = newColor}):Play()
-        end
-    end)
-    
-    -- Color picker (like in the image)
-    local ColorLabel = Instance.new("TextLabel")
-    ColorLabel.Name = "ColorLabel"
-    ColorLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ColorLabel.Position = UDim2.new(0, 0, 0, 255)
-    ColorLabel.BackgroundTransparency = 1
-    ColorLabel.Text = "Colorpicker"
-    ColorLabel.TextColor3 = Theme.TextColor
-    ColorLabel.TextSize = 14
-    ColorLabel.Font = Enum.Font.SourceSans
-    ColorLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ColorLabel.Parent = ContentArea
-    
-    local ColorDisplay = Instance.new("Frame")
-    ColorDisplay.Name = "ColorDisplay"
-    ColorDisplay.Size = UDim2.new(0, 35, 0, 20)
-    ColorDisplay.Position = UDim2.new(1, -35, 0, 255)
-    ColorDisplay.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-    ColorDisplay.BorderSizePixel = 0
-    ColorDisplay.Parent = ContentArea
-    
-    local ColorCorner = Instance.new("UICorner")
-    ColorCorner.CornerRadius = UDim.new(0, 4)
-    ColorCorner.Parent = ColorDisplay
-    
-    -- Footer with credits
-    local Footer = Instance.new("Frame")
-    Footer.Name = "Footer"
-    Footer.Size = UDim2.new(1, 0, 0, 40)
-    Footer.Position = UDim2.new(0, 0, 1, -40)
-    Footer.BackgroundColor3 = Theme.DarkBackground
-    Footer.BorderSizePixel = 0
-    Footer.Parent = MainFrame
-    
-    local FooterCorner = Instance.new("UICorner")
-    FooterCorner.CornerRadius = UDim.new(0, 6)
-    FooterCorner.Parent = Footer
-    
-    -- Fix footer corners
-    local FooterCornerFix = Instance.new("Frame")
-    FooterCornerFix.Name = "FooterCornerFix"
-    FooterCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
-    FooterCornerFix.Position = UDim2.new(0, 0, 0, 0)
-    FooterCornerFix.BackgroundColor3 = Theme.DarkBackground
-    FooterCornerFix.BorderSizePixel = 0
-    FooterCornerFix.Parent = Footer
-    
-    -- Credits
-    local CreditsIcon = Instance.new("ImageLabel")
-    CreditsIcon.Name = "CreditsIcon"
-    CreditsIcon.Size = UDim2.new(0, 30, 0, 30)
-    CreditsIcon.Position = UDim2.new(0, 5, 0, 5)
-    CreditsIcon.BackgroundTransparency = 1
-    CreditsIcon.Image = "rbxassetid://3926307971"
-    CreditsIcon.ImageRectOffset = Vector2.new(164, 84)
-    CreditsIcon.ImageRectSize = Vector2.new(36, 36)
-    CreditsIcon.Parent = Footer
-    
-    local CreditsText = Instance.new("TextLabel")
-    CreditsText.Name = "CreditsText"
-    CreditsText.Size = UDim2.new(1, -45, 1, 0)
-    CreditsText.Position = UDim2.new(0, 40, 0, 0)
-    CreditsText.BackgroundTransparency = 1
-    CreditsText.Text = "LAJ HUB  |  Created by LAJ Team"
-    CreditsText.TextColor3 = Theme.TextColor
-    CreditsText.TextSize = 14
-    CreditsText.Font = Enum.Font.SourceSans
-    CreditsText.TextXAlignment = Enum.TextXAlignment.Left
-    CreditsText.Parent = Footer
-    
-    -- Button functionality
-    VerifyButton.MouseButton1Click:Connect(function()
-        local keyText = KeyInput.Text
-        
-        if keyText == "" then
-            StatusLabel.Text = "Please enter a key!"
-            StatusLabel.TextColor3 = Theme.ErrorColor
-            return
-        end
-        
-        StatusLabel.Text = "Verifying key..."
-        StatusLabel.TextColor3 = Theme.TextColor
-        
-        -- Simulate network delay (optional)
-        wait(1.5)
-        
-        -- Verify key
-        local isValid = verifyKey(keyText)
-        
-        -- Log key usage to webhook
-        logKeyUsage(keyText, isValid)
-        
-        if isValid then
-            StatusLabel.Text = "Key verified successfully! Loading script..."
-            StatusLabel.TextColor3 = Theme.SuccessColor
-            
-            -- Wait a bit before loading main script
-            wait(1)
-            
-            -- Destroy key UI
-            ScreenGui:Destroy()
-            
-            -- Run the main script
-            runMainScript()
-        else
-            StatusLabel.Text = "Invalid key! Please try again."
-            StatusLabel.TextColor3 = Theme.ErrorColor
-        end
-    end)
-    
-    -- Animation
-    MainFrame.BackgroundTransparency = 1
-    TitleBar.BackgroundTransparency = 1
-    TitleCornerFix.BackgroundTransparency = 1
-    TabContainer.BackgroundTransparency = 1
-    TabCornerFix.BackgroundTransparency = 1
-    MainTab.BackgroundTransparency = 1
-    KeyInput.BackgroundTransparency = 1
-    VerifyButton.BackgroundTransparency = 1
-    DiscordButton.BackgroundTransparency = 1
-    Footer.BackgroundTransparency = 1
-    FooterCornerFix.BackgroundTransparency = 1
-    
-    for i = 1, 0, -0.1 do
-        wait(0.02)
-        MainFrame.BackgroundTransparency = i
-        TitleBar.BackgroundTransparency = i
-        TitleCornerFix.BackgroundTransparency = i
-        TabContainer.BackgroundTransparency = i
-        TabCornerFix.BackgroundTransparency = i
-        MainTab.BackgroundTransparency = i
-        KeyInput.BackgroundTransparency = i
-        VerifyButton.BackgroundTransparency = i
-        DiscordButton.BackgroundTransparency = i
-        Footer.BackgroundTransparency = i
-        FooterCornerFix.BackgroundTransparency = i
-    end
-end
+    end,
+})
 
--- Start key system or main script based on verification status
-if _G.LAJHubKeyVerified then
-    -- Already verified, run main script directly
-    runMainScript()
-else
-    -- Not verified, show key system UI
-    createKeySystemUI()
-    
-    -- Debug information
-    print("LAJ HUB Key System Loaded")
-    print("Waiting for key verification...")
-end
+local Inf_jump = false
+
+Settings:CreateToggle({
+   Name = "Infinite Jump",
+   CurrentValue = false,
+   Callback = function(Value)
+      Inf_jump = Value
+      game:GetService("UserInputService").JumpRequest:Connect(function()
+         if Inf_jump then
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+         end
+      end)
+   end,
+})
+
+-- Credit section
+local creditSection = MainTab:CreateSection("Credits")
+
+MainTab:CreateLabel("Created by LAJ Hub Team")
+MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
+MainTab:CreateLabel("Script Version: 4.0 (Modified)")
+MainTab:CreateLabel("* All features now accessible to everyone!")
+
+-- Note: This script is meant to be used in Roblox and won't function in a standalone Lua environment
+print("Note: This is a FIXED version of the KEYS script with these changes:")
+print("1. Completely removed all admin-only code and restrictions")
+print("2. Removed the Admin tab entirely (not just hiding it)")
+print("3. Removed all ban system code")
+print("4. Removed key system")
+print("5. Replaced Blox Fruits scripts with REDz Hub")
+print("6. All features now accessible to all users")
