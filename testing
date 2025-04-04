@@ -232,6 +232,119 @@ if checkRemoteBan() then
     return
 end
 
+-- Create loading strip animation
+local function createLoadingStrip()
+    -- Create the loading screen GUI
+    local loadingGui = Instance.new("ScreenGui")
+    loadingGui.Name = "LAJHubLoadingGui"
+    loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Create the main loading frame
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -50)
+    mainFrame.Size = UDim2.new(0, 300, 0, 100)
+    mainFrame.Parent = loadingGui
+    
+    -- Create title label
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "TitleLabel"
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Position = UDim2.new(0, 0, 0, 10)
+    titleLabel.Size = UDim2.new(1, 0, 0, 30)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.Text = "LAJ HUB"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextSize = 22
+    titleLabel.Parent = mainFrame
+    
+    -- Create subtitle label
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Name = "SubtitleLabel"
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.Position = UDim2.new(0, 0, 0, 40)
+    subtitleLabel.Size = UDim2.new(1, 0, 0, 20)
+    subtitleLabel.Font = Enum.Font.Gotham
+    subtitleLabel.Text = "Loading scripts..."
+    subtitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    subtitleLabel.TextSize = 14
+    subtitleLabel.Parent = mainFrame
+    
+    -- Create loading bar container
+    local loadingBarContainer = Instance.new("Frame")
+    loadingBarContainer.Name = "LoadingBarContainer"
+    loadingBarContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    loadingBarContainer.BorderSizePixel = 0
+    loadingBarContainer.Position = UDim2.new(0.1, 0, 0.7, 0)
+    loadingBarContainer.Size = UDim2.new(0.8, 0, 0, 10)
+    loadingBarContainer.Parent = mainFrame
+    
+    -- Create loading bar
+    local loadingBar = Instance.new("Frame")
+    loadingBar.Name = "LoadingBar"
+    loadingBar.BackgroundColor3 = Color3.fromRGB(131, 71, 229) -- Purple color
+    loadingBar.BorderSizePixel = 0
+    loadingBar.Size = UDim2.new(0, 0, 1, 0)
+    loadingBar.Parent = loadingBarContainer
+    
+    -- Parent to PlayerGui
+    local Players = game:GetService("Players")
+    loadingGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Return references
+    return {
+        Gui = loadingGui,
+        LoadingBar = loadingBar,
+        SubtitleLabel = subtitleLabel
+    }
+end
+
+-- Start the loading animation
+local loading = createLoadingStrip()
+local loadingBar = loading.LoadingBar
+local subtitleLabel = loading.SubtitleLabel
+local loadingGui = loading.Gui
+
+-- Animate the loading bar
+task.spawn(function()
+    local loadingTexts = {
+        "Initializing...",
+        "Loading scripts...",
+        "Checking game compatibility...",
+        "Setting up UI...",
+        "Loading key system...",
+        "Preparing scripts..."
+    }
+    
+    for i = 1, #loadingTexts do
+        subtitleLabel.Text = loadingTexts[i]
+        local targetSize = i / #loadingTexts
+        
+        -- Smooth animation for loading bar
+        local startSize = loadingBar.Size.X.Scale
+        for j = 0, 10 do
+            local progress = j / 10
+            loadingBar.Size = UDim2.new(startSize + (targetSize - startSize) * progress, 0, 1, 0)
+            task.wait(0.02)
+        end
+        
+        task.wait(0.3)
+    end
+    
+    -- Final animation
+    subtitleLabel.Text = "Ready!"
+    loadingBar.Size = UDim2.new(1, 0, 1, 0)
+    task.wait(0.5)
+    
+    -- Clean up loading GUI
+    loadingGui:Destroy()
+end)
+
+-- Short delay before creating Rayfield window
+task.wait(0.5)
+
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
