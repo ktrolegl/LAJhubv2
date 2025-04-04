@@ -1,0 +1,655 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Discord webhook for usage tracking
+local DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1357395980299014224/VHqKfAsLDqGIUQ5icewgv8YX-SblIBEsmG3NmaMG83y68hQcGrfTEXmdW0rCy0P98zuz"
+
+-- Function to send usage data to Discord webhook with improved error handling
+local function sendUsageData()
+    local success, error_message = pcall(function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local HttpService = game:GetService("HttpService")
+        
+        -- Get device info and game info
+        local deviceInfo = {}
+        local executor = "Unknown"
+        pcall(function() 
+            executor = identifyexecutor() or "Unknown" 
+        end)
+        
+        local gameName = "Unknown"
+        pcall(function()
+            gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+        end)
+        
+        -- Prepare embed data for Discord
+        local data = {
+            content = "**LAJ HUB Execution Alert**",
+            embeds = {
+                {
+                    title = "LAJ HUB Script Usage",
+                    description = "A player has executed LAJ HUB",
+                    color = 5814783, -- Purple color
+                    fields = {
+                        {
+                            name = "User",
+                            value = LocalPlayer.Name,
+                            inline = true
+                        },
+                        {
+                            name = "User ID",
+                            value = tostring(LocalPlayer.UserId),
+                            inline = true
+                        },
+                        {
+                            name = "Game",
+                            value = gameName,
+                            inline = true
+                        },
+                        {
+                            name = "Game ID",
+                            value = tostring(game.PlaceId),
+                            inline = true
+                        },
+                        {
+                            name = "Executor",
+                            value = executor,
+                            inline = true
+                        },
+                        {
+                            name = "Time",
+                            value = os.date("%Y-%m-%d %H:%M:%S"),
+                            inline = true
+                        }
+                    },
+                    timestamp = DateTime.now():ToIsoDate()
+                }
+            }
+        }
+        
+        -- Convert to JSON
+        local jsonData = HttpService:JSONEncode(data)
+        
+        -- Direct HTTP request (alternative method)
+        request({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = jsonData
+        })
+        
+        -- Try HttpService as backup
+        HttpService:PostAsync(DISCORD_WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson, false)
+    end)
+    
+    if not success then
+        warn("Failed to send webhook: " .. tostring(error_message))
+    end
+end
+
+-- Function to send ban data to Discord webhook with improved error handling
+local function sendBanData(username, userId, action)
+    local success, error_message = pcall(function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local HttpService = game:GetService("HttpService")
+        
+        -- Prepare embed data for Discord
+        local data = {
+            content = action == "ban" and "**🚫 User Banned**" or "**✅ User Unbanned**",
+            embeds = {
+                {
+                    title = "LAJ HUB Ban System",
+                    description = action == "ban" and "User banned from LAJ HUB" or "User unbanned from LAJ HUB",
+                    color = action == "ban" and 15548997 or 5763719, -- Red for ban, Green for unban
+                    fields = {
+                        {
+                            name = "Target User",
+                            value = username,
+                            inline = true
+                        },
+                        {
+                            name = "Target User ID",
+                            value = userId or "Unknown",
+                            inline = true
+                        },
+                        {
+                            name = "Admin",
+                            value = LocalPlayer.Name,
+                            inline = true
+                        },
+                        {
+                            name = "Admin ID",
+                            value = tostring(LocalPlayer.UserId),
+                            inline = true
+                        },
+                        {
+                            name = "Action",
+                            value = action == "ban" and "Ban" or "Unban",
+                            inline = true
+                        },
+                        {
+                            name = "Time",
+                            value = os.date("%Y-%m-%d %H:%M:%S"),
+                            inline = true
+                        }
+                    },
+                    timestamp = DateTime.now():ToIsoDate()
+                }
+            }
+        }
+        
+        -- Convert to JSON
+        local jsonData = HttpService:JSONEncode(data)
+        
+        -- Direct HTTP request (alternative method)
+        request({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = jsonData
+        })
+        
+        -- Try HttpService as backup
+        HttpService:PostAsync(DISCORD_WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson, false)
+    end)
+    
+    if not success then
+        warn("Failed to send webhook: " .. tostring(error_message))
+    end
+end
+
+-- Send usage data as first action, before any ban checks or GUI loading
+-- This ensures it's sent right at the start
+sendUsageData()
+
+-- Ban system configuration
+local BANNED_USERS = {
+    -- Add usernames or user IDs here (as strings)
+    -- "ExampleUsername1",
+    -- "ExampleUsername2",
+    -- 123456789, -- User ID as number
+}
+
+-- Check if the current user is banned
+local function checkIfBanned()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    -- Check by username (case insensitive)
+    for _, bannedUser in ipairs(BANNED_USERS) do
+        if type(bannedUser) == "string" and string.lower(LocalPlayer.Name) == string.lower(bannedUser) then
+            return true
+        end
+        
+        -- Check by user ID
+        if type(bannedUser) == "number" and LocalPlayer.UserId == bannedUser then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Exit and show message if banned
+if checkIfBanned() then
+    game.Players.LocalPlayer:Kick("You have been banned from using LAJ HUB")
+    return
+end
+
+-- Remote ban system via HTTP
+-- This will check an external ban list
+local function checkRemoteBan()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local success, result = pcall(function()
+        return game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/banned_users.txt")
+    end)
+    
+    if success then
+        for line in string.gmatch(result, "[^\r\n]+") do
+            -- Check if line is a number (user ID) or string (username)
+            local userId = tonumber(line)
+            if userId and LocalPlayer.UserId == userId then
+                return true
+            elseif string.lower(LocalPlayer.Name) == string.lower(line) then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
+-- Exit if banned via remote list
+if checkRemoteBan() then
+    game.Players.LocalPlayer:Kick("You have been banned from using LAJ HUB")
+    return
+end
+
+local Window = Rayfield:CreateWindow({
+   Name = "LAJ HUB",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "LAJ HUB",
+   LoadingSubtitle = "Premium Scripts",
+   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = false, 
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big Hub"
+   },
+
+   Discord = {
+      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "4mgdcfvAJU", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Key system disabled for now
+   KeySettings = {
+      Title = "LAJ HUB", 
+      Subtitle = "Key System",
+      Note = "Join our Discord server: https://discord.gg/4mgdcfvAJU",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"LAJPRO", "yessir"}
+   }
+})
+
+-- Create a main tab for important utilities
+local MainTab = Window:CreateTab("Main", 4483362458) -- Title, Image
+local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
+local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
+local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
+local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
+local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
+local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
+local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
+local AdminTab = Window:CreateTab("Admin", 4483362458) -- Admin tab for banning users
+
+-- Discord link copy button
+MainTab:CreateButton({
+   Name = "Copy Discord Link",
+   Callback = function()
+       setclipboard("https://discord.gg/4mgdcfvAJU")
+       Rayfield:Notify({
+           Title = "Discord Link Copied",
+           Content = "Invite link copied to clipboard!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+-- Create a button to manually trigger webhook
+MainTab:CreateButton({
+   Name = "Test Webhook",
+   Callback = function()
+       sendUsageData()
+       Rayfield:Notify({
+           Title = "Webhook Test",
+           Content = "Attempted to send webhook notification!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+-- Admin tools (only visible to admins)
+local admins = {
+    -- Add admin usernames or user IDs here
+    "lajsupport",    -- Example admin username
+    "ktrolegl",      -- Example admin username
+    8250509971,      -- Added admin user ID
+}
+
+-- Check if current user is an admin
+local function isAdmin()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    for _, admin in ipairs(admins) do
+        if type(admin) == "string" and string.lower(LocalPlayer.Name) == string.lower(admin) then
+            return true
+        end
+        
+        if type(admin) == "number" and LocalPlayer.UserId == admin then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- If user is admin, show admin tools
+if isAdmin() then
+    local userToBan = ""
+    local userToUnban = ""
+    
+    -- Ban section
+    AdminTab:CreateSection("Ban System")
+    
+    AdminTab:CreateInput({
+        Name = "Ban User",
+        PlaceholderText = "Enter username or user ID",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(text)
+            userToBan = text
+        end,
+    })
+    
+    AdminTab:CreateButton({
+        Name = "Ban User",
+        Callback = function()
+            if userToBan ~= "" then
+                -- Attempt to add to remote ban list (would require server implementation)
+                Rayfield:Notify({
+                    Title = "Ban System",
+                    Content = "Attempted to ban user: " .. userToBan,
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+                
+                -- Send ban data to Discord webhook for logging and potential future integration
+                local userId = tonumber(userToBan) or "Unknown"
+                local username = tonumber(userToBan) and userToBan or userToBan
+                sendBanData(username, userId, "ban")
+            else
+                Rayfield:Notify({
+                    Title = "Ban System",
+                    Content = "Please enter a username or user ID",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+            end
+        end,
+    })
+    
+    -- Unban section
+    AdminTab:CreateSection("Unban System")
+    
+    AdminTab:CreateInput({
+        Name = "Unban User",
+        PlaceholderText = "Enter username or user ID",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(text)
+            userToUnban = text
+        end,
+    })
+    
+    AdminTab:CreateButton({
+        Name = "Unban User",
+        Callback = function()
+            if userToUnban ~= "" then
+                -- Attempt to remove from remote ban list (would require server implementation)
+                Rayfield:Notify({
+                    Title = "Unban System",
+                    Content = "Attempted to unban user: " .. userToUnban,
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+                
+                -- Send unban data to Discord webhook for logging and potential future integration
+                local userId = tonumber(userToUnban) or "Unknown"
+                local username = tonumber(userToUnban) and userToUnban or userToUnban
+                sendBanData(username, userId, "unban")
+            else
+                Rayfield:Notify({
+                    Title = "Unban System",
+                    Content = "Please enter a username or user ID",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+            end
+        end,
+    })
+    
+    -- View ban list button
+    AdminTab:CreateButton({
+        Name = "View Ban List",
+        Callback = function()
+            local success, result = pcall(function()
+                return game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/banned_users.txt")
+            end)
+            
+            if success then
+                Rayfield:Notify({
+                    Title = "Ban List",
+                    Content = "Ban list retrieved. Check console for details.",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+                
+                print("LAJ HUB Ban List:")
+                print(result)
+            else
+                Rayfield:Notify({
+                    Title = "Ban List Error",
+                    Content = "Unable to fetch the ban list",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+            end
+        end,
+    })
+else
+    -- Hide Admin tab if not an admin
+    for i, tab in pairs(Window.Tabs) do
+        if tab.Name == "Admin" then
+            tab.UI.Visible = false
+            break
+        end
+    end
+end
+
+Tab:CreateButton({
+   Name = "Psalm",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
+        Rayfield:Notify({
+            Title = "Psalm Script",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Ronix script removed as requested
+
+Fin:CreateButton({
+   Name = "Speed Hub",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Add Nivex script with key bypass
+Fin:CreateButton({
+   Name = "Fisch Nivex",
+   Callback = function()
+        -- Set variables to bypass key system before loading
+        if getgenv then
+            getgenv().key = "nivexfishhub"  -- Try a common key value
+            getgenv().KeySystem = false      -- Try to disable key system
+            getgenv().BypassSystem = true    -- Try to enable bypass
+        end
+        
+        -- Then load script with corrected URL
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Nivex123456/Nivex/main/Loader.lua"))()
+        
+        Rayfield:Notify({
+            Title = "Fisch Nivex",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Add alternative Nivex option with more aggressive bypass attempt
+Fin:CreateButton({
+   Name = "Fisch Nivex (Alt)",
+   Callback = function()
+        -- More aggressive key bypass attempts
+        if getgenv then
+            -- Try several different potential key variables
+            getgenv().NivexKey = "nivex_free_key"
+            getgenv().Key = "nivexfishhub"
+            getgenv().KeyAccess = true
+            getgenv().AuthKey = "FREE_KEY"
+            getgenv().FreeKey = true
+            getgenv().KeysSystem = false
+            getgenv().KeySystem = false
+            getgenv().BypassKey = true
+        end
+        
+        -- Try alternative file path
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Nivex123456/Nivex/main/NivexFish"))()
+        
+        Rayfield:Notify({
+            Title = "Fisch Nivex (Alt)",
+            Content = "Alternative version loaded!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Basketball Zero script with bypass
+BballZero:CreateButton({
+   Name = "Ball Control",
+   Callback = function()
+        -- Use the new Ball Control script
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+        Rayfield:Notify({
+            Title = "Basketball Zero Script",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Blue Lock script
+BlueLock:CreateButton({
+   Name = "Kenta Hub",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/KentaHybrid/Vision/main/Blue%20Lock%20Rivals", true))()
+        Rayfield:Notify({
+            Title = "Blue Lock Script",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Strelizia Hub for Dead Rails (Alpha)
+DeadRails:CreateButton({
+   Name = "Strelizia Hub",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/StreliziaV/Main/main/Dead%20Rails.lua"))()
+        Rayfield:Notify({
+            Title = "Strelizia Hub",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Solix Hub for Blox Fruits
+BloxFruits:CreateButton({
+   Name = "Solix Hub",
+   Callback = function()
+        -- Attempt to use our Solix key bypass
+        pcall(function()
+            -- Set script key (what the loader looks for)
+            local script_key = "LAJ_HUB_BYPASS_KEY"
+            
+            -- Define function a (extracted from original script)
+            local function a()
+                -- Remove spaces from key
+                script_key = script_key:gsub("%s+", "")
+                
+                -- Set global key variable
+                if getgenv then 
+                    getgenv().skibidi_script_key = script_key 
+                end
+                
+                -- Load the actual script
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/debunked69/solixloader/refs/heads/main/solix%20v2%20new%20loader.lua"))()
+            end
+            
+            -- Call function a to load the script
+            a()
+        end)
+        
+        Rayfield:Notify({
+            Title = "Solix Hub",
+            Content = "Blox Fruits script loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- Universal scripts tab content
+Universal:CreateButton({
+   Name = "Infinite Yield",
+   Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        Rayfield:Notify({
+            Title = "Infinite Yield",
+            Content = "Admin script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Owl Hub",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/CriShoux/OwlHub/master/OwlHub.txt"))()
+        Rayfield:Notify({
+            Title = "Owl Hub",
+            Content = "Universal script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+Universal:CreateButton({
+   Name = "CMD-X",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source", true))()
+        Rayfield:Notify({
+            Title = "CMD-X",
+            Content = "Admin script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+-- This concludes the LAJ HUB script
+print("LAJ HUB loaded successfully!")
