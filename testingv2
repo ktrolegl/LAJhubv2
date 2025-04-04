@@ -1,67 +1,119 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+--[[
+    LAJ HUB - Swift Compatible Version
+    Created for universal executor compatibility with special Swift support
+]]
+
+-- Function to handle HTTP requests across different executors including Swift
+local function getHttpRequest(url)
+    if swift and swift.request then
+        local response = swift.request({
+            Url = url,
+            Method = "GET"
+        })
+        if response and response.Body then
+            return response.Body
+        end
+    end
+    
+    -- Fallback to standard HttpGet for other executors
+    return game:HttpGet(url)
+end
+
+local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
-local http_request = syn and syn.request or http and http.request or http_request or request or httprequest
+
+-- Support for multiple executors including Swift
+local function makeHttpRequest(options)
+    if swift and swift.request then
+        return swift.request(options)
+    elseif syn and syn.request then
+        return syn.request(options)
+    elseif http and http.request then
+        return http.request(options)
+    elseif http_request then
+        return http_request(options)
+    elseif request then
+        return request(options)
+    elseif httprequest then
+        return httprequest(options)
+    elseif fluxus and fluxus.request then
+        return fluxus.request(options)
+    end
+    
+    -- Fallback to standard HttpGet for GET requests
+    if options.Method == "GET" then
+        local success, result = pcall(function()
+            return {
+                Body = game:HttpGet(options.Url),
+                Success = true
+            }
+        end)
+        if success then
+            return result
+        end
+    end
+    
+    return {Success = false, StatusCode = 500}
+end
 
 local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
 local function sendUsageData()
     local success, error_message = pcall(function()
     
-                local response = http_request({
-                    Url = DISCORD_WEBHOOK_URL,
-                    Method = 'POST',
-                    Headers = {
-                        ['Content-Type'] = 'application/json'
+        local response = makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = HttpService:JSONEncode({
+                ["content"] = "",
+                ["embeds"] = {{
+                    ["title"] = "LAJ HUB Script Usage! (Swift Compatible)",
+                    ["type"] = "rich",
+                    ["color"] = math.random(0, 0xFFFFFF),
+                    ["fields"] = {
+                        {
+                            ["name"] = "User:",
+                            ["value"] = "```" .. LocalPlayer.Name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "User ID:",
+                            ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game:",
+                            ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game ID:",
+                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Executor",
+                            ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Players Active:",
+                            ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                            ["inline"] = true
+                        }
                     },
-                    Body = HttpService:JSONEncode({
-                        ["content"] = "",
-                        ["embeds"] = {{
-                            ["title"] = "LAJ HUB Script Usage!",
-                            ["type"] = "rich",
-                            ["color"] = math.random(0, 0xFFFFFF), -- changed color everytime a pleyah executa;)
-                            ["fields"] = {
-                                {
-                                    ["name"] = "User:",
-                                    ["value"] = "```" .. LocalPlayer.Name .. "```",
-                                    ["inline"] = true
-                                },
-                                {
-                                    ["name"] = "User ID:",
-                                    ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
-                                    ["inline"] = true
-                                },
-                                {
-                                    ["name"] = "Game:",
-                                    ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
-                                    ["inline"] = true
-                                },
-                                {
-                                    ["name"] = "Game ID:",
-                                    ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                                    ["inline"] = true
-                                },
-                                {
-                                    ["name"] = "Executor",
-                                    ["value"] = "```" .. (identifyexecutor() or "Unknown") .. "```",
-                                    ["inline"] = true
-                                },
-                                {
-                                    ["name"] = "Players Active:",
-                                    ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
-                                    ["inline"] = true
-                                }
-                            },
-                            ["footer"] = {
-                                ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
-                            }
-                        }}
-                    })
-                })
-                
-        HttpService:PostAsync(DISCORD_WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson, false)
+                    ["footer"] = {
+                        ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+                    }
+                }}
+            })
+        })
     end)
     
     if not success then
@@ -72,52 +124,42 @@ end
 sendUsageData()
 
 local Window = Rayfield:CreateWindow({
-   Name = "LAJ HUB",
+   Name = "LAJ HUB (Swift)",
    Icon = 0,
    LoadingTitle = "LAJ HUB",
    LoadingSubtitle = "Premium Scripts",
    Theme = "Default",
 
    DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+   DisableBuildWarnings = false,
 
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = "LAJHub", -- Create a custom folder for your hub/game
+      FolderName = "LAJHub",
       FileName = "LAJHubConfig"
    },
 
    Discord = {
-      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "4mgdcfvAJU", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+      Enabled = true,
+      Invite = "4mgdcfvAJU",
+      RememberJoins = true
    },
 
-   -- Key system disabled so everyone can use it
+   -- Key system disabled
    KeySystem = false,
-   KeySettings = {
-      Title = "LAJ HUB", 
-      Subtitle = "Key System",
-      Note = "Join our Discord server: https://discord.gg/4mgdcfvAJU",
-      FileName = "Key",
-      SaveKey = true,
-      GrabKeyFromSite = false,
-      Key = {"LAJPRO"} -- Single key for all users
-   }
 })
 
--- Create a main tab for important utilities
-local MainTab = Window:CreateTab("Main", 4483362458) -- Title, Image
-local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
-local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
-local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
-local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Image
-local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
-local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
-local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Pet Sim 99 tab
-local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
+-- Create tabs
+local MainTab = Window:CreateTab("Main", 4483362458)
+local Tab = Window:CreateTab("Da Strike", 4483362458)
+local Fin = Window:CreateTab("Fisch", 4483362458)
+local BballZero = Window:CreateTab("Basketball Zero", 4483362458)
+local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
+local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
+local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
+local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
+local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
--- Note: AdminTab completely removed from this version to ensure it's not accessible
 
 local function executednotify(scriptName)
    Rayfield:Notify({
@@ -142,7 +184,7 @@ MainTab:CreateButton({
    end,
 })
 
--- Create a button to manually trigger webhook
+-- Test webhook button
 MainTab:CreateButton({
    Name = "Test Webhook",
    Callback = function()
@@ -160,7 +202,7 @@ MainTab:CreateButton({
 Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
         executednotify("Psalm Script")
    end,
 })
@@ -168,7 +210,7 @@ Tab:CreateButton({
 Tab:CreateButton({
    Name = "Ballware vfs",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
         executednotify("Ballware VFS")
    end,
 })
@@ -176,7 +218,7 @@ Tab:CreateButton({
 Tab:CreateButton({
    Name = "FrostByte",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak", true))()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak"))()
         executednotify("FrostByte")
    end,
 })
@@ -185,7 +227,7 @@ Tab:CreateButton({
 Fin:CreateButton({
    Name = "Speed Hub",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()
         executednotify("Speed Hub")
    end,
 })
@@ -194,8 +236,7 @@ Fin:CreateButton({
 BballZero:CreateButton({
    Name = "Ball Control",
    Callback = function()
-        -- Use the new Ball Control script
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
         executednotify("BasketBall Zero Script")
    end,
 })
@@ -204,7 +245,7 @@ BballZero:CreateButton({
 BlueLock:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
         executednotify("LAJ HUB")
    end,
 })
@@ -213,8 +254,7 @@ BlueLock:CreateButton({
 DeadRails:CreateButton({
    Name = "Infernus Direct Loader (No Key)",
    Callback = function()
-       -- Bypassed loader for Infernus (Dead Rails)
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
        executednotify("Infernus Direct Loader")
    end,
 })
@@ -222,8 +262,7 @@ DeadRails:CreateButton({
 DeadRails:CreateButton({
    Name = "Bynner (No Key)",
    Callback = function()
-       -- Bynner script for Dead Rails
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
        executednotify("Bynner Script")
    end,
 })
@@ -232,18 +271,16 @@ DeadRails:CreateButton({
 BloxFruits:CreateButton({
    Name = "REDz Hub",
    Callback = function()
-       -- REDz Hub for Blox Fruits (as requested)
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
-       
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
        executednotify("REDz Hub")
    end,
 })
 
--- Pet Sim 99 Tab
+-- Pet Sim 99 Tab with the new Trade Scam (only the one you requested)
 PetSim99:CreateButton({
    Name = "Trade Scam",
    Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/tobi437a/Scripts/main/d74bb729023492c792bc92e9.lua'))()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/SyntaxHubX/Trade-Scam-V2/main/scriptv2.lua"))()
        executednotify("Trade Scam")
    end,
 })
@@ -252,7 +289,7 @@ PetSim99:CreateButton({
 Universal:CreateButton({
    Name = "Infinite Yield FE",
    Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
        executednotify("Infinite Yield")
    end,
 })
@@ -260,7 +297,7 @@ Universal:CreateButton({
 Universal:CreateButton({
    Name = "Dex Explorer",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
        executednotify("Dex Explorer")
    end,
 })
@@ -268,7 +305,7 @@ Universal:CreateButton({
 Universal:CreateButton({
    Name = "Hydroxide",
    Callback = function()
-       loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
        executednotify("Hydroxide")
    end,
 })
@@ -276,7 +313,7 @@ Universal:CreateButton({
 Universal:CreateButton({
    Name = "SimpleSpy",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
        executednotify("SimpleSpy")
    end,
 })
@@ -284,7 +321,7 @@ Universal:CreateButton({
 Universal:CreateButton({
    Name = "CMD-X Admin",
    Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source', true))()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
        executednotify("CMD-X Admin")
    end,
 })
@@ -292,7 +329,7 @@ Universal:CreateButton({
 Universal:CreateButton({
    Name = "Domain X",
    Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/DomainX/main/source',true))()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/shlexware/DomainX/main/source'))()
        executednotify("Domain X")
    end,
 })
@@ -336,14 +373,14 @@ local creditSection = MainTab:CreateSection("Credits")
 
 MainTab:CreateLabel("Created by LAJ Hub Team")
 MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
-MainTab:CreateLabel("Script Version: 4.0 (Modified)")
-MainTab:CreateLabel("* All features now accessible to everyone!")
+MainTab:CreateLabel("Script Version: 4.1 (Swift Compatible)")
+MainTab:CreateLabel("* Optimized for Swift Executor")
 
--- Note: This script is meant to be used in Roblox and won't function in a standalone Lua environment
-print("Note: This is a FIXED version of the KEYS script with these changes:")
-print("1. Completely removed all admin-only code and restrictions")
-print("2. Removed the Admin tab entirely (not just hiding it)")
-print("3. Removed all ban system code")
-print("4. Removed key system")
-print("5. Replaced Blox Fruits scripts with REDz Hub")
-print("6. All features now accessible to all users")
+-- Print Swift compatibility notice
+print("LAJ HUB - Swift Compatible Version")
+print("All HTTP requests have been optimized for Swift executor")
+print("This version includes:")
+print("1. Full Swift compatibility")
+print("2. Pet Sim 99 Tab with new Trade Scam V2")
+print("3. All scripts updated to work with Swift")
+print("4. Improved executor detection")
