@@ -12,86 +12,89 @@
     This script is intended for educational purposes only.
 ]]
 
--- Alternative key system implementation with buttons
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-
-local Window = OrionLib:MakeWindow({
-    Name = "LAJ HUB | Key System", 
-    HidePremium = true,
-    SaveConfig = false, 
-    ConfigFolder = "LAJHubOrion",
-    IntroEnabled = false
-})
-
 -- Variables
 local KeyInput = ""
 local CorrectKey = "LAJ2025"
 local DiscordLink = "https://discord.com/invite/4mgdcfvAJU"
 
--- Create the key system tab
-local KeyTab = Window:MakeTab({
-    Name = "Key System",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
+-- Load the Rayfield UI Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Create the key system window
+local Window = Rayfield:CreateWindow({
+    Name = "LAJ HUB | Key System",
+    LoadingTitle = "LAJ HUB",
+    LoadingSubtitle = "by LAJ Team",
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil,
+        FileName = nil
+    },
+    Discord = {
+        Enabled = false,
+        Invite = nil,
+        RememberJoins = false
+    },
+    KeySystem = false,
 })
 
+-- Create the key tab
+local KeyTab = Window:CreateTab("Key System", 4483345998)
+
 -- Add description
-KeyTab:AddParagraph("LAJ HUB Key System", "Enter the key to access the hub")
+local KeyParagraph = KeyTab:CreateParagraph({Title = "LAJ HUB Key System", Content = "Enter the key to access the hub"})
 
 -- Create the text input
-KeyTab:AddTextbox({
+local KeyBox = KeyTab:CreateInput({
     Name = "Enter Key",
-    Default = "",
-    TextDisappear = true,
-    Callback = function(Value)
-        KeyInput = Value
-    end  
+    PlaceholderText = "Enter the key...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        KeyInput = Text
+    end,
 })
 
 -- Create verification button
-KeyTab:AddButton({
+local VerifyButton = KeyTab:CreateButton({
     Name = "Verify Key",
     Callback = function()
         if KeyInput == CorrectKey then
-            OrionLib:MakeNotification({
-                Name = "Key System",
+            Rayfield:Notify({
+                Title = "Key System",
                 Content = "Correct key! Loading scripts...",
-                Image = "rbxassetid://4483345998",
-                Time = 3
+                Duration = 3,
+                Image = 4483345998,
             })
             
             -- Close this UI
-            OrionLib:Destroy()
+            Rayfield:Destroy()
             
             -- Small delay to ensure UI is closed
             task.wait(0.5)
             
             -- Load the main script
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/KEYS"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/main/KEYS"))()
         else
-            OrionLib:MakeNotification({
-                Name = "Key System",
+            Rayfield:Notify({
+                Title = "Key System",
                 Content = "Incorrect key! Please try again.",
-                Image = "rbxassetid://4483345998",
-                Time = 3
+                Duration = 3,
+                Image = 4483345998,
             })
         end
-    end    
+    end,
 })
 
 -- Create Discord button
-KeyTab:AddButton({
+local DiscordButton = KeyTab:CreateButton({
     Name = "Join Discord",
     Callback = function()
         setclipboard(DiscordLink)
-        OrionLib:MakeNotification({
-            Name = "Discord Link",
+        Rayfield:Notify({
+            Title = "Discord Link",
             Content = "Discord link copied to clipboard!",
-            Image = "rbxassetid://4483345998",
-            Time = 3
+            Duration = 3,
+            Image = 4483345998,
         })
-    end    
+    end,
 })
-
--- Add instructions
-KeyTab:AddParagraph("How to get key:", "1. Copy Discord link with button above\n2. Join our Discord server\n3. Get the key in the #key channel\n4. Enter key here and verify")
