@@ -331,7 +331,7 @@ local function isAdmin()
     return false
 end
 
--- If user is admin, show admin tools
+-- Only admins can access admin tools
 if isAdmin() then
     local userToBan = ""
     local userToUnban = ""
