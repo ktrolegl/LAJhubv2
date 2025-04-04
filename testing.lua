@@ -3,6 +3,12 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- Discord webhook for usage tracking
 local DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1357395980299014224/VHqKfAsLDqGIUQ5icewgv8YX-SblIBEsmG3NmaMG83y68hQcGrfTEXmdW0rCy0P98zuz"
 
+-- Time trial variables
+local TrialTimeInSeconds = 300 -- 5 minutes (300 seconds)
+local TrialStartTime = os.time()
+local KeyRequired = false
+local KeyVerified = false
+
 -- Function to send usage data to Discord webhook with improved error handling
 local function sendUsageData()
     local success, error_message = pcall(function()
@@ -46,7 +52,6 @@ local function sendUsageData()
                             value = gameName,
                             inline = true
                         },
-                        {
                             name = "Game ID",
                             value = tostring(game.PlaceId),
                             inline = true
@@ -89,8 +94,148 @@ local function sendUsageData()
     end
 end
 
--- Send usage data as first action
+-- Function to send ban data to Discord webhook with improved error handling
+local function sendBanData(username, userId, action)
+    local success, error_message = pcall(function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local HttpService = game:GetService("HttpService")
+        
+        -- Prepare embed data for Discord
+        local data = {
+            content = action == "ban" and "**🚫 User Banned**" or "**✅ User Unbanned**",
+            embeds = {
+                {
+                    title = "LAJ HUB Ban System",
+                    description = action == "ban" and "User banned from LAJ HUB" or "User unbanned from LAJ HUB",
+                    color = action == "ban" and 15548997 or 5763719, -- Red for ban, Green for unban
+                    fields = {
+                        {
+                            name = "Target User",
+                            value = username,
+                            inline = true
+                        },
+                        {
+                            name = "Target User ID",
+                            value = userId or "Unknown",
+                            inline = true
+                        },
+                        {
+                            name = "Admin",
+                            value = LocalPlayer.Name,
+                            inline = true
+                        },
+                        {
+                            name = "Admin ID",
+                            value = tostring(LocalPlayer.UserId),
+                            inline = true
+                        },
+                        {
+                            name = "Action",
+                            value = action == "ban" and "Ban" or "Unban",
+                            inline = true
+                        },
+                        {
+                            name = "Time",
+                            value = os.date("%Y-%m-%d %H:%M:%S"),
+                            inline = true
+                        }
+                    },
+                    timestamp = DateTime.now():ToIsoDate()
+                }
+            }
+        }
+        
+        -- Convert to JSON
+        local jsonData = HttpService:JSONEncode(data)
+        
+        -- Direct HTTP request (alternative method)
+        request({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = jsonData
+        })
+        
+        -- Try HttpService as backup
+        HttpService:PostAsync(DISCORD_WEBHOOK_URL, jsonData, Enum.HttpContentType.ApplicationJson, false)
+    end)
+    
+    if not success then
+        warn("Failed to send webhook: " .. tostring(error_message))
+    end
+end
+
+-- Send usage data as first action, before any ban checks or GUI loading
+-- This ensures it's sent right at the start
 sendUsageData()
+
+-- Ban system configuration
+local BANNED_USERS = {
+    -- Add usernames or user IDs here (as strings)
+    -- "ExampleUsername1",
+    -- "ExampleUsername2",
+    -- 123456789, -- User ID as number
+}
+
+-- Check if the current user is banned
+local function checkIfBanned()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    -- Check by username (case insensitive)
+    for _, bannedUser in ipairs(BANNED_USERS) do
+        if type(bannedUser) == "string" and string.lower(LocalPlayer.Name) == string.lower(bannedUser) then
+            return true
+        end
+        
+        -- Check by user ID
+        if type(bannedUser) == "number" and LocalPlayer.UserId == bannedUser then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Exit and show message if banned
+if checkIfBanned() then
+    game.Players.LocalPlayer:Kick("You have been banned from using LAJ HUB")
+    return
+end
+
+-- Remote ban system via HTTP
+-- This will check an external ban list
+local function checkRemoteBan()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local success, result = pcall(function()
+        return game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/banned_users.txt")
+    end)
+    
+    if success then
+        for line in string.gmatch(result, "[^\r\n]+") do
+            -- Check if line is a number (user ID) or string (username)
+            local userId = tonumber(line)
+            if userId and LocalPlayer.UserId == userId then
+                return true
+            elseif string.lower(LocalPlayer.Name) == string.lower(line) then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
+-- Exit if banned via remote list
+if checkRemoteBan() then
+    game.Players.LocalPlayer:Kick("You have been banned from using LAJ HUB")
+    return
+end
 
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB",
@@ -103,9 +248,9 @@ local Window = Rayfield:CreateWindow({
    DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
 
    ConfigurationSaving = {
-      Enabled = true, 
-      FolderName = "LAJHub", -- Create a custom folder for your hub/game
-      FileName = "LAJHubConfig"
+      Enabled = false, 
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big Hub"
    },
 
    Discord = {
@@ -114,21 +259,77 @@ local Window = Rayfield:CreateWindow({
       RememberJoins = true -- Set this to false to make them join the discord every time they load it up
    },
 
-   -- Modified: Key system disabled so everyone can use it
-   KeySystem = false, -- Disabled key system so everyone can access
+   KeySystem = false, -- Initially false, will be set to true after trial
    KeySettings = {
-      Title = "LAJ HUB Key System", 
-      Subtitle = "Key Required",
-      Note = "",
-      FileName = "LAJHubKey",
+      Title = "LAJ HUB", 
+      Subtitle = "Trial Expired - Enter Key",
+      Note = "Your 5-minute trial has expired. Join our Discord for a key: https://discord.gg/4mgdcfvAJU",
+      FileName = "Key",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = {"LAJPRO"} -- Single key as requested
+      Key = {"LAJPRO", "yessir"}
    }
 })
 
 -- Create a main tab for important utilities
 local MainTab = Window:CreateTab("Main", 4483362458) -- Title, Image
+
+-- Add Discord section to the main tab
+MainTab:CreateSection("Discord")
+
+-- Add Discord invite link with copy button
+MainTab:CreateButton({
+    Name = "Copy Discord Invite Link",
+    Callback = function()
+        -- Copy to clipboard functionality
+        local DiscordLink = "discord.gg/4mgdcfvAJU"
+        setclipboard(DiscordLink)
+        
+        -- Notify user
+        Rayfield:Notify({
+            Title = "Discord Link Copied!",
+            Content = "Discord invite link copied to clipboard: " .. DiscordLink,
+            Duration = 5,
+            Image = 4483362458,
+        })
+    end,
+})
+
+-- Add Join Discord button that opens the web browser
+MainTab:CreateButton({
+    Name = "Join Discord Server",
+    Callback = function()
+        -- Open browser functionality
+        local DiscordURL = "https://discord.gg/4mgdcfvAJU"
+        
+        -- Attempt to open URL
+        local success = pcall(function()
+            if syn and syn.request then
+                syn.request({
+                    Url = DiscordURL,
+                    Method = "GET"
+                })
+            else
+                -- Fallback to other methods that might work in different executors
+                if request then
+                    request({
+                        Url = DiscordURL,
+                        Method = "GET"
+                    })
+                end
+            end
+        end)
+        
+        -- Always show notification with link
+        Rayfield:Notify({
+            Title = "Discord Server",
+            Content = "Join our Discord server: discord.gg/4mgdcfvAJU",
+            Duration = 8,
+            Image = 4483362458,
+        })
+    end,
+})
+
 local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
 local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
 local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
@@ -136,6 +337,7 @@ local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458) -- Title, Imag
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458) -- Dead Rails tab
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458) -- Blox Fruits tab
 local Universal = Window:CreateTab("Universal", 4483362458) -- Universal scripts tab
+local AdminTab = Window:CreateTab("Admin", 4483362458) -- Admin tab for banning users
 
 -- Discord link copy button
 MainTab:CreateButton({
@@ -165,7 +367,176 @@ MainTab:CreateButton({
    end,
 })
 
--- Da Strike Tab scripts
+-- Admin tools (only visible to admins)
+local admins = {
+    -- Add admin usernames or user IDs here
+    "lajsupport",    -- Example admin username
+    "ktrolegl",      -- Example admin username
+    8250509971,      -- LAJ HUB Owner ID
+}
+
+-- Check if current user is an admin
+local function isAdmin()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    for _, admin in ipairs(admins) do
+        if type(admin) == "string" and string.lower(LocalPlayer.Name) == string.lower(admin) then
+            return true
+        end
+        
+        if type(admin) == "number" and LocalPlayer.UserId == admin then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- If user is admin, show admin tools
+if isAdmin() then
+    local userToBan = ""
+    local userToUnban = ""
+    
+    -- Ban section
+    AdminTab:CreateSection("Ban System")
+    
+    AdminTab:CreateInput({
+        Name = "Ban User",
+        PlaceholderText = "Enter username or user ID",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(text)
+            userToBan = text
+        end,
+    })
+    
+    AdminTab:CreateButton({
+        Name = "Ban User",
+        Callback = function()
+            if userToBan ~= "" then
+                -- Attempt to add to remote ban list (would require server implementation)
+                Rayfield:Notify({
+                    Title = "Ban System",
+                    Content = "Attempted to ban user: " .. userToBan,
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+                
+                -- Send ban data to Discord webhook for logging and potential future integration
+                local userId = tonumber(userToBan) or "Unknown"
+                local username = tonumber(userToBan) and userToBan or userToBan
+                sendBanData(username, userId, "ban")
+                
+                -- This would ideally send an HTTP request to update a remote ban list
+                -- For now, it just sends a webhook notification
+            else
+                Rayfield:Notify({
+                    Title = "Ban System",
+                    Content = "Please enter a username or user ID first",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+            end
+        end,
+    })
+    
+    -- Unban section
+    AdminTab:CreateSection("Unban System")
+    
+    AdminTab:CreateInput({
+        Name = "Unban User",
+        PlaceholderText = "Enter username or user ID to unban",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(text)
+            userToUnban = text
+        end,
+    })
+    
+    AdminTab:CreateButton({
+        Name = "Unban User",
+        Callback = function()
+            if userToUnban ~= "" then
+                -- Attempt to remove from remote ban list
+                Rayfield:Notify({
+                    Title = "Unban System",
+                    Content = "Attempted to unban user: " .. userToUnban,
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+                
+                -- Send unban data to Discord webhook for logging and potential future integration
+                local userId = tonumber(userToUnban) or "Unknown"
+                local username = tonumber(userToUnban) and userToUnban or userToUnban
+                sendBanData(username, userId, "unban")
+                
+                -- This would ideally send an HTTP request to update a remote ban list
+                -- For now, it just sends a webhook notification
+            else
+                Rayfield:Notify({
+                    Title = "Unban System",
+                    Content = "Please enter a username or user ID first",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+            end
+        end,
+    })
+    
+    -- Ban list viewer section
+    AdminTab:CreateSection("Ban List")
+    
+    AdminTab:CreateButton({
+        Name = "View Ban List",
+        Callback = function()
+            -- Attempt to fetch the remote ban list
+            local success, result = pcall(function()
+                return game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/banned_users.txt")
+            end)
+            
+            if success and result then
+                -- Format the ban list for display
+                local banListFormatted = "Current Ban List:\n"
+                local count = 0
+                
+                for line in string.gmatch(result, "[^\r\n]+") do
+                    if line ~= "" then
+                        banListFormatted = banListFormatted .. "• " .. line .. "\n"
+                        count = count + 1
+                    end
+                end
+                
+                if count == 0 then
+                    banListFormatted = "Ban list is empty"
+                end
+                
+                -- Display the ban list
+                Rayfield:Notify({
+                    Title = "Ban List",
+                    Content = banListFormatted,
+                    Duration = 10, -- Longer duration to read the list
+                    Image = 4483362458,
+                })
+            else
+                -- Failed to fetch ban list
+                Rayfield:Notify({
+                    Title = "Ban List Error",
+                    Content = "Unable to fetch the ban list",
+                    Duration = 3,
+                    Image = 4483362458,
+                })
+            end
+        end,
+    })
+else
+    -- Hide Admin tab if not an admin
+    for i, tab in pairs(Window.Tabs) do
+        if tab.Name == "Admin" then
+            tab.UI.Visible = false
+            break
+        end
+    end
+end
+
 Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
@@ -180,249 +551,398 @@ Tab:CreateButton({
 })
 
 Tab:CreateButton({
-   Name = "STRIKE CAM (Must be in spectator mode)",
+   Name = "Ballware vfs",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/laawwr/STRIKE-CAM/main/main.lua", true))()
-       Rayfield:Notify({
-           Title = "STRIKE CAM",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
+        Rayfield:Notify({
+            Title = "Ballware VFS",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
 Tab:CreateButton({
-   Name = "AAALA V3 Admin Commands",
+   Name = "FrostByte",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/laawwr/aaa/main/main.lua", true))()
-       Rayfield:Notify({
-           Title = "AAALA V3",
-           Content = "Admin commands loaded!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak", true))()
+        Rayfield:Notify({
+            Title = "FrostByte",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
--- Fisch Tab
-Fin:CreateButton({
-   Name = "Autofarm",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/Lvdzz/Loadstring/main/Fish-Sim.lua"))() 
-       Rayfield:Notify({
-           Title = "Fisch Autofarm",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
+
+-- Ronix script removed as requested
 
 Fin:CreateButton({
-   Name = "2nd Autofarm",
+   Name = "Speed Hub",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/XIpio/Scripts-1/main/Lua/Fishing%20Simulator%20Autofarm.lua"))()
-       Rayfield:Notify({
-           Title = "2nd Fisch Autofarm",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
--- Basketball Zero Tab
+
+-- Basketball Zero script with bypass
 BballZero:CreateButton({
-   Name = "Auto Green",
+   Name = "Ball Control V2",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/FlamingDrey/Basketball-Zero-AutoGreen/main/BBZ%20Auto%20Green.lua"))()
-       Rayfield:Notify({
-           Title = "Basketball Zero Auto Green",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+        -- Load Ball Control V2 script with error handling
+        local success, errorMsg = pcall(function()
+            local scriptContent = game:HttpGet("https://raw.githubusercontent.com/RedJDark/SCRIPTSS/refs/heads/main/BALLCONTROL.txt", true)
+            loadstring(scriptContent)()
+        end)
+        
+        if success then
+            Rayfield:Notify({
+                Title = "Basketball Zero Script",
+                Content = "Ball Control V2 loaded successfully!",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            -- Report error if loading failed
+            Rayfield:Notify({
+                Title = "Script Error",
+                Content = "Failed to load Ball Control V2: " .. tostring(errorMsg):sub(1, 50),
+                Duration = 5,
+                Image = 4483362458,
+            })
+            print("Script error: " .. tostring(errorMsg))
+        end
    end,
 })
 
--- Blue Lock Tab
+-- Original Ball Control (as backup)
+BballZero:CreateButton({
+   Name = "Original Ball Control",
+   Callback = function()
+        -- Use the original Ball Control script that was working before
+        local success, errorMsg = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+        end)
+        
+        if success then
+            Rayfield:Notify({
+                Title = "Basketball Zero Script",
+                Content = "Original Ball Control loaded successfully!",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "Script Error",
+                Content = "Failed to load Original Ball Control: " .. tostring(errorMsg):sub(1, 50),
+                Duration = 5,
+                Image = 4483362458,
+            })
+        end
+   end,
+})
+            Rayfield:Notify({
+                Title = "Basketball Zero Script",
+                Content = "Original Ball Control loaded successfully!",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "Script Error",
+                Content = "Failed to load Original Ball Control: " .. tostring(errorMsg):sub(1, 50),
+                Duration = 5,
+                Image = 4483362458,
+            })
+        end
+   end,
+})
+        else
+            -- Report error if loading failed
+            Rayfield:Notify({
+                Title = "Script Error",
+                Content = "Failed to load Ball Control V2: " .. tostring(errorMsg):sub(1, 50),
+                Duration = 5,
+                Image = 4483362458,
+            })
+            print("Script error: " .. tostring(errorMsg))
+        end
+   end,
+})
+
+-- Original Ball Control (as backup)
+BballZero:CreateButton({
+   Name = "Original Ball Control",
+   Callback = function()
+        -- Use the original Ball Control script that was working before
+        local success, errorMsg = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+        end)
+        
+        if success then
+            Rayfield:Notify({
+                Title = "Basketball Zero Script",
+                Content = "Original Ball Control loaded successfully!",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "Script Error",
+                Content = "Failed to load Original Ball Control: " .. tostring(errorMsg):sub(1, 50),
+                Duration = 5,
+                Image = 4483362458,
+            })
+        end
+   end,
+})
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            -- Report error if loading failed
+            Rayfield:Notify({
+                Title = "Script Error",
+                Content = "Failed to load Ball Control V2: " .. tostring(errorMsg):sub(1, 50),
+                Duration = 5,
+                Image = 4483362458,
+            })
+            print("Script error: " .. tostring(errorMsg))
+        end
+   end,
+})
+
+-- Blue Lock Rivals script
 BlueLock:CreateButton({
-   Name = "Speed",
+   Name = "LAJ HUB",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/blulockauto/refs/heads/main/speed.lua"))()
-       Rayfield:Notify({
-           Title = "Blue Lock Speed",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/nocturnal631/Main/refs/heads/main/Control%20ball%20script"))()
+        Rayfield:Notify({
+            Title = "Blue Lock Rivals Script",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
-BlueLock:CreateButton({
-   Name = "Auto",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/blulockauto/refs/heads/main/auto2.lua"))()
-       Rayfield:Notify({
-           Title = "Blue Lock Auto",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
--- Dead Rails Tab
+-- Dead Rails scripts
 DeadRails:CreateButton({
-   Name = "Infernus Direct Loader (No Key)",
+   Name = "Strelizia Hub",
    Callback = function()
-       -- Bypassed loader for Infernus (Dead Rails)
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
-       
-       Rayfield:Notify({
-           Title = "Infernus Direct Loader",
-           Content = "Loading Infernus script (no key required)...",
-           Duration = 5,
-           Image = 4483362458,
-       })
+        -- Load Strelizia script for Dead Rails
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua", true))()
+        Rayfield:Notify({
+            Title = "Dead Rails Script",
+            Content = "Strelizia script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
-DeadRails:CreateButton({
-   Name = "Bynner (No Key)",
-   Callback = function()
-       -- Bynner script for Dead Rails
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
-       
-       Rayfield:Notify({
-           Title = "Bynner Script",
-           Content = "Loading Bynner script (no key required)...",
-           Duration = 5,
-           Image = 4483362458,
-       })
-   end,
-})
-
--- Blox Fruits Tab
+-- Blox Fruits scripts
 BloxFruits:CreateButton({
-   Name = "Solix Hub (No Key)",
+   Name = "Solix Hub",
    Callback = function()
-       -- Key bypass for Solix Hub (Blox Fruits)
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/solix_key_bypass/refs/heads/main/solix_key_bypass.lua"))()
-       
-       Rayfield:Notify({
-           Title = "Solix Hub",
-           Content = "Loading Solix Hub (no key required)...",
-           Duration = 5,
-           Image = 4483362458,
-       })
+        -- Use specialized loader for Solix Hub to bypass key system
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/solix_key_bypass.lua"))()
+        Rayfield:Notify({
+            Title = "Blox Fruits Script",
+            Content = "Solix Hub loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
 BloxFruits:CreateButton({
-   Name = "MTriet Hub (No Key)",
+   Name = "Blox Fruits Script",
    Callback = function()
-       -- MTriet Hub for Blox Fruits
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bfscripts/refs/heads/main/mtriet_hub.lua"))()
-       
-       Rayfield:Notify({
-           Title = "MTriet Hub",
-           Content = "Loading MTriet Hub (no key required)...",
-           Duration = 5,
-           Image = 4483362458,
-       })
+        -- Direct loadstring to Blox Fruits script
+        loadstring(game:HttpGet("https://pastefy.app/ACOX6D6h/raw"))()
+        Rayfield:Notify({
+            Title = "Blox Fruits Script",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
--- Universal Tab
+-- Universal scripts section with safe scripts
 Universal:CreateButton({
-   Name = "Infinite Yield FE",
+   Name = "Infinite Yield",
    Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-       Rayfield:Notify({
-           Title = "Infinite Yield",
-           Content = "Admin commands loaded!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+        Rayfield:Notify({
+            Title = "Infinite Yield",
+            Content = "Admin commands loaded!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
-Universal:CreateButton({
-   Name = "Dex Explorer",
-   Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
-       Rayfield:Notify({
-           Title = "Dex Explorer",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
+-- Function to check if trial time has expired and prompt for key
+local function checkTrialTime()
+    if not KeyVerified and not KeyRequired then
+        local currentTime = os.time()
+        local elapsedTime = currentTime - TrialStartTime
+        
+        if elapsedTime >= TrialTimeInSeconds then
+            KeyRequired = true
+            
+            -- Notify user that trial has expired
+            Rayfield:Notify({
+                Title = "Trial Expired",
+                Content = "Your 5-minute trial has expired. Please enter your key to continue using LAJ HUB.",
+                Duration = 8,
+                Image = 4483362458,
+            })
+            
+            -- Create key system UI
+
+                -- Add clipboard copy function for the Discord link
+                local function copyDiscordLink()
+                    local DiscordLink = "discord.gg/4mgdcfvAJU"
+                    setclipboard(DiscordLink)
+                    
+                    -- Notify user
+                    Rayfield:Notify({
+                        Title = "Discord Link Copied!",
+                        Content = "Discord invite link copied to clipboard: " .. DiscordLink,
+                        Duration = 5,
+                        Image = 4483362458,
+                    })
+                end
+
+            task.spawn(function()
+                -- Wait a moment to ensure notification is seen
+                task.wait(2)
+                
+                -- Destroy current window
+                Rayfield:Destroy()
+                
+                -- Recreate window with key system enabled
+                local KeyWindow = Rayfield:CreateWindow({
+
+                -- After key window creation, add copy Discord button
+                task.wait(1) -- Wait for key window to fully load
+                local KeyTab = KeyWindow:CreateTab("Get Key", 4483362458)
+                
+                KeyTab:CreateSection("Need a Key?")
+                
+                KeyTab:CreateButton({
+                    Name = "Copy Discord Invite Link",
+                    Callback = function()
+                        -- Copy to clipboard functionality
+                        local DiscordLink = "discord.gg/4mgdcfvAJU"
+                        setclipboard(DiscordLink)
+                        
+                        -- Notify user
+                        Rayfield:Notify({
+                            Title = "Discord Link Copied!",
+                            Content = "Discord invite link copied to clipboard: " .. DiscordLink,
+                            Duration = 5,
+                            Image = 4483362458,
+                        })
+                    end,
+                })
+
+                    Name = "LAJ HUB",
+                    Icon = 0,
+                    LoadingTitle = "LAJ HUB",
+                    LoadingSubtitle = "Trial Expired",
+                    Theme = "Default",
+                    
+                    DisableRayfieldPrompts = false,
+                    DisableBuildWarnings = false,
+                    
+                    ConfigurationSaving = {
+                        Enabled = false,
+                        FolderName = nil,
+                        FileName = "Big Hub"
+                    },
+                    
+                    Discord = {
+                        Enabled = true,
+                        Invite = "4mgdcfvAJU",
+                        RememberJoins = true
+                    },
+                    
+                    KeySystem = true, -- Now we enable the key system
+                    KeySettings = {
+                        Title = "LAJ HUB",
+                        Subtitle = "Trial Expired - Enter Key",
+                        Note = "Your 5-minute trial has expired. Join our Discord for a key: https://discord.gg/4mgdcfvAJU",
+                        FileName = "Key",
+                        SaveKey = true,
+                        GrabKeyFromSite = false,
+                        Key = {"LAJPRO", "yessir"}
+                    }
+                })
+                
+                -- After successful key verification, reload the full script
+                KeyVerified = true
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub.lua"))()
+            end)
+        else
+            -- Show remaining trial time
+            local remainingSeconds = TrialTimeInSeconds - elapsedTime
+            local minutes = math.floor(remainingSeconds / 60)
+            local seconds = remainingSeconds % 60
+            
+            Rayfield:Notify({
+                Title = "LAJ HUB Trial",
+                Content = string.format("Trial time remaining: %d:%02d", minutes, seconds),
+                Duration = 3,
+                Image = 4483362458,
+            })
+            
+            -- Check again after 60 seconds
+            task.delay(60, checkTrialTime)
+        end
+    end
+end
+
+-- Start the trial timer check
+task.spawn(checkTrialTime)
+
+-- Create timer display in the main tab
+MainTab:CreateSection("Trial Status")
+
+MainTab:CreateButton({
+    Name = "Check Remaining Trial Time",
+    Callback = function()
+        if not KeyVerified and not KeyRequired then
+            local currentTime = os.time()
+            local elapsedTime = currentTime - TrialStartTime
+            local remainingSeconds = math.max(0, TrialTimeInSeconds - elapsedTime)
+            local minutes = math.floor(remainingSeconds / 60)
+            local seconds = remainingSeconds % 60
+            
+            Rayfield:Notify({
+                Title = "LAJ HUB Trial",
+                Content = string.format("Trial time remaining: %d:%02d", minutes, seconds),
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "LAJ HUB",
+                Content = "You have full access to LAJ HUB!",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+    end,
 })
-
-Universal:CreateButton({
-   Name = "Hydroxide",
-   Callback = function()
-       loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
-       Rayfield:Notify({
-           Title = "Hydroxide",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
-Universal:CreateButton({
-   Name = "SimpleSpy",
-   Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
-       Rayfield:Notify({
-           Title = "SimpleSpy",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
-Universal:CreateButton({
-   Name = "CMD-X Admin",
-   Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source', true))()
-       Rayfield:Notify({
-           Title = "CMD-X Admin",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
-Universal:CreateButton({
-   Name = "Domain X",
-   Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/DomainX/main/source',true))()
-       Rayfield:Notify({
-           Title = "Domain X",
-           Content = "Script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
--- Credit section
-local creditSection = MainTab:CreateSection("Credits")
-
-MainTab:CreateLabel("Created by LAJ Hub Team")
-MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
-MainTab:CreateLabel("Script Version: 2.1.0 (Modified)")
-MainTab:CreateLabel("* All features now accessible to everyone!")
-
--- Note: This script is meant to be used in Roblox and won't function in a standalone Lua environment
-print("Note: This is a modified LAJ HUB script that has been modified to:")
-print("1. Remove the key system - no key required to use")
-print("2. Make all features accessible to all users (no admin restrictions)")
