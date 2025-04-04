@@ -89,10 +89,8 @@ local function sendUsageData()
     end
 end
 
--- Send usage data right at the start
+-- Send usage data as first action
 sendUsageData()
-
--- Note: Ban system has been removed to allow all users to access the script
 
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB",
@@ -105,9 +103,9 @@ local Window = Rayfield:CreateWindow({
    DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
 
    ConfigurationSaving = {
-      Enabled = false, 
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Big Hub"
+      Enabled = true, 
+      FolderName = "LAJHub", -- Create a custom folder for your hub/game
+      FileName = "LAJHubConfig"
    },
 
    Discord = {
@@ -116,15 +114,16 @@ local Window = Rayfield:CreateWindow({
       RememberJoins = true -- Set this to false to make them join the discord every time they load it up
    },
 
-   KeySystem = false, -- Key system disabled for now
+   -- Modified: Key system disabled so everyone can use it
+   KeySystem = false, -- Disabled key system so everyone can access
    KeySettings = {
-      Title = "LAJ HUB", 
-      Subtitle = "Key System",
-      Note = "Join our Discord server: https://discord.gg/4mgdcfvAJU",
-      FileName = "Key",
+      Title = "LAJ HUB Key System", 
+      Subtitle = "Key Required",
+      Note = "",
+      FileName = "LAJHubKey",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = {"LAJPRO", "yessir"}
+      Key = {"LAJPRO"} -- Single key as requested
    }
 })
 
@@ -166,16 +165,27 @@ MainTab:CreateButton({
    end,
 })
 
--- Da Strike Scripts
-Tab:CreateSection("Da Strike Scripts")
+-- Da Strike Tab scripts
+Tab:CreateButton({
+   Name = "Psalm",
+   Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
+        Rayfield:Notify({
+            Title = "Psalm Script",
+            Content = "Script loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
 
 Tab:CreateButton({
-   Name = "Kill Aura",
+   Name = "STRIKE CAM (Must be in spectator mode)",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/Dastrikekill.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/laawwr/STRIKE-CAM/main/main.lua", true))()
        Rayfield:Notify({
-           Title = "Kill Aura",
-           Content = "Kill Aura script loaded successfully!",
+           Title = "STRIKE CAM",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
@@ -183,41 +193,26 @@ Tab:CreateButton({
 })
 
 Tab:CreateButton({
-   Name = "Super Speed [J]",
+   Name = "AAALA V3 Admin Commands",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/Dastrikesuper.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/laawwr/aaa/main/main.lua", true))()
        Rayfield:Notify({
-           Title = "Super Speed",
-           Content = "Super Speed script loaded successfully!",
+           Title = "AAALA V3",
+           Content = "Admin commands loaded!",
            Duration = 3,
            Image = 4483362458,
        })
    end,
 })
 
-Tab:CreateButton({
-   Name = "Inf Air [K]",
-   Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/Dastrikeinf.lua"))()
-       Rayfield:Notify({
-           Title = "Infinite Air",
-           Content = "Infinite Air script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
--- Fisch Scripts
-Fin:CreateSection("Fisch Scripts")
-
+-- Fisch Tab
 Fin:CreateButton({
-   Name = "Teleport to Shark",
+   Name = "Autofarm",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/Fisch1.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Lvdzz/Loadstring/main/Fish-Sim.lua"))() 
        Rayfield:Notify({
-           Title = "Teleport to Shark",
-           Content = "Teleport to Shark script loaded successfully!",
+           Title = "Fisch Autofarm",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
@@ -225,131 +220,129 @@ Fin:CreateButton({
 })
 
 Fin:CreateButton({
-   Name = "Teleport to Whale",
+   Name = "2nd Autofarm",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/Fisch2.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/XIpio/Scripts-1/main/Lua/Fishing%20Simulator%20Autofarm.lua"))()
        Rayfield:Notify({
-           Title = "Teleport to Whale",
-           Content = "Teleport to Whale script loaded successfully!",
+           Title = "2nd Fisch Autofarm",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
    end,
 })
 
--- Basketball Zero Scripts
-BballZero:CreateSection("Basketball Zero Scripts")
-
+-- Basketball Zero Tab
 BballZero:CreateButton({
    Name = "Auto Green",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/Autogreen.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/FlamingDrey/Basketball-Zero-AutoGreen/main/BBZ%20Auto%20Green.lua"))()
        Rayfield:Notify({
-           Title = "Auto Green",
-           Content = "Auto Green script loaded successfully!",
+           Title = "Basketball Zero Auto Green",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
    end,
 })
 
-BballZero:CreateButton({
-   Name = "Shoot from anywhere",
+-- Blue Lock Tab
+BlueLock:CreateButton({
+   Name = "Speed",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/Bbno.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/blulockauto/refs/heads/main/speed.lua"))()
        Rayfield:Notify({
-           Title = "Shoot from Anywhere",
-           Content = "Shoot from Anywhere script loaded successfully!",
+           Title = "Blue Lock Speed",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
    end,
 })
-
--- Blue Lock Rivals Scripts
-BlueLock:CreateSection("Blue Lock Rivals Scripts")
 
 BlueLock:CreateButton({
-   Name = "Auto Goal",
+   Name = "Auto",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/AutoGoalBlue.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/blulockauto/refs/heads/main/auto2.lua"))()
        Rayfield:Notify({
-           Title = "Auto Goal",
-           Content = "Auto Goal script loaded successfully!",
+           Title = "Blue Lock Auto",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
    end,
 })
 
--- Dead Rails Scripts
-DeadRails:CreateSection("Dead Rails [Alpha] Scripts")
+-- Dead Rails Tab
+DeadRails:CreateButton({
+   Name = "Infernus Direct Loader (No Key)",
+   Callback = function()
+       -- Bypassed loader for Infernus (Dead Rails)
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
+       
+       Rayfield:Notify({
+           Title = "Infernus Direct Loader",
+           Content = "Loading Infernus script (no key required)...",
+           Duration = 5,
+           Image = 4483362458,
+       })
+   end,
+})
 
 DeadRails:CreateButton({
-   Name = "Silent Aim",
+   Name = "Bynner (No Key)",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/DeadRailsSilent.lua"))()
+       -- Bynner script for Dead Rails
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
+       
        Rayfield:Notify({
-           Title = "Silent Aim",
-           Content = "Silent Aim script loaded successfully!",
-           Duration = 3,
+           Title = "Bynner Script",
+           Content = "Loading Bynner script (no key required)...",
+           Duration = 5,
            Image = 4483362458,
        })
    end,
 })
 
-DeadRails:CreateButton({
-   Name = "ESP",
-   Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/DeadRailsESP.lua"))()
-       Rayfield:Notify({
-           Title = "ESP",
-           Content = "ESP script loaded successfully!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
--- Blox Fruits Scripts
-BloxFruits:CreateSection("Blox Fruits Scripts")
-
+-- Blox Fruits Tab
 BloxFruits:CreateButton({
-   Name = "Neva Hub",
+   Name = "Solix Hub (No Key)",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/VEZ2/NEVAHUB/main/2"))()
+       -- Key bypass for Solix Hub (Blox Fruits)
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/solix_key_bypass/refs/heads/main/solix_key_bypass.lua"))()
+       
        Rayfield:Notify({
-           Title = "Neva Hub",
-           Content = "Neva Hub script loaded successfully!",
-           Duration = 3,
+           Title = "Solix Hub",
+           Content = "Loading Solix Hub (no key required)...",
+           Duration = 5,
            Image = 4483362458,
        })
    end,
 })
 
 BloxFruits:CreateButton({
-   Name = "Hoho Hub",
+   Name = "MTriet Hub (No Key)",
    Callback = function()
-       loadstring(game:HttpGet('https://raw.githubusercontent.com/acsu123/HOHO_H/main/Loading_UI'))()
+       -- MTriet Hub for Blox Fruits
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/bfscripts/refs/heads/main/mtriet_hub.lua"))()
+       
        Rayfield:Notify({
-           Title = "Hoho Hub",
-           Content = "Hoho Hub script loaded successfully!",
-           Duration = 3,
+           Title = "MTriet Hub",
+           Content = "Loading MTriet Hub (no key required)...",
+           Duration = 5,
            Image = 4483362458,
        })
    end,
 })
 
--- Universal Scripts
-Universal:CreateSection("Universal Scripts")
-
+-- Universal Tab
 Universal:CreateButton({
-   Name = "Infinite Yield",
+   Name = "Infinite Yield FE",
    Callback = function()
        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
        Rayfield:Notify({
            Title = "Infinite Yield",
-           Content = "Infinite Yield loaded successfully!",
+           Content = "Admin commands loaded!",
            Duration = 3,
            Image = 4483362458,
        })
@@ -357,12 +350,38 @@ Universal:CreateButton({
 })
 
 Universal:CreateButton({
-   Name = "Fly Script",
+   Name = "Dex Explorer",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/UniversalFly.lua"))()
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
        Rayfield:Notify({
-           Title = "Fly Script",
-           Content = "Fly script loaded successfully!",
+           Title = "Dex Explorer",
+           Content = "Script loaded successfully!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Hydroxide",
+   Callback = function()
+       loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+       Rayfield:Notify({
+           Title = "Hydroxide",
+           Content = "Script loaded successfully!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+Universal:CreateButton({
+   Name = "SimpleSpy",
+   Callback = function()
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+       Rayfield:Notify({
+           Title = "SimpleSpy",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
@@ -372,12 +391,38 @@ Universal:CreateButton({
 Universal:CreateButton({
    Name = "CMD-X Admin",
    Callback = function()
-       loadstring(game:HttpGet("https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source", true))()
+       loadstring(game:HttpGet('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source', true))()
        Rayfield:Notify({
            Title = "CMD-X Admin",
-           Content = "CMD-X Admin loaded successfully!",
+           Content = "Script loaded successfully!",
            Duration = 3,
            Image = 4483362458,
        })
    end,
 })
+
+Universal:CreateButton({
+   Name = "Domain X",
+   Callback = function()
+       loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/DomainX/main/source',true))()
+       Rayfield:Notify({
+           Title = "Domain X",
+           Content = "Script loaded successfully!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+-- Credit section
+local creditSection = MainTab:CreateSection("Credits")
+
+MainTab:CreateLabel("Created by LAJ Hub Team")
+MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
+MainTab:CreateLabel("Script Version: 2.1.0 (Modified)")
+MainTab:CreateLabel("* All features now accessible to everyone!")
+
+-- Note: This script is meant to be used in Roblox and won't function in a standalone Lua environment
+print("Note: This is a modified LAJ HUB script that has been modified to:")
+print("1. Remove the key system - no key required to use")
+print("2. Make all features accessible to all users (no admin restrictions)")
