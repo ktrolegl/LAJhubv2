@@ -1,0 +1,1 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))() local Library = KavoUi loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/main/LAJHub_Simple.lua"))()
