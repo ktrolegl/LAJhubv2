@@ -254,7 +254,7 @@ local Window = Rayfield:CreateWindow({
       RememberJoins = true -- Set this to false to make them join the discord every time they load it up
    },
 
-   KeySystem = true, -- Key system enabled
+   KeySystem = false, -- Key system disabled for now
    KeySettings = {
       Title = "LAJ HUB", 
       Subtitle = "Key System",
@@ -515,18 +515,7 @@ Tab:CreateButton({
 })
 
 
-Fin:CreateButton({
-   Name = "Ronix",
-   Callback = function()
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/a3c501e721ec4d66a864cc2276c0f4e9.lua"))()
-        Rayfield:Notify({
-            Title = "Ronix",
-            Content = "Script loaded successfully!",
-            Duration = 3,
-            Image = 4483362458,
-        })
-   end,
-})
+-- Ronix script removed as requested
 
 Fin:CreateButton({
    Name = "Speed Hub",
@@ -545,11 +534,11 @@ Fin:CreateButton({
 BballZero:CreateButton({
    Name = "Ball Control",
    Callback = function()
-        -- Use the specialized loader for Ball Control to bypass key system
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/ball_control_modified.lua"))()
+        -- Use the new Ball Control script
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
         Rayfield:Notify({
             Title = "Basketball Zero Script",
-            Content = "Ball Control loaded with key bypass!",
+            Content = "New Ball Control loaded successfully!",
             Duration = 3,
             Image = 4483362458,
         })
@@ -594,6 +583,20 @@ BloxFruits:CreateButton({
         Rayfield:Notify({
             Title = "Blox Fruits Script",
             Content = "Solix Hub loaded with key bypass!",
+            Duration = 3,
+            Image = 4483362458,
+        })
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Blox Fruits Script",
+   Callback = function()
+        -- Direct loadstring to Blox Fruits script
+        loadstring(game:HttpGet("https://pastefy.app/ACOX6D6h/raw"))()
+        Rayfield:Notify({
+            Title = "Blox Fruits Script",
+            Content = "Script loaded successfully!",
             Duration = 3,
             Image = 4483362458,
         })
