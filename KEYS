@@ -1,5 +1,66 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+-- Discord webhook for usage tracking
+local DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1357395980299014224/VHqKfAsLDqGIUQ5icewgv8YX-SblIBEsmG3NmaMG83y68hQcGrfTEXmdW0rCy0P98zuz"
+
+-- Function to send usage data to Discord webhook
+local function sendUsageData()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local HttpService = game:GetService("HttpService")
+    
+    -- Get device info and game info
+    local deviceInfo = {}
+    pcall(function() deviceInfo.executor = identifyexecutor() or "Unknown" end)
+    
+    -- Prepare embed data for Discord
+    local data = {
+        embeds = {
+            {
+                title = "LAJ HUB Script Usage",
+                description = "A player has executed LAJ HUB",
+                color = 5814783, -- Purple color
+                fields = {
+                    {
+                        name = "User",
+                        value = LocalPlayer.Name,
+                        inline = true
+                    },
+                    {
+                        name = "User ID",
+                        value = tostring(LocalPlayer.UserId),
+                        inline = true
+                    },
+                    {
+                        name = "Game",
+                        value = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
+                        inline = true
+                    },
+                    {
+                        name = "Game ID",
+                        value = tostring(game.PlaceId),
+                        inline = true
+                    },
+                    {
+                        name = "Executor",
+                        value = deviceInfo.executor or "Unknown",
+                        inline = true
+                    }
+                },
+                timestamp = DateTime.now():ToIsoDate()
+            }
+        }
+    }
+    
+    -- Send data to webhook
+    pcall(function()
+        HttpService:PostAsync(DISCORD_WEBHOOK_URL, HttpService:JSONEncode(data))
+    end)
+end
+
+-- Try to send usage data (this will not stop script execution if it fails)
+pcall(sendUsageData)
+
 -- Ban system configuration
 local BANNED_USERS = {
     -- Add usernames or user IDs here (as strings)
