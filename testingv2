@@ -13,10 +13,13 @@ local Mouse = Player:GetMouse()
 
 -- Configuration (edit these)
 local VALID_KEYS = {
-    "LAJPRO123",
+    "LAJPRO",
     "LAJVIP456",
     "LAJHUB789"
 }
+
+-- Discord server link
+local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
 -- Discord webhook for tracking (reversed for obfuscation)
 local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
@@ -133,8 +136,8 @@ local function createKeySystemUI()
     -- Main Frame
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 400, 0, 250)
-    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+    MainFrame.Size = UDim2.new(0, 400, 0, 300) -- Slightly increased height for Discord button
+    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
@@ -361,11 +364,54 @@ local function createKeySystemUI()
     StatusLabel.Font = Enum.Font.SourceSans
     StatusLabel.Parent = ContentArea
     
+    -- Discord information
+    local DiscordLabel = Instance.new("TextLabel")
+    DiscordLabel.Name = "DiscordLabel"
+    DiscordLabel.Size = UDim2.new(1, 0, 0, 20)
+    DiscordLabel.Position = UDim2.new(0, 0, 0, 155)
+    DiscordLabel.BackgroundTransparency = 1
+    DiscordLabel.Text = "Need a key? Join our Discord:"
+    DiscordLabel.TextColor3 = Theme.TextColor
+    DiscordLabel.TextSize = 14
+    DiscordLabel.Font = Enum.Font.SourceSans
+    DiscordLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DiscordLabel.Parent = ContentArea
+    
+    -- Discord Button
+    local DiscordButton = Instance.new("TextButton")
+    DiscordButton.Name = "DiscordButton"
+    DiscordButton.Size = UDim2.new(1, 0, 0, 35)
+    DiscordButton.Position = UDim2.new(0, 0, 0, 180)
+    DiscordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord color
+    DiscordButton.Text = "Join Discord for Key"
+    DiscordButton.TextColor3 = Theme.TextColor
+    DiscordButton.TextSize = 16
+    DiscordButton.Font = Enum.Font.SourceSansBold
+    DiscordButton.BorderSizePixel = 0
+    DiscordButton.Parent = ContentArea
+    
+    local DiscordCorner = Instance.new("UICorner")
+    DiscordCorner.CornerRadius = UDim.new(0, 4)
+    DiscordCorner.Parent = DiscordButton
+    
+    DiscordButton.MouseButton1Click:Connect(function()
+        setclipboard(DISCORD_LINK)
+        StatusLabel.Text = "Discord link copied to clipboard!"
+        StatusLabel.TextColor3 = Theme.SuccessColor
+        
+        -- Create a notification
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Discord Link Copied",
+            Text = "Paste it in your browser to join!",
+            Duration = 5
+        })
+    end)
+    
     -- Toggle (like in the image)
     local ToggleLabel = Instance.new("TextLabel")
     ToggleLabel.Name = "ToggleLabel"
     ToggleLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ToggleLabel.Position = UDim2.new(0, 0, 0, 155)
+    ToggleLabel.Position = UDim2.new(0, 0, 0, 225)
     ToggleLabel.BackgroundTransparency = 1
     ToggleLabel.Text = "This is a toggle!"
     ToggleLabel.TextColor3 = Theme.TextColor
@@ -377,7 +423,7 @@ local function createKeySystemUI()
     local ToggleButton = Instance.new("Frame")
     ToggleButton.Name = "ToggleButton"
     ToggleButton.Size = UDim2.new(0, 40, 0, 20)
-    ToggleButton.Position = UDim2.new(1, -40, 0, 155)
+    ToggleButton.Position = UDim2.new(1, -40, 0, 225)
     ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     ToggleButton.BorderSizePixel = 0
     ToggleButton.Parent = ContentArea
@@ -416,7 +462,7 @@ local function createKeySystemUI()
     local ColorLabel = Instance.new("TextLabel")
     ColorLabel.Name = "ColorLabel"
     ColorLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ColorLabel.Position = UDim2.new(0, 0, 0, 185)
+    ColorLabel.Position = UDim2.new(0, 0, 0, 255)
     ColorLabel.BackgroundTransparency = 1
     ColorLabel.Text = "Colorpicker"
     ColorLabel.TextColor3 = Theme.TextColor
@@ -428,7 +474,7 @@ local function createKeySystemUI()
     local ColorDisplay = Instance.new("Frame")
     ColorDisplay.Name = "ColorDisplay"
     ColorDisplay.Size = UDim2.new(0, 35, 0, 20)
-    ColorDisplay.Position = UDim2.new(1, -35, 0, 185)
+    ColorDisplay.Position = UDim2.new(1, -35, 0, 255)
     ColorDisplay.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
     ColorDisplay.BorderSizePixel = 0
     ColorDisplay.Parent = ContentArea
@@ -531,6 +577,7 @@ local function createKeySystemUI()
     MainTab.BackgroundTransparency = 1
     KeyInput.BackgroundTransparency = 1
     VerifyButton.BackgroundTransparency = 1
+    DiscordButton.BackgroundTransparency = 1
     Footer.BackgroundTransparency = 1
     FooterCornerFix.BackgroundTransparency = 1
     
@@ -544,6 +591,7 @@ local function createKeySystemUI()
         MainTab.BackgroundTransparency = i
         KeyInput.BackgroundTransparency = i
         VerifyButton.BackgroundTransparency = i
+        DiscordButton.BackgroundTransparency = i
         Footer.BackgroundTransparency = i
         FooterCornerFix.BackgroundTransparency = i
     end
