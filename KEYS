@@ -3,12 +3,6 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- Discord webhook for usage tracking
 local DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1357395980299014224/VHqKfAsLDqGIUQ5icewgv8YX-SblIBEsmG3NmaMG83y68hQcGrfTEXmdW0rCy0P98zuz"
 
--- Time trial variables
-local TrialTimeInSeconds = 300 -- 5 minutes (300 seconds)
-local TrialStartTime = os.time()
-local KeyRequired = false
-local KeyVerified = false
-
 -- Function to send usage data to Discord webhook with improved error handling
 local function sendUsageData()
     local success, error_message = pcall(function()
@@ -52,6 +46,7 @@ local function sendUsageData()
                             value = gameName,
                             inline = true
                         },
+                        {
                             name = "Game ID",
                             value = tostring(game.PlaceId),
                             inline = true
@@ -259,11 +254,11 @@ local Window = Rayfield:CreateWindow({
       RememberJoins = true -- Set this to false to make them join the discord every time they load it up
    },
 
-   KeySystem = false, -- Initially false, will be set to true after trial
+   KeySystem = false, -- Key system disabled for now
    KeySettings = {
       Title = "LAJ HUB", 
-      Subtitle = "Trial Expired - Enter Key",
-      Note = "Your 5-minute trial has expired. Join our Discord for a key: https://discord.gg/4mgdcfvAJU",
+      Subtitle = "Key System",
+      Note = "Join our Discord server: https://discord.gg/4mgdcfvAJU",
       FileName = "Key",
       SaveKey = true,
       GrabKeyFromSite = false,
@@ -273,63 +268,6 @@ local Window = Rayfield:CreateWindow({
 
 -- Create a main tab for important utilities
 local MainTab = Window:CreateTab("Main", 4483362458) -- Title, Image
-
--- Add Discord section to the main tab
-MainTab:CreateSection("Discord")
-
--- Add Discord invite link with copy button
-MainTab:CreateButton({
-    Name = "Copy Discord Invite Link",
-    Callback = function()
-        -- Copy to clipboard functionality
-        local DiscordLink = "discord.gg/4mgdcfvAJU"
-        setclipboard(DiscordLink)
-        
-        -- Notify user
-        Rayfield:Notify({
-            Title = "Discord Link Copied!",
-            Content = "Discord invite link copied to clipboard: " .. DiscordLink,
-            Duration = 5,
-            Image = 4483362458,
-        })
-    end,
-})
-
--- Add Join Discord button that opens the web browser
-MainTab:CreateButton({
-    Name = "Join Discord Server",
-    Callback = function()
-        -- Open browser functionality
-        local DiscordURL = "https://discord.gg/4mgdcfvAJU"
-        
-        -- Attempt to open URL
-        local success = pcall(function()
-            if syn and syn.request then
-                syn.request({
-                    Url = DiscordURL,
-                    Method = "GET"
-                })
-            else
-                -- Fallback to other methods that might work in different executors
-                if request then
-                    request({
-                        Url = DiscordURL,
-                        Method = "GET"
-                    })
-                end
-            end
-        end)
-        
-        -- Always show notification with link
-        Rayfield:Notify({
-            Title = "Discord Server",
-            Content = "Join our Discord server: discord.gg/4mgdcfvAJU",
-            Duration = 8,
-            Image = 4483362458,
-        })
-    end,
-})
-
 local Tab = Window:CreateTab("Da Strike", 4483362458) -- Title, Image
 local Fin = Window:CreateTab("Fisch", 4483362458) -- Title, Image
 local BballZero = Window:CreateTab("Basketball Zero", 4483362458) -- Title, Image
@@ -372,7 +310,7 @@ local admins = {
     -- Add admin usernames or user IDs here
     "lajsupport",    -- Example admin username
     "ktrolegl",      -- Example admin username
-    8250509971,      -- LAJ HUB Owner ID
+    8250509971,      -- Added admin user ID
 }
 
 -- Check if current user is an admin
@@ -592,131 +530,18 @@ Fin:CreateButton({
    end,
 })
 
-
 -- Basketball Zero script with bypass
 BballZero:CreateButton({
-   Name = "Ball Control V2",
+   Name = "Ball Control",
    Callback = function()
-        -- Load Ball Control V2 script with error handling
-        local success, errorMsg = pcall(function()
-            local scriptContent = game:HttpGet("https://raw.githubusercontent.com/RedJDark/SCRIPTSS/refs/heads/main/BALLCONTROL.txt", true)
-            loadstring(scriptContent)()
-        end)
-        
-        if success then
-            Rayfield:Notify({
-                Title = "Basketball Zero Script",
-                Content = "Ball Control V2 loaded successfully!",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            -- Report error if loading failed
-            Rayfield:Notify({
-                Title = "Script Error",
-                Content = "Failed to load Ball Control V2: " .. tostring(errorMsg):sub(1, 50),
-                Duration = 5,
-                Image = 4483362458,
-            })
-            print("Script error: " .. tostring(errorMsg))
-        end
-   end,
-})
-
--- Original Ball Control (as backup)
-BballZero:CreateButton({
-   Name = "Original Ball Control",
-   Callback = function()
-        -- Use the original Ball Control script that was working before
-        local success, errorMsg = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-        end)
-        
-        if success then
-            Rayfield:Notify({
-                Title = "Basketball Zero Script",
-                Content = "Original Ball Control loaded successfully!",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "Script Error",
-                Content = "Failed to load Original Ball Control: " .. tostring(errorMsg):sub(1, 50),
-                Duration = 5,
-                Image = 4483362458,
-            })
-        end
-   end,
-})
-            Rayfield:Notify({
-                Title = "Basketball Zero Script",
-                Content = "Original Ball Control loaded successfully!",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "Script Error",
-                Content = "Failed to load Original Ball Control: " .. tostring(errorMsg):sub(1, 50),
-                Duration = 5,
-                Image = 4483362458,
-            })
-        end
-   end,
-})
-        else
-            -- Report error if loading failed
-            Rayfield:Notify({
-                Title = "Script Error",
-                Content = "Failed to load Ball Control V2: " .. tostring(errorMsg):sub(1, 50),
-                Duration = 5,
-                Image = 4483362458,
-            })
-            print("Script error: " .. tostring(errorMsg))
-        end
-   end,
-})
-
--- Original Ball Control (as backup)
-BballZero:CreateButton({
-   Name = "Original Ball Control",
-   Callback = function()
-        -- Use the original Ball Control script that was working before
-        local success, errorMsg = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-        end)
-        
-        if success then
-            Rayfield:Notify({
-                Title = "Basketball Zero Script",
-                Content = "Original Ball Control loaded successfully!",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "Script Error",
-                Content = "Failed to load Original Ball Control: " .. tostring(errorMsg):sub(1, 50),
-                Duration = 5,
-                Image = 4483362458,
-            })
-        end
-   end,
-})
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            -- Report error if loading failed
-            Rayfield:Notify({
-                Title = "Script Error",
-                Content = "Failed to load Ball Control V2: " .. tostring(errorMsg):sub(1, 50),
-                Duration = 5,
-                Image = 4483362458,
-            })
-            print("Script error: " .. tostring(errorMsg))
-        end
+        -- Use the new Ball Control script
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+        Rayfield:Notify({
+            Title = "Basketball Zero Script",
+            Content = "New Ball Control loaded successfully!",
+            Duration = 3,
+            Image = 4483362458,
+        })
    end,
 })
 
@@ -736,13 +561,13 @@ BlueLock:CreateButton({
 
 -- Dead Rails scripts
 DeadRails:CreateButton({
-   Name = "Strelizia Hub",
+   Name = "Infernus",
    Callback = function()
-        -- Load Strelizia script for Dead Rails
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua", true))()
+        -- Use the specialized loader for Infernus to bypass key system
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/infernus_direct_loader.lua"))()
         Rayfield:Notify({
             Title = "Dead Rails Script",
-            Content = "Strelizia script loaded successfully!",
+            Content = "Infernus loaded with key bypass!",
             Duration = 3,
             Image = 4483362458,
         })
@@ -790,159 +615,4 @@ Universal:CreateButton({
             Image = 4483362458,
         })
    end,
-})
-
--- Function to check if trial time has expired and prompt for key
-local function checkTrialTime()
-    if not KeyVerified and not KeyRequired then
-        local currentTime = os.time()
-        local elapsedTime = currentTime - TrialStartTime
-        
-        if elapsedTime >= TrialTimeInSeconds then
-            KeyRequired = true
-            
-            -- Notify user that trial has expired
-            Rayfield:Notify({
-                Title = "Trial Expired",
-                Content = "Your 5-minute trial has expired. Please enter your key to continue using LAJ HUB.",
-                Duration = 8,
-                Image = 4483362458,
-            })
-            
-            -- Create key system UI
-
-                -- Add clipboard copy function for the Discord link
-                local function copyDiscordLink()
-                    local DiscordLink = "discord.gg/4mgdcfvAJU"
-                    setclipboard(DiscordLink)
-                    
-                    -- Notify user
-                    Rayfield:Notify({
-                        Title = "Discord Link Copied!",
-                        Content = "Discord invite link copied to clipboard: " .. DiscordLink,
-                        Duration = 5,
-                        Image = 4483362458,
-                    })
-                end
-
-            task.spawn(function()
-                -- Wait a moment to ensure notification is seen
-                task.wait(2)
-                
-                -- Destroy current window
-                Rayfield:Destroy()
-                
-                -- Recreate window with key system enabled
-                local KeyWindow = Rayfield:CreateWindow({
-
-                -- After key window creation, add copy Discord button
-                task.wait(1) -- Wait for key window to fully load
-                local KeyTab = KeyWindow:CreateTab("Get Key", 4483362458)
-                
-                KeyTab:CreateSection("Need a Key?")
-                
-                KeyTab:CreateButton({
-                    Name = "Copy Discord Invite Link",
-                    Callback = function()
-                        -- Copy to clipboard functionality
-                        local DiscordLink = "discord.gg/4mgdcfvAJU"
-                        setclipboard(DiscordLink)
-                        
-                        -- Notify user
-                        Rayfield:Notify({
-                            Title = "Discord Link Copied!",
-                            Content = "Discord invite link copied to clipboard: " .. DiscordLink,
-                            Duration = 5,
-                            Image = 4483362458,
-                        })
-                    end,
-                })
-
-                    Name = "LAJ HUB",
-                    Icon = 0,
-                    LoadingTitle = "LAJ HUB",
-                    LoadingSubtitle = "Trial Expired",
-                    Theme = "Default",
-                    
-                    DisableRayfieldPrompts = false,
-                    DisableBuildWarnings = false,
-                    
-                    ConfigurationSaving = {
-                        Enabled = false,
-                        FolderName = nil,
-                        FileName = "Big Hub"
-                    },
-                    
-                    Discord = {
-                        Enabled = true,
-                        Invite = "4mgdcfvAJU",
-                        RememberJoins = true
-                    },
-                    
-                    KeySystem = true, -- Now we enable the key system
-                    KeySettings = {
-                        Title = "LAJ HUB",
-                        Subtitle = "Trial Expired - Enter Key",
-                        Note = "Your 5-minute trial has expired. Join our Discord for a key: https://discord.gg/4mgdcfvAJU",
-                        FileName = "Key",
-                        SaveKey = true,
-                        GrabKeyFromSite = false,
-                        Key = {"LAJPRO", "yessir"}
-                    }
-                })
-                
-                -- After successful key verification, reload the full script
-                KeyVerified = true
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub.lua"))()
-            end)
-        else
-            -- Show remaining trial time
-            local remainingSeconds = TrialTimeInSeconds - elapsedTime
-            local minutes = math.floor(remainingSeconds / 60)
-            local seconds = remainingSeconds % 60
-            
-            Rayfield:Notify({
-                Title = "LAJ HUB Trial",
-                Content = string.format("Trial time remaining: %d:%02d", minutes, seconds),
-                Duration = 3,
-                Image = 4483362458,
-            })
-            
-            -- Check again after 60 seconds
-            task.delay(60, checkTrialTime)
-        end
-    end
-end
-
--- Start the trial timer check
-task.spawn(checkTrialTime)
-
--- Create timer display in the main tab
-MainTab:CreateSection("Trial Status")
-
-MainTab:CreateButton({
-    Name = "Check Remaining Trial Time",
-    Callback = function()
-        if not KeyVerified and not KeyRequired then
-            local currentTime = os.time()
-            local elapsedTime = currentTime - TrialStartTime
-            local remainingSeconds = math.max(0, TrialTimeInSeconds - elapsedTime)
-            local minutes = math.floor(remainingSeconds / 60)
-            local seconds = remainingSeconds % 60
-            
-            Rayfield:Notify({
-                Title = "LAJ HUB Trial",
-                Content = string.format("Trial time remaining: %d:%02d", minutes, seconds),
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "LAJ HUB",
-                Content = "You have full access to LAJ HUB!",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
 })
