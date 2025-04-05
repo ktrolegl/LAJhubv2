@@ -7,12 +7,13 @@ local HttpService = game:GetService("HttpService")
 local Player = Players.LocalPlayer
 
 -- Secure webhook URL (obfuscated and rate-limited)
-local WEBHOOK_URL = string.reverse("kWx8nsHbiVuEbibE393E5nQrOlEzMA7pYmnFnmxZ6aRHypHtrW/fAVbK5kqdBhdLB/1164273408659117531/skoohbew/ipa/moc.drocsid//:sptth")
+local WEBHOOK_URL = string.reverse("vU0M0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijiArT7j8xqGH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
 
 -- Rate limiting variables to prevent webhook abuse (max 1 request per 5 minutes)
 local lastWebhookTime = 0
 local WEBHOOK_COOLDOWN = 300 -- 5 minutes in seconds
 -- Function to log ban/kick events via webhook with rate limiting
+    
 local function logBanEvent(reason)
     -- Rate limiting check
     local currentTime = os.time()
@@ -34,7 +35,8 @@ local function logBanEvent(reason)
         -- Update the timestamp for rate limiting
         lastWebhookTime = currentTime
         
-        request({
+        -- Use makeHttpRequest instead of request for better compatibility
+        makeHttpRequest({
             Url = WEBHOOK_URL,
             Method = "POST",
             Headers = {
@@ -80,18 +82,6 @@ local function logBanEvent(reason)
                     ["footer"] = {
                         ["text"] = "Ban/Kick Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
                     }
-                }}
-            })
-
-
-
-        })
-    end)
-    
-    if not success then
-        warn("Failed to send ban webhook: " .. tostring(error_message))
-    end
-end
                 }}
             })
         })
@@ -213,7 +203,7 @@ local function makeHttpRequest(options)
     return {Success = false, StatusCode = 500}
 end
 
-local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
+local DISCORD_WEBHOOK_URL = string.reverse("vU0M0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijiArT7j8xqGH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
 
 local function sendUsageData()
     if not game then return end -- Skip in non-Roblox environment
