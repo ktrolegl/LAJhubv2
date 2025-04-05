@@ -1,11 +1,13 @@
--- LAJ HUB Key System - Modern UI
--- Custom UI key verification with GitHub tracking
+-- LAJ HUB Key System with Enhanced Webhook Functionality
+-- Combines key verification system with advanced webhook tracking
+-- Created for GitHub deployment
 
 -- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 -- Variables
 local Player = Players.LocalPlayer
@@ -26,14 +28,39 @@ local VALID_KEYS = {
 -- Discord server link
 local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
--- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
+-- Webhook URLs for tracking (reversed for obfuscation)
+local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
+local USER_COUNT_WEBHOOK_URL = "https://discord.com/api/webhooks/1357978591928782933/2HF0z8dfhWcXjbPQwhTcCPrTkSPX-Eu2WP15-jNCAngiLbW5YODPsA835wVkucjya_MN"
 
 -- GitHub script URL (where your main script is hosted)
 local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
 
+-- Initialize user counter and last webhook time
+local userCounter = 0
+local lastWebhookTime = 0
+local WEBHOOK_COOLDOWN = 300 -- 5 minutes cooldown
+
 -- Request function for different executors
-local request = syn and syn.request or http and http.request or http_request or request or httprequest
+local function makeHttpRequest(options)
+    -- For Swift executor
+    if swift and swift.request then
+        return swift.request(options)
+    end
+    
+    -- For Synapse and others with http/request libraries
+    if syn and syn.request then
+        return syn.request(options)
+    elseif http and http.request then
+        return http.request(options)
+    elseif request then
+        return request(options)
+    elseif HttpService and HttpService.RequestInternal then
+        return HttpService:RequestInternal(options)
+    else
+        warn("No HTTP request function found")
+        return {Success = false, Body = "No HTTP request function available"}
+    end
+end
 
 -- UI Colors
 local Theme = {
@@ -47,60 +74,295 @@ local Theme = {
 
 -- Function to log key usage via webhook
 local function logKeyUsage(key, success)
-    local success, error_message = pcall(function()
-        request({
-            Url = WEBHOOK_URL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{
-                    ["title"] = success and "LAJ HUB Key Used Successfully" or "Failed Key Attempt",
-                    ["color"] = success and 65280 or 16711680,
-                    ["fields"] = {
-                        {
-                            ["name"] = "User",
-                            ["value"] = "```" .. Player.Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "User ID",
-                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Key Used",
-                            ["value"] = "```" .. key .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game",
-                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Executor",
-                            ["value"] = "```" .. (identifyexecutor and identifyexecutor() or "Unknown") .. "```",
-                            ["inline"] = true
-                        }
+    -- Rate limiting check
+    local currentTime = os.time()
+    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        return
+    end
+    
+    local success_pcall, error_message = pcall(function()
+        -- Update the timestamp for rate limiting
+        lastWebhookTime = currentTime
+        
+        -- Prepare webhook data
+        local webhookData = {
+            ["content"] = "",
+            ["embeds"] = {{
+                ["title"] = success and "LAJ HUB Key Used Successfully" or "Failed Key Attempt",
+                ["color"] = success and 65280 or 16711680, -- Green for success, red for failure
+                ["fields"] = {
+                    {
+                        ["name"] = "User",
+                        ["value"] = "```" .. Player.Name .. "```",
+                        ["inline"] = true
                     },
-                    ["footer"] = {
-                        ["text"] = "Key Usage Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
+                    {
+                        ["name"] = "User ID",
+                        ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Key Used",
+                        ["value"] = "```" .. key .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game ID",
+                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Executor",
+                        ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                        ["inline"] = true
                     }
-                }}
-            })
+                },
+                ["footer"] = {
+                    ["text"] = "Key Usage Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
+                }
+            }}
+        }
+        
+        -- Send webhook with proper error handling
+        local jsonData = HttpService:JSONEncode(webhookData)
+        makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = jsonData
+        })
+    end)
+    
+    if not success_pcall then
+        warn("Failed to send key webhook: " .. tostring(error_message))
+    end
+end
+
+-- Function to send usage data to Discord webhook
+local function sendUsageData()
+    -- Calculate current time for rate limiting
+    local currentTime = os.time()
+    
+    -- Rate limit to 1 request per 5 minutes to prevent webhook abuse
+    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        return
+    end
+    
+    -- Increment the user counter
+    userCounter = userCounter + 1
+    
+    -- Safely try to send the webhooks
+    local success, error_message = pcall(function()
+        -- Update the timestamp for rate limiting
+        lastWebhookTime = currentTime
+        
+        -- Prepare the data for the regular usage webhook
+        local webhookData = {
+            ["content"] = "",
+            ["embeds"] = {{
+                ["title"] = "LAJ HUB Script Usage! (Swift Compatible)",
+                ["type"] = "rich",
+                ["color"] = math.random(0, 0xFFFFFF),
+                ["fields"] = {
+                    {
+                        ["name"] = "User:",
+                        ["value"] = "```" .. Player.Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "User ID:",
+                        ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game:",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game ID:",
+                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Executor:",
+                        ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Players Active:",
+                        ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                        ["inline"] = true
+                    }
+                },
+                ["footer"] = {
+                    ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+                }
+            }}
+        }
+        
+        -- Encode the data and send the first webhook
+        local jsonData = HttpService:JSONEncode(webhookData)
+        makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = jsonData
+        })
+        
+        -- Format time for the user count webhook
+        local formattedTime = os.date("%Y-%m-%d %H:%M:%S")
+        
+        -- Prepare data for the user count webhook
+        local countWebhookData = {
+            ["content"] = "",
+            ["embeds"] = {{
+                ["title"] = "🌟 LAJ HUB Usage Statistics 🌟",
+                ["description"] = "**Script has now been used by " .. tostring(userCounter) .. " players!**\n\n*A new player has just executed LAJ HUB*",
+                ["color"] = 0x7289DA, -- Discord blue color
+                ["thumbnail"] = {
+                    ["url"] = "https://i.imgur.com/QV7nVFU.png" -- You can replace with your own logo URL
+                },
+                ["fields"] = {
+                    {
+                        ["name"] = "👤 Latest User",
+                        ["value"] = "```" .. Player.Name .. " (" .. tostring(Player.UserId) .. ")```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🎮 Game",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🔧 Executor",
+                        ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "📊 Total Users",
+                        ["value"] = "```yaml\n" .. tostring(userCounter) .. " Users```",
+                        ["inline"] = false
+                    },
+                    {
+                        ["name"] = "🔄 Daily Activity",
+                        ["value"] = "```diff\n+ New user added to statistics\n+ Counter incremented successfully```",
+                        ["inline"] = false
+                    }
+                },
+                ["footer"] = {
+                    ["text"] = "LAJ HUB Stats • Last Updated: " .. formattedTime,
+                    ["icon_url"] = "https://i.imgur.com/QV7nVFU.png"
+                }
+            }}
+        }
+        
+        -- Encode and send the user count webhook
+        local countJsonData = HttpService:JSONEncode(countWebhookData)
+        makeHttpRequest({
+            Url = USER_COUNT_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = countJsonData
         })
     end)
     
     if not success then
-        warn("Failed to send webhook: " .. tostring(error_message))
+        warn("Failed to send usage webhook: " .. tostring(error_message))
+    end
+end
+
+-- Function to log ban/kick events via webhook
+local function logBanEvent(reason)
+    -- Rate limiting check
+    local currentTime = os.time()
+    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        warn("Rate limit: Not sending webhook notification (cooldown active)")
+        return
+    end
+    
+    -- Check for anti-spam by validating the reason
+    if not reason or reason == "" then
+        reason = "Unknown (No reason provided)"
+    end
+    
+    -- Create a unique identifier for this notification to prevent duplicates
+    local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
+    
+    -- Limit data being sent for privacy and security
+    local success, error_message = pcall(function()
+        -- Update the timestamp for rate limiting
+        lastWebhookTime = currentTime
+        
+        -- Prepare the webhook data
+        local webhookData = {
+            ["content"] = "",
+            ["embeds"] = {{                  
+                ["title"] = "Player Banned/Kicked Alert",
+                ["color"] = 16711680, -- Red color for ban alerts
+                ["fields"] = {
+                    {
+                        ["name"] = "User",
+                        ["value"] = "```" .. Player.Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "User ID",
+                        ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game ID",
+                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Ban/Kick Reason",
+                        ["value"] = "```" .. (reason or "Unknown") .. "```",
+                        ["inline"] = false
+                    },
+                    {
+                        ["name"] = "Notification ID",
+                        ["value"] = "```" .. notificationId .. "```",
+                        ["inline"] = false
+                    }
+                },
+                ["footer"] = {
+                    ["text"] = "Ban/Kick Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
+                }
+            }}
+        }
+        
+        -- Send the webhook
+        local jsonData = HttpService:JSONEncode(webhookData)
+        makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = jsonData
+        })
+    end)
+    
+    if not success then
+        warn("Failed to send ban webhook: " .. tostring(error_message))
     end
 end
 
@@ -123,6 +385,37 @@ local function loadMainScript()
     if not success then
         warn("Failed to load main script: " .. tostring(error_message))
     end
+end
+
+-- Set up kick/ban detection
+local function setupKickDetection()
+    -- Set up event listeners for kick/ban detection
+    Players.PlayerRemoving:Connect(function(player)
+        if player == Player then
+            logBanEvent("Player removed from game (possibly kicked/banned)")
+        end
+    end)
+    
+    -- Hook for kick detection
+    local oldNameCall
+    oldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
+        local args = {...}
+        local method = getnamecallmethod()
+        
+        if method == "Kick" and self == Player then
+            local reason = args[1] or "Unknown"
+            logBanEvent(reason)
+        end
+        
+        return oldNameCall(self, ...)
+    end)
+    
+    -- Monitor teleport failures as they often occur during bans
+    game:GetService("TeleportService").TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+        if player == Player and (teleportResult == Enum.TeleportResult.Banned or teleportResult == Enum.TeleportResult.GameEnded) then
+            logBanEvent("Teleport failed due to ban: " .. errorMessage)
+        end
+    end)
 end
 
 -- Creating UI Elements
@@ -260,50 +553,11 @@ local function createKeySystemUI()
     MinimizeCorner.CornerRadius = UDim.new(0, 4)
     MinimizeCorner.Parent = MinimizeButton
     
-    -- Tab system
-    local TabContainer = Instance.new("Frame")
-    TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(0, 80, 1, -30)
-    TabContainer.Position = UDim2.new(0, 0, 0, 30)
-    TabContainer.BackgroundColor3 = Theme.DarkBackground
-    TabContainer.BorderSizePixel = 0
-    TabContainer.Parent = MainFrame
-    
-    local TabContainerCorner = Instance.new("UICorner")
-    TabContainerCorner.CornerRadius = UDim.new(0, 6)
-    TabContainerCorner.Parent = TabContainer
-    
-    -- Fix tab container corners
-    local TabCornerFix = Instance.new("Frame")
-    TabCornerFix.Name = "TabCornerFix"
-    TabCornerFix.Size = UDim2.new(0.5, 0, 1, 0)
-    TabCornerFix.Position = UDim2.new(0.5, 0, 0, 0)
-    TabCornerFix.BackgroundColor3 = Theme.DarkBackground
-    TabCornerFix.BorderSizePixel = 0
-    TabCornerFix.Parent = TabContainer
-    
-    -- Main Tab
-    local MainTab = Instance.new("TextButton")
-    MainTab.Name = "MainTab"
-    MainTab.Size = UDim2.new(1, 0, 0, 30)
-    MainTab.Position = UDim2.new(0, 0, 0, 10)
-    MainTab.BackgroundColor3 = Theme.AccentColor
-    MainTab.Text = "Tab 1"
-    MainTab.TextColor3 = Theme.TextColor
-    MainTab.TextSize = 14
-    MainTab.Font = Enum.Font.SourceSansBold
-    MainTab.BorderSizePixel = 0
-    MainTab.Parent = TabContainer
-    
-    local MainTabCorner = Instance.new("UICorner")
-    MainTabCorner.CornerRadius = UDim.new(0, 4)
-    MainTabCorner.Parent = MainTab
-    
     -- Content Area
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -90, 1, -40)
-    ContentArea.Position = UDim2.new(0, 85, 0, 35)
+    ContentArea.Size = UDim2.new(1, -20, 1, -40)
+    ContentArea.Position = UDim2.new(0, 10, 0, 35)
     ContentArea.BackgroundTransparency = 1
     ContentArea.BorderSizePixel = 0
     ContentArea.Parent = MainFrame
@@ -363,31 +617,18 @@ local function createKeySystemUI()
     StatusLabel.Size = UDim2.new(1, 0, 0, 20)
     StatusLabel.Position = UDim2.new(0, 0, 0, 125)
     StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Text = ""
+    StatusLabel.Text = "Enter your key above"
     StatusLabel.TextColor3 = Theme.TextColor
     StatusLabel.TextSize = 14
     StatusLabel.Font = Enum.Font.SourceSans
     StatusLabel.Parent = ContentArea
     
-    -- Discord information
-    local DiscordLabel = Instance.new("TextLabel")
-    DiscordLabel.Name = "DiscordLabel"
-    DiscordLabel.Size = UDim2.new(1, 0, 0, 20)
-    DiscordLabel.Position = UDim2.new(0, 0, 0, 155)
-    DiscordLabel.BackgroundTransparency = 1
-    DiscordLabel.Text = "Need a key? Join our Discord:"
-    DiscordLabel.TextColor3 = Theme.TextColor
-    DiscordLabel.TextSize = 14
-    DiscordLabel.Font = Enum.Font.SourceSans
-    DiscordLabel.TextXAlignment = Enum.TextXAlignment.Left
-    DiscordLabel.Parent = ContentArea
-    
-    -- Discord Button
+    -- Discord button
     local DiscordButton = Instance.new("TextButton")
     DiscordButton.Name = "DiscordButton"
     DiscordButton.Size = UDim2.new(1, 0, 0, 35)
-    DiscordButton.Position = UDim2.new(0, 0, 0, 180)
-    DiscordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord color
+    DiscordButton.Position = UDim2.new(0, 0, 0, 155)
+    DiscordButton.BackgroundColor3 = Color3.fromRGB(114, 137, 218) -- Discord color
     DiscordButton.Text = "Join Discord for Key"
     DiscordButton.TextColor3 = Theme.TextColor
     DiscordButton.TextSize = 16
@@ -399,212 +640,130 @@ local function createKeySystemUI()
     DiscordCorner.CornerRadius = UDim.new(0, 4)
     DiscordCorner.Parent = DiscordButton
     
-    DiscordButton.MouseButton1Click:Connect(function()
-        setclipboard(DISCORD_LINK)
-        StatusLabel.Text = "Discord link copied to clipboard!"
-        StatusLabel.TextColor3 = Theme.SuccessColor
-        
-        -- Create a notification
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Discord Link Copied",
-            Text = "Paste it in your browser to join!",
-            Duration = 5
-        })
-    end)
-    
-    -- Toggle (like in the image)
-    local ToggleLabel = Instance.new("TextLabel")
-    ToggleLabel.Name = "ToggleLabel"
-    ToggleLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ToggleLabel.Position = UDim2.new(0, 0, 0, 225)
-    ToggleLabel.BackgroundTransparency = 1
-    ToggleLabel.Text = "This is a toggle!"
-    ToggleLabel.TextColor3 = Theme.TextColor
-    ToggleLabel.TextSize = 14
-    ToggleLabel.Font = Enum.Font.SourceSans
-    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ToggleLabel.Parent = ContentArea
-    
-    local ToggleButton = Instance.new("Frame")
-    ToggleButton.Name = "ToggleButton"
-    ToggleButton.Size = UDim2.new(0, 40, 0, 20)
-    ToggleButton.Position = UDim2.new(1, -40, 0, 225)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    ToggleButton.BorderSizePixel = 0
-    ToggleButton.Parent = ContentArea
-    
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 10)
-    ToggleCorner.Parent = ToggleButton
-    
-    local ToggleCircle = Instance.new("Frame")
-    ToggleCircle.Name = "ToggleCircle"
-    ToggleCircle.Size = UDim2.new(0, 16, 0, 16)
-    ToggleCircle.Position = UDim2.new(0, 2, 0, 2)
-    ToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-    ToggleCircle.BorderSizePixel = 0
-    ToggleCircle.Parent = ToggleButton
-    
-    local ToggleCircleCorner = Instance.new("UICorner")
-    ToggleCircleCorner.CornerRadius = UDim.new(1, 0)
-    ToggleCircleCorner.Parent = ToggleCircle
-    
-    local toggleEnabled = false
-    
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            toggleEnabled = not toggleEnabled
-            
-            local newPosition = toggleEnabled and UDim2.new(1, -18, 0, 2) or UDim2.new(0, 2, 0, 2)
-            local newColor = toggleEnabled and Theme.AccentColor or Color3.fromRGB(60, 60, 60)
-            
-            TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = newPosition}):Play()
-            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = newColor}):Play()
-        end
-    end)
-    
-    -- Color picker (like in the image)
-    local ColorLabel = Instance.new("TextLabel")
-    ColorLabel.Name = "ColorLabel"
-    ColorLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ColorLabel.Position = UDim2.new(0, 0, 0, 255)
-    ColorLabel.BackgroundTransparency = 1
-    ColorLabel.Text = "Colorpicker"
-    ColorLabel.TextColor3 = Theme.TextColor
-    ColorLabel.TextSize = 14
-    ColorLabel.Font = Enum.Font.SourceSans
-    ColorLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ColorLabel.Parent = ContentArea
-    
-    local ColorDisplay = Instance.new("Frame")
-    ColorDisplay.Name = "ColorDisplay"
-    ColorDisplay.Size = UDim2.new(0, 35, 0, 20)
-    ColorDisplay.Position = UDim2.new(1, -35, 0, 255)
-    ColorDisplay.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-    ColorDisplay.BorderSizePixel = 0
-    ColorDisplay.Parent = ContentArea
-    
-    local ColorCorner = Instance.new("UICorner")
-    ColorCorner.CornerRadius = UDim.new(0, 4)
-    ColorCorner.Parent = ColorDisplay
-    
-    -- Footer with credits
-    local Footer = Instance.new("Frame")
-    Footer.Name = "Footer"
-    Footer.Size = UDim2.new(1, 0, 0, 40)
-    Footer.Position = UDim2.new(0, 0, 1, -40)
-    Footer.BackgroundColor3 = Theme.DarkBackground
-    Footer.BorderSizePixel = 0
-    Footer.Parent = MainFrame
-    
-    local FooterCorner = Instance.new("UICorner")
-    FooterCorner.CornerRadius = UDim.new(0, 6)
-    FooterCorner.Parent = Footer
-    
-    -- Fix footer corners
-    local FooterCornerFix = Instance.new("Frame")
-    FooterCornerFix.Name = "FooterCornerFix"
-    FooterCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
-    FooterCornerFix.Position = UDim2.new(0, 0, 0, 0)
-    FooterCornerFix.BackgroundColor3 = Theme.DarkBackground
-    FooterCornerFix.BorderSizePixel = 0
-    FooterCornerFix.Parent = Footer
-    
     -- Credits
-    local CreditsIcon = Instance.new("ImageLabel")
-    CreditsIcon.Name = "CreditsIcon"
-    CreditsIcon.Size = UDim2.new(0, 30, 0, 30)
-    CreditsIcon.Position = UDim2.new(0, 5, 0, 5)
-    CreditsIcon.BackgroundTransparency = 1
-    CreditsIcon.Image = "rbxassetid://3926307971"
-    CreditsIcon.ImageRectOffset = Vector2.new(164, 84)
-    CreditsIcon.ImageRectSize = Vector2.new(36, 36)
-    CreditsIcon.Parent = Footer
+    local CreditsLabel = Instance.new("TextLabel")
+    CreditsLabel.Name = "CreditsLabel"
+    CreditsLabel.Size = UDim2.new(1, 0, 0, 20)
+    CreditsLabel.Position = UDim2.new(0, 0, 1, -25)
+    CreditsLabel.BackgroundTransparency = 1
+    CreditsLabel.Text = "LAJ HUB © 2023-2024 | Swift Compatible"
+    CreditsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    CreditsLabel.TextSize = 12
+    CreditsLabel.Font = Enum.Font.SourceSans
+    CreditsLabel.Parent = ContentArea
     
-    local CreditsText = Instance.new("TextLabel")
-    CreditsText.Name = "CreditsText"
-    CreditsText.Size = UDim2.new(1, -45, 1, 0)
-    CreditsText.Position = UDim2.new(0, 40, 0, 0)
-    CreditsText.BackgroundTransparency = 1
-    CreditsText.Text = "LAJ HUB  |  Created by LAJ Team"
-    CreditsText.TextColor3 = Theme.TextColor
-    CreditsText.TextSize = 14
-    CreditsText.Font = Enum.Font.SourceSans
-    CreditsText.TextXAlignment = Enum.TextXAlignment.Left
-    CreditsText.Parent = Footer
-    
-    -- Button functionality
+    -- Button actions
     VerifyButton.MouseButton1Click:Connect(function()
-        local keyText = KeyInput.Text
+        local key = KeyInput.Text
         
-        if keyText == "" then
-            StatusLabel.Text = "Please enter a key!"
-            StatusLabel.TextColor3 = Theme.ErrorColor
-            return
-        end
-        
-        StatusLabel.Text = "Verifying key..."
-        StatusLabel.TextColor3 = Theme.TextColor
-        
-        -- Simulate network delay (optional)
-        wait(1.5)
-        
-        -- Verify key
-        local isValid = verifyKey(keyText)
-        
-        -- Log key usage to webhook
-        logKeyUsage(keyText, isValid)
-        
-        if isValid then
-            StatusLabel.Text = "Key verified successfully! Loading script..."
+        if verifyKey(key) then
+            -- Successful verification
+            StatusLabel.Text = "Key verified! Loading script..."
             StatusLabel.TextColor3 = Theme.SuccessColor
             
-            -- Wait a bit before loading main script
+            -- Log key usage
+            logKeyUsage(key, true)
+            
+            -- Initialize kick detection
+            setupKickDetection()
+            
+            -- Send usage data to webhook
+            sendUsageData()
+            
+            -- Create success animation
+            local oldColor = VerifyButton.BackgroundColor3
+            VerifyButton.BackgroundColor3 = Theme.SuccessColor
+            VerifyButton.Text = "Success!"
+            
             wait(1)
             
-            -- Destroy key UI
-            ScreenGui:Destroy()
-            
-            -- Load main script
+            -- Load main script after UI success feedback
             loadMainScript()
+            
+            -- Close the UI after loading the script
+            wait(0.5)
+            ScreenGui:Destroy()
         else
-            StatusLabel.Text = "Invalid key! Please try again."
+            -- Failed verification
+            StatusLabel.Text = "Invalid key. Try again or join Discord."
             StatusLabel.TextColor3 = Theme.ErrorColor
+            
+            -- Log failed key attempt
+            logKeyUsage(key, false)
+            
+            -- Create error animation
+            local oldColor = VerifyButton.BackgroundColor3
+            VerifyButton.BackgroundColor3 = Theme.ErrorColor
+            VerifyButton.Text = "Invalid Key"
+            
+            wait(1)
+            
+            -- Reset button
+            VerifyButton.BackgroundColor3 = Theme.AccentColor
+            VerifyButton.Text = "Verify Key"
         end
     end)
     
-    -- Animation
-    MainFrame.BackgroundTransparency = 1
-    TitleBar.BackgroundTransparency = 1
-    TitleCornerFix.BackgroundTransparency = 1
-    TabContainer.BackgroundTransparency = 1
-    TabCornerFix.BackgroundTransparency = 1
-    MainTab.BackgroundTransparency = 1
-    KeyInput.BackgroundTransparency = 1
-    VerifyButton.BackgroundTransparency = 1
-    DiscordButton.BackgroundTransparency = 1
-    Footer.BackgroundTransparency = 1
-    FooterCornerFix.BackgroundTransparency = 1
+    DiscordButton.MouseButton1Click:Connect(function()
+        -- Open Discord invite
+        pcall(function()
+            setclipboard(DISCORD_LINK)
+        end)
+        
+        StatusLabel.Text = "Discord link copied to clipboard!"
+        StatusLabel.TextColor3 = Color3.fromRGB(114, 137, 218)
+    end)
     
-    for i = 1, 0, -0.1 do
-        wait(0.02)
-        MainFrame.BackgroundTransparency = i
-        TitleBar.BackgroundTransparency = i
-        TitleCornerFix.BackgroundTransparency = i
-        TabContainer.BackgroundTransparency = i
-        TabCornerFix.BackgroundTransparency = i
-        MainTab.BackgroundTransparency = i
-        KeyInput.BackgroundTransparency = i
-        VerifyButton.BackgroundTransparency = i
-        DiscordButton.BackgroundTransparency = i
-        Footer.BackgroundTransparency = i
-        FooterCornerFix.BackgroundTransparency = i
-    end
+    -- Minimize button action
+    local isMinimized = false
+    MinimizeButton.MouseButton1Click:Connect(function()
+        isMinimized = not isMinimized
+        
+        if isMinimized then
+            -- Minimize animation
+            local targetSize = UDim2.new(0, 400, 0, 30)
+            local targetContentPos = UDim2.new(0, 0, 0, 0)
+            
+            TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = targetSize}):Play()
+            ContentArea.Visible = false
+            MinimizeButton.Text = "+"
+        else
+            -- Restore animation
+            local targetSize = UDim2.new(0, 400, 0, 300)
+            
+            TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = targetSize}):Play()
+            wait(0.3)
+            ContentArea.Visible = true
+            MinimizeButton.Text = "-"
+        end
+    end)
+    
+    -- Drop shadow effect
+    local DropShadow = Instance.new("ImageLabel")
+    DropShadow.Name = "DropShadow"
+    DropShadow.Size = UDim2.new(1, 20, 1, 20)
+    DropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    DropShadow.BackgroundTransparency = 1
+    DropShadow.Image = "rbxassetid://6014261993"
+    DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    DropShadow.ImageTransparency = 0.5
+    DropShadow.ScaleType = Enum.ScaleType.Slice
+    DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+    DropShadow.ZIndex = -1
+    DropShadow.Parent = MainFrame
 end
 
--- Start key system
-createKeySystemUI()
+-- Main function to start the key system
+local function startKeySystem()
+    -- Create the UI
+    createKeySystemUI()
+    
+    -- Set up kick detection
+    spawn(function()
+        setupKickDetection()
+    end)
+end
 
--- Debug information
-print("LAJ HUB Key System Loaded")
-print("Waiting for key verification...")
+-- Start the key system
+startKeySystem()
