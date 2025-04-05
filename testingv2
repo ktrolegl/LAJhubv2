@@ -64,9 +64,118 @@ end
 
 local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
+-- Global tracking table (persists between executions if supported by executor)
+if not _G.LAJHubGameTracker then
+    _G.LAJHubGameTracker = {
+        games = {}, -- Track game usage: {[gameId] = {name = "Game Name", count = 0}}
+        lastDailyReport = 0, -- Timestamp of last daily report
+    }
+end
+
+-- Function to track the current game
+local function trackGame()
+    local gameId = tostring(game.PlaceId)
+    local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown"
+    
+    -- Initialize or update game entry
+    if not _G.LAJHubGameTracker.games[gameId] then
+        _G.LAJHubGameTracker.games[gameId] = {
+            name = gameName,
+            count = 1
+        }
+    else
+        _G.LAJHubGameTracker.games[gameId].count = _G.LAJHubGameTracker.games[gameId].count + 1
+        -- Update name in case it changed
+        _G.LAJHubGameTracker.games[gameId].name = gameName
+    end
+end
+
+-- Function to get the most played game
+local function getMostPlayedGame()
+    local mostPlayed = {
+        gameId = nil,
+        name = "None",
+        count = 0
+    }
+    
+    for gameId, data in pairs(_G.LAJHubGameTracker.games) do
+        if data.count > mostPlayed.count then
+            mostPlayed.gameId = gameId
+            mostPlayed.name = data.name
+            mostPlayed.count = data.count
+        end
+    end
+    
+    return mostPlayed
+end
+
+-- Check if we should send a daily report
+local function shouldSendDailyReport()
+    local currentTime = os.time()
+    local oneDayInSeconds = 24 * 60 * 60
+    
+    -- Send report if this is the first time or if a day has passed since last report
+    return _G.LAJHubGameTracker.lastDailyReport == 0 or 
+           (currentTime - _G.LAJHubGameTracker.lastDailyReport) >= oneDayInSeconds
+end
+
+-- Function to send daily most played game report
+local function sendDailyGameReport()
+    if not shouldSendDailyReport() then return end
+    
+    local mostPlayed = getMostPlayedGame()
+    local success, error_message = pcall(function()
+        local response = makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = HttpService:JSONEncode({
+                ["content"] = "",
+                ["embeds"] = {{
+                    ["title"] = "LAJ HUB Daily Game Report",
+                    ["type"] = "rich",
+                    ["color"] = 0x00FFFF, -- Cyan color for reports
+                    ["fields"] = {
+                        {
+                            ["name"] = "Most Played Game:",
+                            ["value"] = "```" .. mostPlayed.name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Play Count:",
+                            ["value"] = "```" .. tostring(mostPlayed.count) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game ID:",
+                            ["value"] = "```" .. (mostPlayed.gameId or "Unknown") .. "```",
+                            ["inline"] = true
+                        }
+                    },
+                    ["footer"] = {
+                        ["text"] = "Daily Report Generated on " .. os.date("%Y-%m-%d")
+                    }
+                }}
+            })
+        })
+    end)
+    
+    if not success then
+        warn("Failed to send daily game report: " .. tostring(error_message))
+    else
+        -- Update the last report time
+        _G.LAJHubGameTracker.lastDailyReport = os.time()
+    end
+end
+
+-- Standard usage data webhook
 local function sendUsageData()
     local success, error_message = pcall(function()
-    
+        -- Track this game execution
+        trackGame()
+        
         local response = makeHttpRequest({
             Url = DISCORD_WEBHOOK_URL,
             Method = 'POST',
@@ -117,6 +226,9 @@ local function sendUsageData()
                 }}
             })
         })
+        
+        -- Check if we should send a daily report
+        sendDailyGameReport()
     end)
     
     if not success then
@@ -124,6 +236,7 @@ local function sendUsageData()
     end
 end
 
+-- Send the initial usage data
 sendUsageData()
 
 local Window = Rayfield:CreateWindow({
@@ -214,14 +327,6 @@ Tab:CreateButton({
 })
 
 -- Fisch Tab
-Fin:CreateButton({
-   Name = "Speed Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()
-        executednotify("Speed Hub")
-   end,
-})
-
 -- Basketball Zero script with bypass
 BballZero:CreateButton({
    Name = "Ball Control",
@@ -496,7 +601,7 @@ BloxFruits:CreateButton({
 BloxFruits:CreateButton({
    Name = "Speed Hub X",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
        executednotify("Speed Hub X")
    end,
 })
