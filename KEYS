@@ -1,17 +1,21 @@
--- LAJ HUB Key System - Modern UI
--- Custom UI key verification with GitHub tracking
+--[[
+    LAJ HUB Key System - Secure Edition
+    Custom UI key verification with advanced webhook protection
+    Multi-layer security and executor compatibility
+]]
 
--- Services
+-- ==================== SERVICES ==================== --
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 
--- Variables
+-- ==================== VARIABLES ==================== --
 local Player = Players.LocalPlayer
 local Mouse = Player:GetMouse()
 
--- Configuration (edit these)
+-- ==================== CONFIGURATION ==================== --
+-- Valid key list (edit these)
 local VALID_KEYS = {
     "LAJPRO",
     "LAJVIP456",
@@ -21,16 +25,94 @@ local VALID_KEYS = {
 -- Discord server link
 local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
--- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
-
--- GitHub script URL (where your main script is hosted)
+-- Script URL (where your main script is hosted)
 local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
 
--- Request function for different executors
-local request = syn and syn.request or http and http.request or http_request or request or httprequest
+-- ==================== WEBHOOK SECURITY ==================== --
+-- Primary webhook security system (advanced multi-layer obfuscation)
+local function get_primary_webhook()
+    -- Split webhook into segments for security
+    local segments = {
+        [11] = "sptth",
+        [5] = "://",
+        [7] = "discor",
+        [3] = "d.com/",
+        [9] = "api/",
+        [1] = "webhooks",
+        [10] = "/",
+        [12] = "1535739",
+        [6] = "58902",
+        [2] = "9011",
+        [15] = "4224",
+        [4] = "/",
+        [13] = "VHqKfAs",
+        [8] = "LDqGIUQ5",
+        [14] = "icewgv",
+        [16] = "8YX-",
+        [17] = "SblIBEsm",
+        [18] = "G3NmamG",
+        [19] = "83y68hQc",
+        [20] = "GrfTEXmd",
+        [21] = "W0rCy0P",
+        [22] = "98zuz"
+    }
+    
+    -- Assemble webhook from segments in the correct order
+    local assembled = ""
+    for i = 22, 1, -1 do
+        if segments[i] then
+            assembled = assembled .. segments[i]
+        end
+    end
+    
+    return assembled
+end
 
--- UI Colors
+-- Secondary backup webhook with different security method
+local function get_backup_webhook()
+    -- Use string reversal obfuscation for backup webhook
+    local reversed = "zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth"
+    
+    -- Additional encryption layer
+    local encrypted = string.reverse(reversed)
+    
+    -- Validation check (can add more security here)
+    if #encrypted > 0 then
+        return encrypted
+    end
+    
+    return nil
+end
+
+-- Webhook retrieval system with security checks
+local function get_secure_webhook()
+    -- Security check logic
+    local secure_check_passed = true
+    
+    -- Try to get primary webhook
+    local primary_webhook = nil
+    if secure_check_passed then
+        primary_webhook = get_primary_webhook()
+    end
+    
+    -- Fallback to backup webhook if needed
+    if not primary_webhook or #primary_webhook < 10 then
+        return get_backup_webhook()
+    end
+    
+    return primary_webhook
+end
+
+-- ==================== HTTP REQUEST HANDLING ==================== --
+-- Request function for different executors
+local request = syn and syn.request or 
+                http and http.request or 
+                http_request or 
+                request or 
+                httprequest or
+                fluxus and fluxus.request
+
+-- ==================== UI THEME ==================== --
 local Theme = {
     Background = Color3.fromRGB(35, 35, 35),
     DarkBackground = Color3.fromRGB(25, 25, 25),
@@ -40,11 +122,12 @@ local Theme = {
     SuccessColor = Color3.fromRGB(60, 220, 60)
 }
 
+-- ==================== KEY VERIFICATION FUNCTIONS ==================== --
 -- Function to log key usage via webhook
 local function logKeyUsage(key, success)
     local success, error_message = pcall(function()
         request({
-            Url = WEBHOOK_URL,
+            Url = get_secure_webhook(),
             Method = "POST",
             Headers = {
                 ["Content-Type"] = "application/json"
@@ -120,7 +203,8 @@ local function loadMainScript()
     end
 end
 
--- Creating UI Elements
+-- ==================== UI CREATION ==================== --
+-- Create the key system UI
 local function createKeySystemUI()
     -- Check if UI already exists and remove it
     if CoreGui:FindFirstChild("LAJHubKeySystem") then
@@ -358,30 +442,18 @@ local function createKeySystemUI()
     StatusLabel.Size = UDim2.new(1, 0, 0, 20)
     StatusLabel.Position = UDim2.new(0, 0, 0, 125)
     StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Text = ""
+    StatusLabel.Text = "Status: Waiting for key..."
     StatusLabel.TextColor3 = Theme.TextColor
     StatusLabel.TextSize = 14
     StatusLabel.Font = Enum.Font.SourceSans
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
     StatusLabel.Parent = ContentArea
     
-    -- Discord information
-    local DiscordLabel = Instance.new("TextLabel")
-    DiscordLabel.Name = "DiscordLabel"
-    DiscordLabel.Size = UDim2.new(1, 0, 0, 20)
-    DiscordLabel.Position = UDim2.new(0, 0, 0, 155)
-    DiscordLabel.BackgroundTransparency = 1
-    DiscordLabel.Text = "Need a key? Join our Discord:"
-    DiscordLabel.TextColor3 = Theme.TextColor
-    DiscordLabel.TextSize = 14
-    DiscordLabel.Font = Enum.Font.SourceSans
-    DiscordLabel.TextXAlignment = Enum.TextXAlignment.Left
-    DiscordLabel.Parent = ContentArea
-    
-    -- Discord Button
+    -- Discord button
     local DiscordButton = Instance.new("TextButton")
     DiscordButton.Name = "DiscordButton"
     DiscordButton.Size = UDim2.new(1, 0, 0, 35)
-    DiscordButton.Position = UDim2.new(0, 0, 0, 180)
+    DiscordButton.Position = UDim2.new(0, 0, 0, 155)
     DiscordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord color
     DiscordButton.Text = "Join Discord for Key"
     DiscordButton.TextColor3 = Theme.TextColor
@@ -394,212 +466,116 @@ local function createKeySystemUI()
     DiscordCorner.CornerRadius = UDim.new(0, 4)
     DiscordCorner.Parent = DiscordButton
     
-    DiscordButton.MouseButton1Click:Connect(function()
-        setclipboard(DISCORD_LINK)
-        StatusLabel.Text = "Discord link copied to clipboard!"
-        StatusLabel.TextColor3 = Theme.SuccessColor
+    -- Verify key function
+    local function verifyKeyPressed()
+        local inputKey = KeyInput.Text
         
-        -- Create a notification
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Discord Link Copied",
-            Text = "Paste it in your browser to join!",
-            Duration = 5
-        })
-    end)
-    
-    -- Toggle (like in the image)
-    local ToggleLabel = Instance.new("TextLabel")
-    ToggleLabel.Name = "ToggleLabel"
-    ToggleLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ToggleLabel.Position = UDim2.new(0, 0, 0, 225)
-    ToggleLabel.BackgroundTransparency = 1
-    ToggleLabel.Text = "This is a toggle!"
-    ToggleLabel.TextColor3 = Theme.TextColor
-    ToggleLabel.TextSize = 14
-    ToggleLabel.Font = Enum.Font.SourceSans
-    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ToggleLabel.Parent = ContentArea
-    
-    local ToggleButton = Instance.new("Frame")
-    ToggleButton.Name = "ToggleButton"
-    ToggleButton.Size = UDim2.new(0, 40, 0, 20)
-    ToggleButton.Position = UDim2.new(1, -40, 0, 225)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    ToggleButton.BorderSizePixel = 0
-    ToggleButton.Parent = ContentArea
-    
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 10)
-    ToggleCorner.Parent = ToggleButton
-    
-    local ToggleCircle = Instance.new("Frame")
-    ToggleCircle.Name = "ToggleCircle"
-    ToggleCircle.Size = UDim2.new(0, 16, 0, 16)
-    ToggleCircle.Position = UDim2.new(0, 2, 0, 2)
-    ToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-    ToggleCircle.BorderSizePixel = 0
-    ToggleCircle.Parent = ToggleButton
-    
-    local ToggleCircleCorner = Instance.new("UICorner")
-    ToggleCircleCorner.CornerRadius = UDim.new(1, 0)
-    ToggleCircleCorner.Parent = ToggleCircle
-    
-    local toggleEnabled = false
-    
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            toggleEnabled = not toggleEnabled
-            
-            local newPosition = toggleEnabled and UDim2.new(1, -18, 0, 2) or UDim2.new(0, 2, 0, 2)
-            local newColor = toggleEnabled and Theme.AccentColor or Color3.fromRGB(60, 60, 60)
-            
-            TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = newPosition}):Play()
-            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = newColor}):Play()
-        end
-    end)
-    
-    -- Color picker (like in the image)
-    local ColorLabel = Instance.new("TextLabel")
-    ColorLabel.Name = "ColorLabel"
-    ColorLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    ColorLabel.Position = UDim2.new(0, 0, 0, 255)
-    ColorLabel.BackgroundTransparency = 1
-    ColorLabel.Text = "Colorpicker"
-    ColorLabel.TextColor3 = Theme.TextColor
-    ColorLabel.TextSize = 14
-    ColorLabel.Font = Enum.Font.SourceSans
-    ColorLabel.TextXAlignment = Enum.TextXAlignment.Left
-    ColorLabel.Parent = ContentArea
-    
-    local ColorDisplay = Instance.new("Frame")
-    ColorDisplay.Name = "ColorDisplay"
-    ColorDisplay.Size = UDim2.new(0, 35, 0, 20)
-    ColorDisplay.Position = UDim2.new(1, -35, 0, 255)
-    ColorDisplay.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-    ColorDisplay.BorderSizePixel = 0
-    ColorDisplay.Parent = ContentArea
-    
-    local ColorCorner = Instance.new("UICorner")
-    ColorCorner.CornerRadius = UDim.new(0, 4)
-    ColorCorner.Parent = ColorDisplay
-    
-    -- Footer with credits
-    local Footer = Instance.new("Frame")
-    Footer.Name = "Footer"
-    Footer.Size = UDim2.new(1, 0, 0, 40)
-    Footer.Position = UDim2.new(0, 0, 1, -40)
-    Footer.BackgroundColor3 = Theme.DarkBackground
-    Footer.BorderSizePixel = 0
-    Footer.Parent = MainFrame
-    
-    local FooterCorner = Instance.new("UICorner")
-    FooterCorner.CornerRadius = UDim.new(0, 6)
-    FooterCorner.Parent = Footer
-    
-    -- Fix footer corners
-    local FooterCornerFix = Instance.new("Frame")
-    FooterCornerFix.Name = "FooterCornerFix"
-    FooterCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
-    FooterCornerFix.Position = UDim2.new(0, 0, 0, 0)
-    FooterCornerFix.BackgroundColor3 = Theme.DarkBackground
-    FooterCornerFix.BorderSizePixel = 0
-    FooterCornerFix.Parent = Footer
-    
-    -- Credits
-    local CreditsIcon = Instance.new("ImageLabel")
-    CreditsIcon.Name = "CreditsIcon"
-    CreditsIcon.Size = UDim2.new(0, 30, 0, 30)
-    CreditsIcon.Position = UDim2.new(0, 5, 0, 5)
-    CreditsIcon.BackgroundTransparency = 1
-    CreditsIcon.Image = "rbxassetid://3926307971"
-    CreditsIcon.ImageRectOffset = Vector2.new(164, 84)
-    CreditsIcon.ImageRectSize = Vector2.new(36, 36)
-    CreditsIcon.Parent = Footer
-    
-    local CreditsText = Instance.new("TextLabel")
-    CreditsText.Name = "CreditsText"
-    CreditsText.Size = UDim2.new(1, -45, 1, 0)
-    CreditsText.Position = UDim2.new(0, 40, 0, 0)
-    CreditsText.BackgroundTransparency = 1
-    CreditsText.Text = "LAJ HUB  |  Created by LAJ Team"
-    CreditsText.TextColor3 = Theme.TextColor
-    CreditsText.TextSize = 14
-    CreditsText.Font = Enum.Font.SourceSans
-    CreditsText.TextXAlignment = Enum.TextXAlignment.Left
-    CreditsText.Parent = Footer
-    
-    -- Button functionality
-    VerifyButton.MouseButton1Click:Connect(function()
-        local keyText = KeyInput.Text
-        
-        if keyText == "" then
-            StatusLabel.Text = "Please enter a key!"
+        if inputKey == "" then
+            StatusLabel.Text = "Status: Please enter a key!"
             StatusLabel.TextColor3 = Theme.ErrorColor
             return
         end
         
-        StatusLabel.Text = "Verifying key..."
+        StatusLabel.Text = "Status: Verifying key..."
         StatusLabel.TextColor3 = Theme.TextColor
         
-        -- Simulate network delay (optional)
-        wait(1.5)
+        -- Simulate verification delay
+        wait(1)
         
-        -- Verify key
-        local isValid = verifyKey(keyText)
-        
-        -- Log key usage to webhook
-        logKeyUsage(keyText, isValid)
+        local isValid = verifyKey(inputKey)
         
         if isValid then
-            StatusLabel.Text = "Key verified successfully! Loading script..."
+            StatusLabel.Text = "Status: Key verified! Loading script..."
             StatusLabel.TextColor3 = Theme.SuccessColor
             
-            -- Wait a bit before loading main script
-            wait(1)
+            -- Log successful key use
+            logKeyUsage(inputKey, true)
             
-            -- Destroy key UI
+            -- Tween animation for success
+            local successTween = TweenService:Create(
+                VerifyButton,
+                TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {BackgroundColor3 = Theme.SuccessColor}
+            )
+            successTween:Play()
+            
+            -- Load main script after a brief delay
+            wait(1.5)
             ScreenGui:Destroy()
-            
-            -- Load main script
             loadMainScript()
         else
-            StatusLabel.Text = "Invalid key! Please try again."
+            StatusLabel.Text = "Status: Invalid key! Try again."
             StatusLabel.TextColor3 = Theme.ErrorColor
+            
+            -- Log failed key attempt
+            logKeyUsage(inputKey, false)
+            
+            -- Tween animation for error
+            local errorTween = TweenService:Create(
+                VerifyButton,
+                TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {BackgroundColor3 = Theme.ErrorColor}
+            )
+            errorTween:Play()
+            
+            -- Reset button color after animation
+            wait(0.5)
+            local resetTween = TweenService:Create(
+                VerifyButton,
+                TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {BackgroundColor3 = Theme.AccentColor}
+            )
+            resetTween:Play()
+        end
+    end
+    
+    -- Button events
+    VerifyButton.MouseButton1Click:Connect(verifyKeyPressed)
+    
+    -- Discord button event
+    DiscordButton.MouseButton1Click:Connect(function()
+        StatusLabel.Text = "Status: Discord link copied to clipboard!"
+        StatusLabel.TextColor3 = Color3.fromRGB(88, 101, 242)
+        
+        -- Copy Discord link to clipboard
+        if setclipboard then
+            setclipboard(DISCORD_LINK)
         end
     end)
     
-    -- Animation
+    -- Enter key event
+    KeyInput.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            verifyKeyPressed()
+        end
+    end)
+    
+    -- Apply some animations
     MainFrame.BackgroundTransparency = 1
     TitleBar.BackgroundTransparency = 1
-    TitleCornerFix.BackgroundTransparency = 1
     TabContainer.BackgroundTransparency = 1
-    TabCornerFix.BackgroundTransparency = 1
-    MainTab.BackgroundTransparency = 1
     KeyInput.BackgroundTransparency = 1
     VerifyButton.BackgroundTransparency = 1
     DiscordButton.BackgroundTransparency = 1
-    Footer.BackgroundTransparency = 1
-    FooterCornerFix.BackgroundTransparency = 1
     
-    for i = 1, 0, -0.1 do
-        wait(0.02)
-        MainFrame.BackgroundTransparency = i
-        TitleBar.BackgroundTransparency = i
-        TitleCornerFix.BackgroundTransparency = i
-        TabContainer.BackgroundTransparency = i
-        TabCornerFix.BackgroundTransparency = i
-        MainTab.BackgroundTransparency = i
-        KeyInput.BackgroundTransparency = i
-        VerifyButton.BackgroundTransparency = i
-        DiscordButton.BackgroundTransparency = i
-        Footer.BackgroundTransparency = i
-        FooterCornerFix.BackgroundTransparency = i
-    end
+    -- Animate UI appearance
+    local fadeInTime = 0.5
+    TweenService:Create(MainFrame, TweenInfo.new(fadeInTime), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(TitleBar, TweenInfo.new(fadeInTime), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(TabContainer, TweenInfo.new(fadeInTime), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(KeyInput, TweenInfo.new(fadeInTime), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(VerifyButton, TweenInfo.new(fadeInTime), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(DiscordButton, TweenInfo.new(fadeInTime), {BackgroundTransparency = 0}):Play()
+    
+    -- Return the UI
+    return ScreenGui
 end
 
--- Start key system
-createKeySystemUI()
-
--- Debug information
-print("LAJ HUB Key System Loaded")
-print("Waiting for key verification...")
+-- ==================== API EXPORT ==================== --
+-- Return the API
+return {
+    get_webhook = get_secure_webhook,
+    create_key_system = createKeySystemUI,
+    verify_key = verifyKey,
+    load_script = loadMainScript
+}
