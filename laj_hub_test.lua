@@ -279,6 +279,14 @@ BlueLock:CreateButton({
    end,
 })
 
+BlueLock:CreateButton({
+   Name = "Piskasiska Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Piskasiska22222/tester/refs/heads/main/test"))()
+        executednotify("Piskasiska Script")
+   end,
+})
+
 
 PetSim99:CreateButton({
    Name = "LAJ Trade Scam (Custom)",
@@ -419,23 +427,6 @@ Rivals:CreateButton({
 
 -- Dead Rails Tab
 DeadRails:CreateSection("Dead Rails Scripts")
-
-DeadRails:CreateButton({
-   Name = "Infernus Direct Loader (No Key)",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
-       executednotify("Infernus Direct Loader")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Bynner (No Key)",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
-       executednotify("Bynner Script")
-   end,
-})
-
 
 DeadRails:CreateButton({
    Name = "Markk Keyless",
