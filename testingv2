@@ -940,90 +940,10 @@ DeadRails:CreateButton({
 BloxFruits:CreateSection("Blox Fruits Scripts")
 
 BloxFruits:CreateButton({
-   Name = "AnDepZai Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AnDepZaiHub/AnDepZaiHubBeta/main/AnDepZaiHubBeta.lua"))()
-        executednotify("AnDepZai Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Cokka Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/UserDevEthical/Loadstring/main/CokkaHub.lua"))()
-        executednotify("Cokka Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Delta Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://gitlab.com/littlekiller2927/deltacore/-/raw/main/deltabf.lua"))()
-        executednotify("Delta Script")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Sara Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SaraSenpai/bloxfruist/main/Sarahub"))()
-        executednotify("Sara Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Winter Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Yuri/main/Winterhub_V2.lua"))()
-        executednotify("Winter Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Uranium Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Augustzyzx/UraniumMobile/main/UraniumKak.lua"))()
-        executednotify("Uranium Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Azure Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
-        executednotify("Azure Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Vector Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tuxoz/VectorHub/main/BloxFruitPC%26MOBILE"))()
-        executednotify("Vector Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Royx Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/NightsTimeZ/Donate-Me/main/free%20bf.lua"))()
-        executednotify("Royx Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
    Name = "Wolf Hub",
    Callback = function()
         loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
         executednotify("Wolf Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Payback Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Script-Blox/Script/main/PayBack.lua"))()
-        executednotify("Payback Hub")
    end,
 })
 
@@ -1036,26 +956,10 @@ BloxFruits:CreateButton({
 })
 
 BloxFruits:CreateButton({
-   Name = "KAY Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AXCScript/KayMobile/main/Script-Loader"))()
-        executednotify("KAY Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
    Name = "THUNDER Hub",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/RemakeMobileTest"))()
         executednotify("THUNDER Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "SEAGATE Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SeaBabyBF/seamain/main/SeaGateNextGenz"))()
-        executednotify("SEAGATE Hub")
    end,
 })
 
@@ -1091,52 +995,6 @@ BloxFruits:CreateButton({
    end,
 })
 
-BloxFruits:CreateButton({
-   Name = "MIN GREEN Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Basicallyybeta/main/main/Mingaming.lua"))()
-        executednotify("MIN GREEN Hub")
-   end,
-})
-BloxFruits:CreateButton({
-   Name = "AnDepZai Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/AnDepZaiHub/AnDepZaiHubBeta/main/AnDepZaiHubBeta.lua"))()
-        executednotify("AnDepZai Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Cokka Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/UserDevEthical/Loadstring/main/CokkaHub.lua"))()
-        executednotify("Cokka Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Delta Script",
-   Callback = function()
-        loadstring(getHttpRequest("https://gitlab.com/littlekiller2927/deltacore/-/raw/main/deltabf.lua"))()
-        executednotify("Delta Script")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Sara Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SaraSenpai/bloxfruist/main/Sarahub"))()
-        executednotify("Sara Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Winter Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Yuri/main/Winterhub_V2.lua"))()
-        executednotify("Winter Hub")
-   end,
-})
 
 BloxFruits:CreateButton({
    Name = "Uranium Hub",
@@ -1159,14 +1017,6 @@ BloxFruits:CreateButton({
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/Tuxoz/VectorHub/main/BloxFruitPC%26MOBILE"))()
         executednotify("Vector Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Royx Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/NightsTimeZ/Donate-Me/main/free%20bf.lua"))()
-        executednotify("Royx Hub")
    end,
 })
 
@@ -1199,14 +1049,6 @@ BloxFruits:CreateButton({
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/AXCScript/KayMobile/main/Script-Loader"))()
         executednotify("KAY Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "THUNDER Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/RemakeMobileTest"))()
-        executednotify("THUNDER Hub")
    end,
 })
 
