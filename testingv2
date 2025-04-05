@@ -710,15 +710,7 @@ print("4. Improved executor detection")
 
 -- Rivals Tab
 Rivals:CreateSection("Rivals Scripts")
-
-Rivals:CreateButton({
-   Name = "RIVALS Winter",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/SkibidiCen/MainMenu/main/Code"))()
-        executednotify("RIVALS Winter")
-   end,
-})
-
+ 
 Rivals:CreateButton({
    Name = "Azure Mod",
    Callback = function()
