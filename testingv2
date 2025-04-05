@@ -389,6 +389,7 @@ local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
 local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
 local MuscleLegend = Window:CreateTab("Muscle Legend", 4483362458) -- Added Muscle Legend tab
+local MurderMystery = Window:CreateTab("Murder Mystery", 4483362458) -- Added Murder Mystery tab
 local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
 local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
@@ -930,6 +931,35 @@ DeadRails:CreateButton({
 
 -- BloxFruits Tab Scripts
 BloxFruits:CreateSection("Blox Fruits Scripts")
+
+-- Murder Mystery Tab Content 
+MurderMystery:CreateSection("🔥 MURDER MYSTERY COMING SOON 🔥") 
+
+MurderMystery:CreateLabel("COMING SOON WAIT LIL BRO") 
+
+MurderMystery:CreateParagraph({ 
+    Title = "Under Development", 
+    Content = "The Murder Mystery script is currently in development and will be available in a future update. Please check back later for this exciting addition to LAJ HUB!" 
+}) 
+
+MurderMystery:CreateButton({ 
+    Name = "Join Discord for Updates", 
+    Callback = function() 
+        setclipboard("https://discord.gg/4mgdcfvAJU") 
+        Rayfield:Notify({ 
+            Title = "Discord Link Copied", 
+            Content = "The Discord link has been copied to your clipboard!", 
+            Duration = 5, 
+            Image = 9725800107, 
+            Actions = { 
+                Ignore = { 
+                    Name = "OK", 
+                    Callback = function() end 
+                } 
+            } 
+        }) 
+    end 
+})
 
 BloxFruits:CreateButton({
    Name = "Wolf Hub",
