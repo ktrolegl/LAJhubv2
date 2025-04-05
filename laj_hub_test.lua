@@ -640,17 +640,116 @@ print("4. Improved executor detection")
 Rivals:CreateSection("Rivals Scripts")
 
 Rivals:CreateButton({
-   Name = "Coming Soon",
+   Name = "RIVALS Winter",
    Callback = function()
-       Rayfield:Notify({
-           Title = "Rivals Scripts",
-           Content = "Scripts for this game are coming soon!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SkibidiCen/MainMenu/main/Code"))()
+        executednotify("RIVALS Winter")
    end,
 })
 
+Rivals:CreateButton({
+   Name = "Azure Mod",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Actyrn/Scripts/main/AzureModded"))()
+        executednotify("Azure Mod")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Tbao Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/main/TbaoHubRivals"))()
+        executednotify("Tbao Hub")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "8Bits Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/8bits4ya/rivals-v3/refs/heads/main/main.lua"))()
+        executednotify("8Bits Hub")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Venox Hub",
+   Callback = function()
+        loadstring(getHttpRequest('https://raw.githubusercontent.com/venoxhh/universalscripts/main/rivals/venoxware'))()
+        executednotify("Venox Hub")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Lunax Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Alexisisback/Lunax/refs/heads/main/Loader.lua"))()
+        executednotify("Lunax Hub")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Ventures.lua",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/laeraz/ventures/refs/heads/main/rivals.lua"))()
+        executednotify("Ventures.lua")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Ronix Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/b581d07bfd134ff4ea612d671361be77.lua"))()
+        executednotify("Ronix Hub")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "PinguinRVS",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/PUSCRIPTS/PINGUIN/refs/heads/main/RivalsV1"))()
+        executednotify("PinguinRVS")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Zypherion",
+   Callback = function()
+        loadstring(getHttpRequest(('https://raw.githubusercontent.com/blackowl1231/ZYPHERION/refs/heads/main/main.lua')))()
+        executednotify("Zypherion")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Auto Farm Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/212c1198a1beacf31150a8cf339ba288.lua"))()
+        executednotify("Auto Farm Hub")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Rybow Aimbot",
+   Callback = function()
+        loadstring(getHttpRequest('https://raw.githubusercontent.com/rybowe/rybowescripts/main/release.lua'))()
+        executednotify("Rybow Aimbot")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Xera Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/luascriptsROBLOX/Xerar/refs/heads/main/RivalsxeraPBF"))()
+        executednotify("Xera Script")
+   end,
+})
+
+Rivals:CreateButton({
+   Name = "Minimal Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/MinimalScriptingService/MinimalRivals/main/rivals.lua",true))()
+        executednotify("Minimal Hub")
+   end,
+})
 -- Dead Rails Tab
 DeadRails:CreateSection("Dead Rails Scripts")
 
