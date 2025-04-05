@@ -7,8 +7,7 @@ local HttpService = game:GetService("HttpService")
 local Player = Players.LocalPlayer
 
 -- Secure webhook URL (obfuscated and rate-limited)
-local WEBHOOK_URL = string.reverse("kWx8nsHbiVuEbibE393E5nQrOlEzMA7pYmnFnmxZ6aRHypHtrW/fAVbK5kqdBhdLB/1164273408659117531/skoohbew/ipa/moc.drocsid//:sptth")
-
+https://discord.com/api/webhooks/1357911456804372611/LBhdqPxr2Kk5bVAfWrtHpyHRa6ZmxnFnukmYp7AMzElOrQnE5393EbibEuVibHsn8xWk
 -- Rate limiting variables to prevent webhook abuse (max 1 request per 5 minutes)
 local lastWebhookTime = 0
 local WEBHOOK_COOLDOWN = 300 -- 5 minutes in seconds
@@ -82,6 +81,178 @@ local function logBanEvent(reason)
                     }
                 }}
             })
+
+BloxFruits:CreateButton({
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Pado Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/REWzaKunGz1/premium/main/PadoHub"))()
+        executednotify("Pado Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "AnDepZai Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AnDepZaiHub/AnDepZaiHubBeta/main/AnDepZaiHubBeta.lua"))()
+        executednotify("AnDepZai Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Cokka Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/UserDevEthical/Loadstring/main/CokkaHub.lua"))()
+        executednotify("Cokka Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Delta Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://gitlab.com/littlekiller2927/deltacore/-/raw/main/deltabf.lua"))()
+        executednotify("Delta Script")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Sara Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SaraSenpai/bloxfruist/main/Sarahub"))()
+        executednotify("Sara Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Winter Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Yuri/main/Winterhub_V2.lua"))()
+        executednotify("Winter Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Uranium Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Augustzyzx/UraniumMobile/main/UraniumKak.lua"))()
+        executednotify("Uranium Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Azure Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/3b2169cf53bc6104dabe8e19562e5cc2.lua"))()
+        executednotify("Azure Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Vector Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tuxoz/VectorHub/main/BloxFruitPC%26MOBILE"))()
+        executednotify("Vector Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Royx Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/NightsTimeZ/Donate-Me/main/free%20bf.lua"))()
+        executednotify("Royx Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Wolf Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://link.trwxz.com/LS-Wolf-Hub"))()
+        executednotify("Wolf Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "Payback Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Script-Blox/Script/main/PayBack.lua"))()
+        executednotify("Payback Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "RIPPER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/hajibeza/Module/main/Mobile_Script.lua"))()
+        executednotify("RIPPER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "KAY Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AXCScript/KayMobile/main/Script-Loader"))()
+        executednotify("KAY Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "THUNDER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ThunderZ-HUB/HUB/main/RemakeMobileTest"))()
+        executednotify("THUNDER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "SEAGATE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SeaBabyBF/seamain/main/SeaGateNextGenz"))()
+        executednotify("SEAGATE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MATSUNE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Yatsuraa/Matsune/main/Matsunebeta.lua"))()
+        executednotify("MATSUNE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MIN SEAGATE Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/CheemsNhuChiAl/MinGamingHub/main/mingamingupdatenew"))()
+        executednotify("MIN SEAGATE Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "ZINER Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Tienvn123tkvn/Test/main/ZINERHUB.lua"))()
+        executednotify("ZINER Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MUXUS Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/MuxusTL/BloxFruits/main/MuxusHub_V2.lua"))()
+        executednotify("MUXUS Hub")
+   end,
+})
+
+BloxFruits:CreateButton({
+   Name = "MIN GREEN Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Basicallyybeta/main/main/Mingaming.lua"))()
+        executednotify("MIN GREEN Hub")
+   end,
+})
         })
     end)
     
@@ -279,7 +450,7 @@ if game then
 end
 
 local Window = Rayfield:CreateWindow({
-   Name = "LAJ HUB (Swift)",
+   Name = "Airflow UPDATED",
    Icon = 0,
    LoadingTitle = "LAJ HUB",
    LoadingSubtitle = "Premium Scripts",
@@ -364,7 +535,7 @@ Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
-        executednotify("Psalm Script")
+        executednotify("Test Webhook")
    end,
 })
 
@@ -372,7 +543,7 @@ Tab:CreateButton({
    Name = "Ballware vfs",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
-        executednotify("Ballware VFS")
+        executednotify("Ballware vfs")
    end,
 })
 
@@ -405,7 +576,7 @@ Fin:CreateButton({
    Name = "ThanHub",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/thantzy/thanhub/refs/heads/main/thanv1"))()
-        executednotify("ThanHub Script")
+        executednotify("ThanHub")
    end,
 })
 
@@ -413,7 +584,7 @@ Fin:CreateButton({
    Name = "Rift GUI",
    Callback = function()
         loadstring(getHttpRequest("https://github.com/Synergy-Networks/products/raw/main/Rift/loader.lua"))()
-        executednotify("Rift GUI - AutoFarming")
+        executednotify("Rift GUI")
    end,
 })
 
@@ -421,7 +592,7 @@ Fin:CreateButton({
    Name = "Hooked Script",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/Superman245/sc2/refs/heads/main/s6"))()
-        executednotify("Hooked Script - Mobile")
+        executednotify("Hooked Script")
    end,
 })
 
@@ -429,7 +600,7 @@ Fin:CreateButton({
    Name = "HomoHack",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/dementiaenjoyer/homohack/main/loader.lua"))()
-        executednotify("HomoHack - Auto Fish")
+        executednotify("HomoHack")
    end,
 })
 
@@ -438,7 +609,7 @@ Fin:CreateButton({
    Callback = function()
         script_key="4JxQ1x@+1"
         loadstring(getHttpRequest("https://getnative.cc/script/loader"))()
-        executednotify("Native Hub v0571")
+        executednotify("Native Hub")
    end,
 })
 
@@ -446,7 +617,7 @@ Fin:CreateButton({
    Name = "Raito Hub",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/RaitoHub/refs/heads/main/Script"))()
-        executednotify("Raito Hub 🐋MARIANA")
+        executednotify("Raito Hub")
    end,
 })
 
@@ -454,7 +625,7 @@ Fin:CreateButton({
    Name = "Zenith Hub",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/ZenithHub/refs/heads/main/Loader"))()
-        executednotify("Zenith Hub v3.2.5 - Keyless")
+        executednotify("Zenith Hub")
    end,
 })
 
@@ -463,7 +634,7 @@ Fin:CreateButton({
    Callback = function()
         script_key = 'lunor_free_key'
         loadstring(getHttpRequest("https://raw.githubusercontent.com/Just3itx/Lunor-Loadstrings/refs/heads/main/Loader"))()
-        executednotify("Lunor Script v1.1.3")
+        executednotify("Lunor Script")
    end,
 })
 
@@ -471,7 +642,7 @@ Fin:CreateButton({
    Name = "Ronix Hub",
    Callback = function()
         loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/4a8848fbc1047bcc62c49e797384e9ab.lua"))()
-        executednotify("Ronix Hub Script V0.43")
+        executednotify("Ronix Hub")
    end,
 })
 -- Basketball Zero script with bypass
@@ -479,7 +650,7 @@ BballZero:CreateButton({
    Name = "Ball Control",
    Callback = function()
         loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
-        executednotify("BasketBall Zero Script")
+        executednotify("Ball Control")
    end,
 })
 
@@ -502,11 +673,11 @@ BlueLock:CreateButton({
 
 
 PetSim99:CreateButton({
-   Name = "LAJ Trade Scam (Custom)",
+   Name = "Airflow UPDATED",
    Callback = function()
        -- Load the script from GitHub
        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
-       executednotify("LAJ Custom Trade Scam")
+       executednotify("Airflow UPDATED")
    end,
 })
 -- Muscle Legend Tab
@@ -525,7 +696,7 @@ Universal:CreateButton({
    Name = "Infinite Yield FE",
    Callback = function()
        loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-       executednotify("Infinite Yield")
+       executednotify("Infinite Yield FE")
    end,
 })
 
@@ -554,10 +725,10 @@ Universal:CreateButton({
 })
 
 Universal:CreateButton({
-   Name = "CMD-X Admin",
+   Name = "Airflow UPDATED",
    Callback = function()
        loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
-       executednotify("CMD-X Admin")
+       executednotify("Airflow UPDATED")
    end,
 })
 
@@ -755,9 +926,9 @@ DeadRails:CreateButton({
 })
 
 DeadRails:CreateButton({
-   Name = "Null-Fire Keyless",
+   Name = "Airflow UPDATED",
    Callback = function()
        loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
-       executednotify("Null-Fire Keyless")
+       executednotify("Airflow UPDATED")
    end,
 })
