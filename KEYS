@@ -15,18 +15,27 @@ local Mouse = Player:GetMouse()
 local VALID_KEYS = {
     "LAJPRO",
     "LAJVIP456",
-    "LAJHUB789"
+    "LAJHUB789",
+    "LAJSPECIAL",
+    "LAJULTRA",
+    "LAJEXCLUSIVE",
+    "LAJPREMIUM", 
+    "LAJELITE"
+}
+    "LAJSPECIAL",
+    "LAJULTRA",
+    "LAJEXCLUSIVE",
+    "LAJPREMIUM", 
+    "LAJELITE"
 }
 
 -- Discord server link
 local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
--- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
-
+-- Discord webhook for tracking (enhanced security)
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1357983293064351814/zs000eW7rUpcn7sHWU3HGqx8j7TrAjiB1kNI6A0QbE2n1ZRm8yeFD8VE_n8Kpa0OM0Uv"
 -- GitHub script URL (where your main script is hosted)
 local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
-
 -- Request function for different executors
 local request = syn and syn.request or http and http.request or http_request or request or httprequest
 
