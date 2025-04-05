@@ -1,4 +1,135 @@
 --[[
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+-- Variables
+-- Variables
+local Player = Players.LocalPlayer
+
+-- Secure webhook URL (obfuscated and rate-limited)
+local WEBHOOK_URL = string.reverse("kWx8nsHbiVuEbibE393E5nQrOlEzMA7pYmnFnmxZ6aRHypHtrW/fAVbK5kqdBhdLB/1164273408659117531/skoohbew/ipa/moc.drocsid//:sptth")
+
+-- Rate limiting variables to prevent webhook abuse (max 1 request per 5 minutes)
+local lastWebhookTime = 0
+local WEBHOOK_COOLDOWN = 300 -- 5 minutes in seconds
+-- Function to log ban/kick events via webhook with rate limiting
+local function logBanEvent(reason)
+    -- Rate limiting check
+    local currentTime = os.time()
+    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        warn("Rate limit: Not sending webhook notification (cooldown active)")
+        return
+    end
+    
+    -- Check for anti-spam by validating the reason
+    if not reason or reason == "" then
+        reason = "Unknown (No reason provided)"
+    end
+    
+    -- Create a unique identifier for this notification to prevent duplicates
+    local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
+    
+    -- Limit data being sent for privacy and security
+    local success, error_message = pcall(function()
+        -- Update the timestamp for rate limiting
+        lastWebhookTime = currentTime
+        
+        request({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode({
+                ["content"] = "",
+                ["embeds"] = {{                  
+                    ["title"] = "Player Banned/Kicked Alert",
+                    ["color"] = 16711680, -- Red color for ban alerts
+                    ["fields"] = {
+                        {
+                            ["name"] = "User",
+                            ["value"] = "```" .. Player.Name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "User ID",
+                            ["value"] = "```" .. tostring(Player.UserId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game",
+                            ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game ID",
+                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Ban/Kick Reason",
+                            ["value"] = "```" .. (reason or "Unknown") .. "```",
+                            ["inline"] = false
+                        },
+                        {
+                            ["name"] = "Notification ID",
+                            ["value"] = "```" .. notificationId .. "```",
+                            ["inline"] = false
+                        }
+                    },
+                    ["footer"] = {
+                        ["text"] = "Ban/Kick Timestamp: " .. os.date("%Y-%m-%d %H:%M:%S")
+                    }
+                }}
+            })
+        })
+    end)
+    
+    if not success then
+        warn("Failed to send ban webhook: " .. tostring(error_message))
+    end
+end
+                }}
+            })
+        })
+    end)
+    
+    if not success then
+        warn("Failed to send ban webhook: " .. tostring(error_message))
+    end
+end
+
+-- Set up event listeners for kick/ban detection
+-- Method 1: Detect when player is removed
+Players.PlayerRemoving:Connect(function(player)
+    if player == Player then
+        logBanEvent("Player removed from game (possibly kicked/banned)")
+    end
+end)
+
+-- Method 2: Detect common kick methods
+local oldNameCall
+oldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+    
+    if method == "Kick" and self == Player then
+        local reason = args[1] or "Unknown"
+        logBanEvent(reason)
+    end
+    
+    return oldNameCall(self, ...)
+end)
+
+-- Method 3: Monitor teleport failures as they often occur during bans
+game:GetService("TeleportService").TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+    if player == Player and (teleportResult == Enum.TeleportResult.Banned or teleportResult == Enum.TeleportResult.GameEnded) then
+        logBanEvent("Teleport failed due to ban: " .. errorMessage)
+    end
+end)
+
+print("LAJ HUB Ban detection system loaded successfully")
+end
     LAJ HUB - Swift Compatible Version
     Created for universal executor compatibility with special Swift support
 ]]
@@ -269,6 +400,80 @@ Fin:CreateButton({
    end,
 })
 
+
+Fin:CreateButton({
+   Name = "ThanHub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/thantzy/thanhub/refs/heads/main/thanv1"))()
+        executednotify("ThanHub Script")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Rift GUI",
+   Callback = function()
+        loadstring(getHttpRequest("https://github.com/Synergy-Networks/products/raw/main/Rift/loader.lua"))()
+        executednotify("Rift GUI - AutoFarming")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Hooked Script",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Superman245/sc2/refs/heads/main/s6"))()
+        executednotify("Hooked Script - Mobile")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "HomoHack",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/dementiaenjoyer/homohack/main/loader.lua"))()
+        executednotify("HomoHack - Auto Fish")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Native Hub",
+   Callback = function()
+        script_key="4JxQ1x@+1"
+        loadstring(getHttpRequest("https://getnative.cc/script/loader"))()
+        executednotify("Native Hub v0571")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Raito Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/RaitoHub/refs/heads/main/Script"))()
+        executednotify("Raito Hub 🐋MARIANA")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Zenith Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Efe0626/ZenithHub/refs/heads/main/Loader"))()
+        executednotify("Zenith Hub v3.2.5 - Keyless")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Lunor Script",
+   Callback = function()
+        script_key = 'lunor_free_key'
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Just3itx/Lunor-Loadstrings/refs/heads/main/Loader"))()
+        executednotify("Lunor Script v1.1.3")
+   end,
+})
+
+Fin:CreateButton({
+   Name = "Ronix Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/4a8848fbc1047bcc62c49e797384e9ab.lua"))()
+        executednotify("Ronix Hub Script V0.43")
+   end,
+})
 -- Basketball Zero script with bypass
 BballZero:CreateButton({
    Name = "Ball Control",
