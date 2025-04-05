@@ -175,13 +175,14 @@ local Window = Rayfield:CreateWindow({
 
 -- Create tabs
 local MainTab = Window:CreateTab("Main", 4483362458)
-local Tab = Window:CreateTab("Da Strike", 4483362458)
+local Tab = Window:CreateTab("Da Strike x Da Hood", 4483362458)
 local Fin = Window:CreateTab("Fisch", 4483362458)
 local BballZero = Window:CreateTab("Basketball Zero", 4483362458)
 local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
 local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
+local MuscleLegend = Window:CreateTab("Muscle Legend", 4483362458) -- Added Muscle Legend tab
 local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
 local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
@@ -227,7 +228,7 @@ MainTab:CreateButton({
    end,
 })
 
--- Da Strike Tab scripts
+-- Da Strike x Da Hood Tab scripts
 Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
@@ -252,6 +253,13 @@ Tab:CreateButton({
    end,
 })
 
+Tab:CreateButton({
+   Name = "Da Hood Script",
+   Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Zinzs/luascripting/main/canyoutellitsadahoodscriptornot.lua'))()
+        executednotify("Da Hood Script")
+   end,
+})
 -- Fisch Tab
 Fin:CreateButton({
    Name = "Speed Hub",
@@ -294,6 +302,16 @@ PetSim99:CreateButton({
        -- Load the script from GitHub
        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
        executednotify("LAJ Custom Trade Scam")
+   end,
+})
+-- Muscle Legend Tab
+MuscleLegend:CreateSection("Muscle Legend Scripts")
+
+MuscleLegend:CreateButton({
+   Name = "Muscle Legend Script",
+   Callback = function()
+       loadstring(game:HttpGet(("https://raw.githubusercontent.com/ahmadsgamer2/Script--Game/main/Muscle-Legends"),true))()
+       executednotify("Muscle Legend Script")
    end,
 })
 
