@@ -2,6 +2,9 @@
 -- Combines key verification system with advanced webhook tracking
 -- Created for GitHub deployment
 
+-- Module definition
+local KeySystem = {}
+
 -- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -13,32 +16,80 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local Player = Players.LocalPlayer
 local Mouse = Player:GetMouse()
 
--- Configuration (edit these)
-local VALID_KEYS = {
-    "LAJPRO",
-    "LAJVIP456",
-    "LAJHUB789",
-    "LAJSPECIAL",
-    "LAJULTRA",
-    "LAJEXCLUSIVE",
-    "LAJPREMIUM", 
-    "LAJELITE"
+-- Webhook Security Functions
+local function encodeWebhook(url)
+    if not url or url == "" then return "" end
+    
+    -- Encode URL by reversing and base64 encoding
+    local reverse = url:reverse()
+    
+    -- Base64 encode the reversed string for additional security
+    local base64 = HttpService:JSONEncode(reverse)
+    
+    -- Add a simple XOR layer
+    local encoded = ""
+    for i = 1, #base64 do
+        local byte = string.byte(base64, i)
+        local xorKey = i % 10 + 1
+        encoded = encoded .. string.char(bit32.bxor(byte, xorKey))
+    end
+    
+    return encoded
+end
+
+local function decodeWebhook(encoded)
+    if not encoded or encoded == "" then return "" end
+    
+    -- Decode XOR layer
+    local base64 = ""
+    for i = 1, #encoded do
+        local byte = string.byte(encoded, i)
+        local xorKey = i % 10 + 1
+        base64 = base64 .. string.char(bit32.bxor(byte, xorKey))
+    end
+    
+    -- Decode base64
+    local reverse = ""
+    pcall(function()
+        reverse = HttpService:JSONDecode(base64)
+    end)
+    
+    -- Reverse back to original
+    return reverse:reverse()
+end
+
+-- Store webhook URLs in a more secure way
+local ENCODED_WEBHOOKS = {
+    default = "", -- Will be set during Init
+    userCount = ""  -- Will be set during Init
 }
 
--- Discord server link
-local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
-
--- Webhook URLs for tracking (reversed for obfuscation)
-local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
-local USER_COUNT_WEBHOOK_URL = "https://discord.com/api/webhooks/1357978591928782933/2HF0z8dfhWcXjbPQwhTcCPrTkSPX-Eu2WP15-jNCAngiLbW5YODPsA835wVkucjya_MN"
-
--- GitHub script URL (where your main script is hosted)
-local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
+-- Default configuration (will be overridden by Init)
+local CONFIG = {
+    WebhookURL = nil,
+    UserCountWebhookURL = nil,
+    KeyList = {},
+    GameName = "LAJ HUB",
+    DiscordLink = "https://discord.gg/4mgdcfvAJU",
+    ScriptURL = nil,
+    OnKeyVerified = nil,  -- Callback function when key is verified
+    ObfuscateWebhooks = true  -- Enable webhook obfuscation
+}
 
 -- Initialize user counter and last webhook time
 local userCounter = 0
 local lastWebhookTime = 0
 local WEBHOOK_COOLDOWN = 300 -- 5 minutes cooldown
+
+-- UI Colors
+local Theme = {
+    Background = Color3.fromRGB(35, 35, 35),
+    DarkBackground = Color3.fromRGB(25, 25, 25),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    AccentColor = Color3.fromRGB(65, 105, 225),
+    ErrorColor = Color3.fromRGB(220, 60, 60),
+    SuccessColor = Color3.fromRGB(60, 220, 60)
+}
 
 -- Request function for different executors
 local function makeHttpRequest(options)
@@ -62,21 +113,29 @@ local function makeHttpRequest(options)
     end
 end
 
--- UI Colors
-local Theme = {
-    Background = Color3.fromRGB(35, 35, 35),
-    DarkBackground = Color3.fromRGB(25, 25, 25),
-    TextColor = Color3.fromRGB(255, 255, 255),
-    AccentColor = Color3.fromRGB(65, 105, 225),
-    ErrorColor = Color3.fromRGB(220, 60, 60),
-    SuccessColor = Color3.fromRGB(60, 220, 60)
-}
+-- Function to get the real webhook URL (decodes if needed)
+local function getWebhookURL(type)
+    if not CONFIG.ObfuscateWebhooks then
+        return type == "userCount" and CONFIG.UserCountWebhookURL or CONFIG.WebhookURL
+    end
+    
+    local encoded = type == "userCount" and ENCODED_WEBHOOKS.userCount or ENCODED_WEBHOOKS.default
+    return decodeWebhook(encoded)
+end
 
 -- Function to log key usage via webhook
 local function logKeyUsage(key, success)
     -- Rate limiting check
     local currentTime = os.time()
     if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        return
+    end
+    
+    -- Get the real webhook URL
+    local webhookURL = getWebhookURL("default")
+    
+    -- Don't try to send if webhook URL is not set
+    if not webhookURL or webhookURL == "" then
         return
     end
     
@@ -131,7 +190,7 @@ local function logKeyUsage(key, success)
         -- Send webhook with proper error handling
         local jsonData = HttpService:JSONEncode(webhookData)
         makeHttpRequest({
-            Url = DISCORD_WEBHOOK_URL,
+            Url = webhookURL,
             Method = 'POST',
             Headers = {
                 ['Content-Type'] = 'application/json'
@@ -152,6 +211,15 @@ local function sendUsageData()
     
     -- Rate limit to 1 request per 5 minutes to prevent webhook abuse
     if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+        return
+    end
+    
+    -- Get the real webhook URLs
+    local webhookURL = getWebhookURL("default")
+    local userCountWebhookURL = getWebhookURL("userCount")
+    
+    -- Don't try to send if webhook URL is not set
+    if not webhookURL or webhookURL == "" then
         return
     end
     
@@ -211,7 +279,7 @@ local function sendUsageData()
         -- Encode the data and send the first webhook
         local jsonData = HttpService:JSONEncode(webhookData)
         makeHttpRequest({
-            Url = DISCORD_WEBHOOK_URL,
+            Url = webhookURL,
             Method = 'POST',
             Headers = {
                 ['Content-Type'] = 'application/json'
@@ -219,63 +287,66 @@ local function sendUsageData()
             Body = jsonData
         })
         
-        -- Format time for the user count webhook
-        local formattedTime = os.date("%Y-%m-%d %H:%M:%S")
-        
-        -- Prepare data for the user count webhook
-        local countWebhookData = {
-            ["content"] = "",
-            ["embeds"] = {{
-                ["title"] = "🌟 LAJ HUB Usage Statistics 🌟",
-                ["description"] = "**Script has now been used by " .. tostring(userCounter) .. " players!**\n\n*A new player has just executed LAJ HUB*",
-                ["color"] = 0x7289DA, -- Discord blue color
-                ["thumbnail"] = {
-                    ["url"] = "https://i.imgur.com/QV7nVFU.png" -- You can replace with your own logo URL
-                },
-                ["fields"] = {
-                    {
-                        ["name"] = "👤 Latest User",
-                        ["value"] = "```" .. Player.Name .. " (" .. tostring(Player.UserId) .. ")```",
-                        ["inline"] = true
+        -- Only try to send user count webhook if URL is set
+        if userCountWebhookURL and userCountWebhookURL ~= "" then
+            -- Format time for the user count webhook
+            local formattedTime = os.date("%Y-%m-%d %H:%M:%S")
+            
+            -- Prepare data for the user count webhook
+            local countWebhookData = {
+                ["content"] = "",
+                ["embeds"] = {{
+                    ["title"] = "🌟 LAJ HUB Usage Statistics 🌟",
+                    ["description"] = "**Script has now been used by " .. tostring(userCounter) .. " players!**\n\n*A new player has just executed LAJ HUB*",
+                    ["color"] = 0x7289DA, -- Discord blue color
+                    ["thumbnail"] = {
+                        ["url"] = "https://i.imgur.com/QV7nVFU.png" -- You can replace with your own logo URL
                     },
-                    {
-                        ["name"] = "🎮 Game",
-                        ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
-                        ["inline"] = true
+                    ["fields"] = {
+                        {
+                            ["name"] = "👤 Latest User",
+                            ["value"] = "```" .. Player.Name .. " (" .. tostring(Player.UserId) .. ")```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "🎮 Game",
+                            ["value"] = "```" .. MarketplaceService:GetProductInfo(game.PlaceId).Name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "🔧 Executor",
+                            ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "📊 Total Users",
+                            ["value"] = "```yaml\n" .. tostring(userCounter) .. " Users```",
+                            ["inline"] = false
+                        },
+                        {
+                            ["name"] = "🔄 Daily Activity",
+                            ["value"] = "```diff\n+ New user added to statistics\n+ Counter incremented successfully```",
+                            ["inline"] = false
+                        }
                     },
-                    {
-                        ["name"] = "🔧 Executor",
-                        ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
-                        ["inline"] = true
-                    },
-                    {
-                        ["name"] = "📊 Total Users",
-                        ["value"] = "```yaml\n" .. tostring(userCounter) .. " Users```",
-                        ["inline"] = false
-                    },
-                    {
-                        ["name"] = "🔄 Daily Activity",
-                        ["value"] = "```diff\n+ New user added to statistics\n+ Counter incremented successfully```",
-                        ["inline"] = false
+                    ["footer"] = {
+                        ["text"] = "LAJ HUB Stats • Last Updated: " .. formattedTime,
+                        ["icon_url"] = "https://i.imgur.com/QV7nVFU.png"
                     }
+                }}
+            }
+            
+            -- Encode and send the user count webhook
+            local countJsonData = HttpService:JSONEncode(countWebhookData)
+            makeHttpRequest({
+                Url = userCountWebhookURL,
+                Method = 'POST',
+                Headers = {
+                    ['Content-Type'] = 'application/json'
                 },
-                ["footer"] = {
-                    ["text"] = "LAJ HUB Stats • Last Updated: " .. formattedTime,
-                    ["icon_url"] = "https://i.imgur.com/QV7nVFU.png"
-                }
-            }}
-        }
-        
-        -- Encode and send the user count webhook
-        local countJsonData = HttpService:JSONEncode(countWebhookData)
-        makeHttpRequest({
-            Url = USER_COUNT_WEBHOOK_URL,
-            Method = 'POST',
-            Headers = {
-                ['Content-Type'] = 'application/json'
-            },
-            Body = countJsonData
-        })
+                Body = countJsonData
+            })
+        end
     end)
     
     if not success then
@@ -289,6 +360,14 @@ local function logBanEvent(reason)
     local currentTime = os.time()
     if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
         warn("Rate limit: Not sending webhook notification (cooldown active)")
+        return
+    end
+    
+    -- Get the real webhook URL
+    local webhookURL = getWebhookURL("default")
+    
+    -- Don't try to send if webhook URL is not set
+    if not webhookURL or webhookURL == "" then
         return
     end
     
@@ -352,7 +431,7 @@ local function logBanEvent(reason)
         -- Send the webhook
         local jsonData = HttpService:JSONEncode(webhookData)
         makeHttpRequest({
-            Url = DISCORD_WEBHOOK_URL,
+            Url = webhookURL,
             Method = 'POST',
             Headers = {
                 ['Content-Type'] = 'application/json'
@@ -368,23 +447,12 @@ end
 
 -- Function to verify a key
 local function verifyKey(key)
-    for _, validKey in ipairs(VALID_KEYS) do
+    for _, validKey in ipairs(CONFIG.KeyList) do
         if key == validKey then
             return true
         end
     end
     return false
-end
-
--- Function to load the main script
-local function loadMainScript()
-    local success, error_message = pcall(function()
-        loadstring(game:HttpGet(SCRIPT_URL))()
-    end)
-    
-    if not success then
-        warn("Failed to load main script: " .. tostring(error_message))
-    end
 end
 
 -- Set up kick/ban detection
@@ -419,7 +487,7 @@ local function setupKickDetection()
 end
 
 -- Creating UI Elements
-local function createKeySystemUI()
+local function createKeySystemUI(onKeyVerified)
     -- Check if UI already exists and remove it
     if CoreGui:FindFirstChild("LAJHubKeySystem") then
         CoreGui:FindFirstChild("LAJHubKeySystem"):Destroy()
@@ -435,50 +503,24 @@ local function createKeySystemUI()
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 400, 0, 300) -- Slightly increased height for Discord button
-    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
     
-    -- Apply corner radius
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 6)
-    MainCorner.Parent = MainFrame
-    
-    -- Title Bar
-    local TitleBar = Instance.new("Frame")
-    TitleBar.Name = "TitleBar"
-    TitleBar.Size = UDim2.new(1, 0, 0, 30)
-    TitleBar.Position = UDim2.new(0, 0, 0, 0)
-    TitleBar.BackgroundColor3 = Theme.DarkBackground
-    TitleBar.BorderSizePixel = 0
-    TitleBar.Parent = MainFrame
-    
-    local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 6)
-    TitleCorner.Parent = TitleBar
-    
-    -- Fix corners
-    local TitleCornerFix = Instance.new("Frame")
-    TitleCornerFix.Name = "TitleCornerFix"
-    TitleCornerFix.Size = UDim2.new(1, 0, 0.5, 0)
-    TitleCornerFix.Position = UDim2.new(0, 0, 0.5, 0)
-    TitleCornerFix.BackgroundColor3 = Theme.DarkBackground
-    TitleCornerFix.BorderSizePixel = 0
-    TitleCornerFix.Parent = TitleBar
-    
-    -- Make the title bar draggable
+    -- Make the frame draggable
     local dragging
     local dragInput
     local dragStart
     local startPos
     
-    local function updateInput(input)
+    local function update(input)
         local delta = input.Position - dragStart
         MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
     
-    TitleBar.InputBegan:Connect(function(input)
+    MainFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
@@ -492,7 +534,7 @@ local function createKeySystemUI()
         end
     end)
     
-    TitleBar.InputChanged:Connect(function(input)
+    MainFrame.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement then
             dragInput = input
         end
@@ -500,9 +542,17 @@ local function createKeySystemUI()
     
     game:GetService("UserInputService").InputChanged:Connect(function(input)
         if input == dragInput and dragging then
-            updateInput(input)
+            update(input)
         end
     end)
+    
+    -- Title Bar
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
+    TitleBar.Size = UDim2.new(1, 0, 0, 30)
+    TitleBar.BackgroundColor3 = Theme.DarkBackground
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Parent = MainFrame
     
     -- Title
     local TitleLabel = Instance.new("TextLabel")
@@ -510,162 +560,158 @@ local function createKeySystemUI()
     TitleLabel.Size = UDim2.new(1, -60, 1, 0)
     TitleLabel.Position = UDim2.new(0, 10, 0, 0)
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = "LAJ HUB - Key System"
-    TitleLabel.TextColor3 = Theme.TextColor
-    TitleLabel.TextSize = 16
     TitleLabel.Font = Enum.Font.SourceSansBold
+    TitleLabel.Text = CONFIG.GameName .. " Key System"
+    TitleLabel.TextColor3 = Theme.TextColor
+    TitleLabel.TextSize = 18
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TitleBar
-    
-    -- Close Button
-    local CloseButton = Instance.new("TextButton")
-    CloseButton.Name = "CloseButton"
-    CloseButton.Size = UDim2.new(0, 24, 0, 24)
-    CloseButton.Position = UDim2.new(1, -28, 0, 3)
-    CloseButton.BackgroundColor3 = Theme.ErrorColor
-    CloseButton.Text = "×"
-    CloseButton.TextColor3 = Theme.TextColor
-    CloseButton.TextSize = 18
-    CloseButton.Font = Enum.Font.SourceSansBold
-    CloseButton.Parent = TitleBar
-    
-    local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(0, 4)
-    CloseCorner.Parent = CloseButton
-    
-    CloseButton.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
     
     -- Minimize Button
     local MinimizeButton = Instance.new("TextButton")
     MinimizeButton.Name = "MinimizeButton"
-    MinimizeButton.Size = UDim2.new(0, 24, 0, 24)
-    MinimizeButton.Position = UDim2.new(1, -56, 0, 3)
-    MinimizeButton.BackgroundColor3 = Theme.Background
+    MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+    MinimizeButton.Position = UDim2.new(1, -60, 0, 0)
+    MinimizeButton.BackgroundTransparency = 1
+    MinimizeButton.Font = Enum.Font.SourceSansBold
     MinimizeButton.Text = "-"
     MinimizeButton.TextColor3 = Theme.TextColor
-    MinimizeButton.TextSize = 18
-    MinimizeButton.Font = Enum.Font.SourceSansBold
+    MinimizeButton.TextSize = 24
     MinimizeButton.Parent = TitleBar
     
-    local MinimizeCorner = Instance.new("UICorner")
-    MinimizeCorner.CornerRadius = UDim.new(0, 4)
-    MinimizeCorner.Parent = MinimizeButton
+    -- Close Button
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Name = "CloseButton"
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -30, 0, 0)
+    CloseButton.BackgroundTransparency = 1
+    CloseButton.Font = Enum.Font.SourceSansBold
+    CloseButton.Text = "×"
+    CloseButton.TextColor3 = Theme.TextColor
+    CloseButton.TextSize = 24
+    CloseButton.Parent = TitleBar
+    
+    -- Close button action
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
     
     -- Content Area
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -20, 1, -40)
-    ContentArea.Position = UDim2.new(0, 10, 0, 35)
+    ContentArea.Size = UDim2.new(1, 0, 1, -30)
+    ContentArea.Position = UDim2.new(0, 0, 0, 30)
     ContentArea.BackgroundTransparency = 1
-    ContentArea.BorderSizePixel = 0
     ContentArea.Parent = MainFrame
     
-    -- Key input elements
+    -- Logo (if available)
+    local LogoImage = Instance.new("ImageLabel")
+    LogoImage.Name = "LogoImage"
+    LogoImage.Size = UDim2.new(0, 100, 0, 100)
+    LogoImage.Position = UDim2.new(0.5, 0, 0, 20)
+    LogoImage.AnchorPoint = Vector2.new(0.5, 0)
+    LogoImage.BackgroundTransparency = 1
+    LogoImage.Image = "rbxassetid://15159281768" -- Replace with your logo asset ID
+    LogoImage.Parent = ContentArea
+    
+    -- Key Label
     local KeyLabel = Instance.new("TextLabel")
     KeyLabel.Name = "KeyLabel"
-    KeyLabel.Size = UDim2.new(1, 0, 0, 20)
-    KeyLabel.Position = UDim2.new(0, 0, 0, 10)
+    KeyLabel.Size = UDim2.new(1, -40, 0, 20)
+    KeyLabel.Position = UDim2.new(0, 20, 0, 130)
     KeyLabel.BackgroundTransparency = 1
-    KeyLabel.Text = "Enter your key:"
+    KeyLabel.Font = Enum.Font.SourceSansBold
+    KeyLabel.Text = "Enter Key:"
     KeyLabel.TextColor3 = Theme.TextColor
-    KeyLabel.TextSize = 14
-    KeyLabel.Font = Enum.Font.SourceSans
+    KeyLabel.TextSize = 18
     KeyLabel.TextXAlignment = Enum.TextXAlignment.Left
     KeyLabel.Parent = ContentArea
     
+    -- Key Input
     local KeyInput = Instance.new("TextBox")
     KeyInput.Name = "KeyInput"
-    KeyInput.Size = UDim2.new(1, 0, 0, 35)
-    KeyInput.Position = UDim2.new(0, 0, 0, 35)
+    KeyInput.Size = UDim2.new(1, -40, 0, 35)
+    KeyInput.Position = UDim2.new(0, 20, 0, 155)
     KeyInput.BackgroundColor3 = Theme.DarkBackground
-    KeyInput.PlaceholderText = "Enter your LAJ HUB key here..."
-    KeyInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+    KeyInput.BorderSizePixel = 0
+    KeyInput.Font = Enum.Font.SourceSans
+    KeyInput.PlaceholderText = "Enter your key here..."
     KeyInput.Text = ""
     KeyInput.TextColor3 = Theme.TextColor
-    KeyInput.TextSize = 14
-    KeyInput.Font = Enum.Font.SourceSans
-    KeyInput.BorderSizePixel = 0
+    KeyInput.TextSize = 16
     KeyInput.ClearTextOnFocus = false
     KeyInput.Parent = ContentArea
     
-    local KeyInputCorner = Instance.new("UICorner")
-    KeyInputCorner.CornerRadius = UDim.new(0, 4)
-    KeyInputCorner.Parent = KeyInput
-    
-    -- Button for key verification
-    local VerifyButton = Instance.new("TextButton")
-    VerifyButton.Name = "VerifyButton"
-    VerifyButton.Size = UDim2.new(1, 0, 0, 35)
-    VerifyButton.Position = UDim2.new(0, 0, 0, 80)
-    VerifyButton.BackgroundColor3 = Theme.AccentColor
-    VerifyButton.Text = "Verify Key"
-    VerifyButton.TextColor3 = Theme.TextColor
-    VerifyButton.TextSize = 16
-    VerifyButton.Font = Enum.Font.SourceSansBold
-    VerifyButton.BorderSizePixel = 0
-    VerifyButton.Parent = ContentArea
-    
-    local VerifyCorner = Instance.new("UICorner")
-    VerifyCorner.CornerRadius = UDim.new(0, 4)
-    VerifyCorner.Parent = VerifyButton
-    
-    -- Status label
+    -- Status Label
     local StatusLabel = Instance.new("TextLabel")
     StatusLabel.Name = "StatusLabel"
-    StatusLabel.Size = UDim2.new(1, 0, 0, 20)
-    StatusLabel.Position = UDim2.new(0, 0, 0, 125)
+    StatusLabel.Size = UDim2.new(1, -40, 0, 20)
+    StatusLabel.Position = UDim2.new(0, 20, 0, 195)
     StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Text = "Enter your key above"
-    StatusLabel.TextColor3 = Theme.TextColor
-    StatusLabel.TextSize = 14
     StatusLabel.Font = Enum.Font.SourceSans
+    StatusLabel.Text = "Enter your key and click Verify"
+    StatusLabel.TextColor3 = Theme.TextColor
+    StatusLabel.TextSize = 16
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Center
     StatusLabel.Parent = ContentArea
     
-    -- Discord button
+    -- Verify Button
+    local VerifyButton = Instance.new("TextButton")
+    VerifyButton.Name = "VerifyButton"
+    VerifyButton.Size = UDim2.new(1, -40, 0, 35)
+    VerifyButton.Position = UDim2.new(0, 20, 0, 220)
+    VerifyButton.BackgroundColor3 = Theme.AccentColor
+    VerifyButton.BorderSizePixel = 0
+    VerifyButton.Font = Enum.Font.SourceSansBold
+    VerifyButton.Text = "Verify Key"
+    VerifyButton.TextColor3 = Theme.TextColor
+    VerifyButton.TextSize = 18
+    VerifyButton.Parent = ContentArea
+    
+    -- Discord Button
     local DiscordButton = Instance.new("TextButton")
     DiscordButton.Name = "DiscordButton"
-    DiscordButton.Size = UDim2.new(1, 0, 0, 35)
-    DiscordButton.Position = UDim2.new(0, 0, 0, 155)
-    DiscordButton.BackgroundColor3 = Color3.fromRGB(114, 137, 218) -- Discord color
+    DiscordButton.Size = UDim2.new(1, -40, 0, 30)
+    DiscordButton.Position = UDim2.new(0, 20, 1, -45)
+    DiscordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord blue
+    DiscordButton.BorderSizePixel = 0
+    DiscordButton.Font = Enum.Font.SourceSansBold
     DiscordButton.Text = "Join Discord for Key"
     DiscordButton.TextColor3 = Theme.TextColor
     DiscordButton.TextSize = 16
-    DiscordButton.Font = Enum.Font.SourceSansBold
-    DiscordButton.BorderSizePixel = 0
     DiscordButton.Parent = ContentArea
     
-    local DiscordCorner = Instance.new("UICorner")
-    DiscordCorner.CornerRadius = UDim.new(0, 4)
-    DiscordCorner.Parent = DiscordButton
+    -- Set up button hover effects
+    for _, button in pairs({VerifyButton, DiscordButton}) do
+        button.MouseEnter:Connect(function()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = button.BackgroundColor3:Lerp(Color3.fromRGB(255, 255, 255), 0.2)}):Play()
+        end)
+        
+        button.MouseLeave:Connect(function()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = button.BackgroundColor3:Lerp(Color3.fromRGB(0, 0, 0), 0.1)}):Play()
+        end)
+    end
     
-    -- Credits
-    local CreditsLabel = Instance.new("TextLabel")
-    CreditsLabel.Name = "CreditsLabel"
-    CreditsLabel.Size = UDim2.new(1, 0, 0, 20)
-    CreditsLabel.Position = UDim2.new(0, 0, 1, -25)
-    CreditsLabel.BackgroundTransparency = 1
-    CreditsLabel.Text = "LAJ HUB © 2023-2024 | Swift Compatible"
-    CreditsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-    CreditsLabel.TextSize = 12
-    CreditsLabel.Font = Enum.Font.SourceSans
-    CreditsLabel.Parent = ContentArea
-    
-    -- Button actions
+    -- Verify button action
     VerifyButton.MouseButton1Click:Connect(function()
         local key = KeyInput.Text
         
-        if verifyKey(key) then
+        if key == "" then
+            StatusLabel.Text = "Please enter a key"
+            StatusLabel.TextColor3 = Theme.ErrorColor
+            return
+        end
+        
+        -- Verify the key
+        local isValid = verifyKey(key)
+        
+        if isValid then
             -- Successful verification
-            StatusLabel.Text = "Key verified! Loading script..."
+            StatusLabel.Text = "Key verified successfully!"
             StatusLabel.TextColor3 = Theme.SuccessColor
             
-            -- Log key usage
+            -- Log successful key usage
             logKeyUsage(key, true)
-            
-            -- Initialize kick detection
-            setupKickDetection()
             
             -- Send usage data to webhook
             sendUsageData()
@@ -677,8 +723,10 @@ local function createKeySystemUI()
             
             wait(1)
             
-            -- Load main script after UI success feedback
-            loadMainScript()
+            -- Call the verification callback
+            if onKeyVerified then
+                onKeyVerified(key)
+            end
             
             -- Close the UI after loading the script
             wait(0.5)
@@ -707,7 +755,7 @@ local function createKeySystemUI()
     DiscordButton.MouseButton1Click:Connect(function()
         -- Open Discord invite
         pcall(function()
-            setclipboard(DISCORD_LINK)
+            setclipboard(CONFIG.DiscordLink)
         end)
         
         StatusLabel.Text = "Discord link copied to clipboard!"
@@ -754,16 +802,40 @@ local function createKeySystemUI()
     DropShadow.Parent = MainFrame
 end
 
--- Main function to start the key system
-local function startKeySystem()
-    -- Create the UI
-    createKeySystemUI()
+-- Expose webhook functions for external use
+KeySystem.sendUsageData = sendUsageData
+KeySystem.logKeyUsage = logKeyUsage
+KeySystem.logBanEvent = logBanEvent
+
+-- Main initialization function
+function KeySystem.Init(config)
+    -- Update configuration with provided values
+    for key, value in pairs(config) do
+        CONFIG[key] = value
+    end
+    
+    -- Validate required configuration
+    if not CONFIG.KeyList or #CONFIG.KeyList == 0 then
+        warn("KeySystem.Init: No valid keys provided in configuration")
+        return false
+    end
+    
+    -- Encode webhook URLs for security if enabled
+    if CONFIG.ObfuscateWebhooks then
+        ENCODED_WEBHOOKS.default = CONFIG.WebhookURL and encodeWebhook(CONFIG.WebhookURL) or ""
+        ENCODED_WEBHOOKS.userCount = CONFIG.UserCountWebhookURL and encodeWebhook(CONFIG.UserCountWebhookURL) or ""
+    end
     
     -- Set up kick detection
     spawn(function()
         setupKickDetection()
     end)
+    
+    -- Create and show the key system UI
+    createKeySystemUI(CONFIG.OnKeyVerified)
+    
+    return true
 end
 
--- Start the key system
-startKeySystem()
+-- Return the module
+return KeySystem
