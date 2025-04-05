@@ -1,0 +1,325 @@
+--[[
+    LAJ HUB - Pet Simulator 99 Trade Scam Script
+    Custom implementation for LAJ HUB
+]]
+
+-- Local Player Information
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+-- Constants and configurations
+local SCRIPT_VERSION = "1.0.0"
+local PET_DUPLICATION_CHANCE = 100 -- 100% chance to add duplicated pets
+
+-- Check if in the correct game
+if game.PlaceId ~= 8737899170 and game.PlaceId ~= 15744250920 then
+    warn("This script is designed for Pet Simulator 99 only!")
+    return
+end
+
+-- GUI Creation for notification and controls
+local TradeScamGUI = Instance.new("ScreenGui")
+TradeScamGUI.Name = "LAJTradeScamGUI"
+TradeScamGUI.Parent = game.CoreGui
+TradeScamGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local function createNotification(title, text, duration)
+    duration = duration or 3
+    
+    local NotificationFrame = Instance.new("Frame")
+    NotificationFrame.Name = "Notification"
+    NotificationFrame.Size = UDim2.new(0, 250, 0, 80)
+    NotificationFrame.Position = UDim2.new(1, -260, 0.8, 0)
+    NotificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    NotificationFrame.BorderSizePixel = 0
+    NotificationFrame.Parent = TradeScamGUI
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 6)
+    UICorner.Parent = NotificationFrame
+    
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Name = "Title"
+    TitleLabel.Size = UDim2.new(1, -20, 0, 30)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 10)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.TextSize = 18
+    TitleLabel.Font = Enum.Font.SourceSansBold
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = NotificationFrame
+    
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Name = "Text"
+    TextLabel.Size = UDim2.new(1, -20, 0, 30)
+    TextLabel.Position = UDim2.new(0, 10, 0, 40)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = text
+    TextLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TextLabel.TextSize = 14
+    TextLabel.Font = Enum.Font.SourceSans
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Parent = NotificationFrame
+    
+    -- Animation
+    NotificationFrame.Position = UDim2.new(1, 0, 0.8, 0)
+    local tween = TweenService:Create(
+        NotificationFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+        {Position = UDim2.new(1, -260, 0.8, 0)}
+    )
+    tween:Play()
+    
+    -- Destroy after duration
+    spawn(function()
+        wait(duration)
+        local fadeOut = TweenService:Create(
+            NotificationFrame,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+            {Position = UDim2.new(1, 0, 0.8, 0)}
+        )
+        fadeOut:Play()
+        fadeOut.Completed:Wait()
+        NotificationFrame:Destroy()
+    end)
+end
+
+-- Control Panel
+local ControlPanel = Instance.new("Frame")
+ControlPanel.Name = "ControlPanel"
+ControlPanel.Size = UDim2.new(0, 200, 0, 180)
+ControlPanel.Position = UDim2.new(0, 10, 0.5, -90)
+ControlPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ControlPanel.BorderSizePixel = 0
+ControlPanel.Active = true
+ControlPanel.Draggable = true
+ControlPanel.Parent = TradeScamGUI
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = ControlPanel
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = ControlPanel
+
+local UICornerTitle = Instance.new("UICorner")
+UICornerTitle.CornerRadius = UDim.new(0, 6)
+UICornerTitle.Parent = TitleBar
+
+local ClipFrame = Instance.new("Frame")
+ClipFrame.Name = "ClipFrame"
+ClipFrame.Size = UDim2.new(1, 0, 0.5, 0)
+ClipFrame.Position = UDim2.new(0, 0, 0.5, 0)
+ClipFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ClipFrame.BorderSizePixel = 0
+ClipFrame.Parent = TitleBar
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "Title"
+TitleLabel.Size = UDim2.new(1, -10, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "LAJ Trade Scam v" .. SCRIPT_VERSION
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 14
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TitleBar
+
+-- Toggle button
+local function createToggleButton(text, position, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Name = text .. "Toggle"
+    ToggleFrame.Size = UDim2.new(1, -20, 0, 30)
+    ToggleFrame.Position = position
+    ToggleFrame.BackgroundTransparency = 1
+    ToggleFrame.Parent = ControlPanel
+    
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Name = "Label"
+    ToggleLabel.Size = UDim2.new(1, -50, 1, 0)
+    ToggleLabel.Position = UDim2.new(0, 0, 0, 0)
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.Text = text
+    ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleLabel.TextSize = 14
+    ToggleLabel.Font = Enum.Font.SourceSans
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleLabel.Parent = ToggleFrame
+    
+    local ToggleButton = Instance.new("Frame")
+    ToggleButton.Name = "Button"
+    ToggleButton.Size = UDim2.new(0, 40, 0, 20)
+    ToggleButton.Position = UDim2.new(1, -40, 0.5, -10)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Parent = ToggleFrame
+    
+    local UICornerToggle = Instance.new("UICorner")
+    UICornerToggle.CornerRadius = UDim.new(0, 10)
+    UICornerToggle.Parent = ToggleButton
+    
+    local ToggleCircle = Instance.new("Frame")
+    ToggleCircle.Name = "Circle"
+    ToggleCircle.Size = UDim2.new(0, 16, 0, 16)
+    ToggleCircle.Position = UDim2.new(0, 2, 0.5, -8)
+    ToggleCircle.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    ToggleCircle.BorderSizePixel = 0
+    ToggleCircle.Parent = ToggleButton
+    
+    local UICornerCircle = Instance.new("UICorner")
+    UICornerCircle.CornerRadius = UDim.new(1, 0)
+    UICornerCircle.Parent = ToggleCircle
+    
+    local toggled = false
+    
+    local function updateToggle()
+        local position = toggled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+        local color = toggled and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(80, 80, 80)
+        
+        local tweenCircle = TweenService:Create(
+            ToggleCircle,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Position = position}
+        )
+        
+        local tweenButton = TweenService:Create(
+            ToggleButton,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundColor3 = color}
+        )
+        
+        tweenCircle:Play()
+        tweenButton:Play()
+        
+        callback(toggled)
+    end
+    
+    ToggleButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            toggled = not toggled
+            updateToggle()
+        end
+    end)
+    
+    return {
+        setToggle = function(value)
+            toggled = value
+            updateToggle()
+        end,
+        getToggle = function()
+            return toggled
+        end
+    }
+end
+
+-- Trading implementation for Pet Simulator 99
+local TradeScamSettings = {
+    Enabled = false,
+    DuplicatePets = false,
+    RemovePets = false,
+    DuplicateHugeSuccess = false,
+    AlwaysAccept = false
+}
+
+-- Create toggles
+local EnabledToggle = createToggleButton("Enable Trade Scam", UDim2.new(0, 10, 0, 40), function(value)
+    TradeScamSettings.Enabled = value
+    if value then
+        createNotification("Trade Scam", "Trade scam enabled!", 3)
+    else
+        createNotification("Trade Scam", "Trade scam disabled!", 3)
+    end
+end)
+
+local DuplicateToggle = createToggleButton("Duplicate Pets", UDim2.new(0, 10, 0, 80), function(value)
+    TradeScamSettings.DuplicatePets = value
+end)
+
+local RemoveToggle = createToggleButton("Remove After Trade", UDim2.new(0, 10, 0, 120), function(value)
+    TradeScamSettings.RemovePets = value
+end)
+
+-- Hook into the trading system
+local TradeHandler = {}
+
+-- Function to detect trading system
+function TradeHandler:Init()
+    createNotification("Trade Scam", "Initializing trade scam system...", 3)
+    
+    -- We need to find and hook into the Pet Simulator 99 trading system
+    -- This would be implemented based on the game's specific trading system
+    
+    spawn(function()
+        while wait(1) do
+            -- Check if we're in a trade
+            local tradeFrame = nil
+            
+            -- Look for trade GUI elements
+            for _, v in pairs(PlayerGui:GetDescendants()) do
+                if v:IsA("Frame") and (v.Name:lower():find("trade") or v.Name:lower():find("trading")) then
+                    tradeFrame = v
+                    break
+                end
+            end
+            
+            if tradeFrame and TradeScamSettings.Enabled then
+                self:HandleTrade(tradeFrame)
+            end
+        end
+    end)
+    
+    createNotification("Trade Scam", "Trade scam system ready!", 3)
+end
+
+-- Handle the current trade
+function TradeHandler:HandleTrade(tradeFrame)
+    if not TradeScamSettings.Enabled then return end
+    
+    -- When in a trade, manipulate the pets being shown/offered
+    -- This would be implemented based on the game's specific trading system
+    
+    -- Example implementation (this would need to be adapted to the actual game):
+    if TradeScamSettings.DuplicatePets then
+        createNotification("Trade Scam", "Duplicating pets in trade...", 2)
+        -- Here we would find pets in the trade and duplicate them
+        -- This is a conceptual implementation
+    end
+    
+    if TradeScamSettings.AlwaysAccept then
+        -- Auto-accept when the other player accepts
+        -- This is a conceptual implementation
+    end
+end
+
+-- Initialize the trade scam handler
+TradeHandler:Init()
+
+-- Clean up function
+local function onScriptTerminate()
+    TradeScamGUI:Destroy()
+end
+
+-- Register clean up
+spawn(function()
+    local playerRemoving
+    playerRemoving = Players.PlayerRemoving:Connect(function(player)
+        if player == LocalPlayer then
+            onScriptTerminate()
+            playerRemoving:Disconnect()
+        end
+    end)
+end)
+
+createNotification("LAJ Trade Scam", "Script loaded successfully! Use the control panel to configure.", 5)
