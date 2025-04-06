@@ -25,7 +25,44 @@ styles["Diddy"] = {
 local AbilitiesModule = game:GetService("ReplicatedStorage").Controllers.AbilityController.Abilities
 local abilities = require(AbilitiesModule)
 
--- Helper function to create water particles
+-- Helper function to check if ultimate is active
+local function isUltimateActive()
+    local ultimateStatus = player:FindFirstChild("UltimateActive")
+    if ultimateStatus and ultimateStatus.Value then
+        return true
+    end
+    
+    -- Alternative check methods in case the above doesn't work
+    local ultimateGui = player.PlayerGui:FindFirstChild("UltimateGui")
+    if ultimateGui and ultimateGui.Enabled then
+        return true
+    end
+    
+    -- Check for ultimate effects on character
+    local character = player.Character
+    if character then
+        local ultimateEffect = character:FindFirstChild("UltimateEffect")
+        if ultimateEffect then
+            return true
+        end
+    end
+    
+    -- Check for ultimate meter value
+    local ingameGui = player.PlayerGui:FindFirstChild("InGame")
+    if ingameGui then
+        local ultimateMeter = ingameGui:FindFirstChild("Ultimate")
+        if ultimateMeter and ultimateMeter:FindFirstChild("Fill") then
+            if ultimateMeter.Fill.Size.X.Scale >= 0.99 then
+                return true
+            end
+        end
+    end
+    
+    -- Default return false if no ultimate indicators found
+    return false
+end
+
+-- Helper function to create water/oil particles
 local function createWaterVFX(parent, duration, size, color)
     local TweenService = game:GetService("TweenService")
     local Debris = game:GetService("Debris")
@@ -58,7 +95,7 @@ local function createWaterVFX(parent, duration, size, color)
     puddle.CanCollide = false
     puddle.Transparency = 0.3
     puddle.Material = Enum.Material.SmoothPlastic
-    puddle.Color = Color3.fromRGB(41, 128, 255)
+    puddle.Color = color or Color3.fromRGB(41, 128, 255)
     puddle.CFrame = parent.CFrame * CFrame.new(0, -3, 0)
     puddle.Parent = workspace
     
@@ -96,7 +133,7 @@ local function teleportWithEffects(player, distance)
     local look = originalCF.LookVector
     
     -- Create effect at original position
-    createWaterVFX(rootPart, 2, 2.5)
+    createWaterVFX(rootPart, 2, 2.5, Color3.fromRGB(41, 50, 71))
     
     -- Teleport instantly
     rootPart.CFrame = originalCF + look * distance
@@ -111,7 +148,7 @@ local function teleportWithEffects(player, distance)
     originPart.Parent = workspace
     
     -- Create effect at teleport destination
-    createWaterVFX(rootPart, 3, 3)
+    createWaterVFX(rootPart, 3, 3, Color3.fromRGB(41, 50, 71))
     
     -- Create connecting effect between positions
     local distancePart = Instance.new("Part")
@@ -120,7 +157,7 @@ local function teleportWithEffects(player, distance)
     distancePart.CanCollide = false
     distancePart.Transparency = 0.8
     distancePart.Material = Enum.Material.Neon
-    distancePart.Color = Color3.fromRGB(41, 128, 255)
+    distancePart.Color = Color3.fromRGB(41, 50, 71)
     distancePart.CFrame = CFrame.new(originalPos + (look * distance/2), originalPos + look * distance)
     distancePart.Parent = workspace
     
@@ -139,6 +176,370 @@ local function teleportWithEffects(player, distance)
     Debris:AddItem(originPart, 0.6)
     
     return rootPart.CFrame
+end
+
+-- Create a simple Oil Clone for Slick Shadow ability
+local function createOilClone(character, duration, offset)
+    if not character then return nil end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid then return nil end
+    
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return nil end
+    
+    local TweenService = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
+    
+    -- Create the clone container
+    local cloneModel = Instance.new("Model")
+    cloneModel.Name = "OilClone"
+    
+    -- Clone main body parts
+    local bodyParts = {}
+    for _, child in pairs(character:GetChildren()) do
+        if child:IsA("BasePart") and child.Name ~= "HumanoidRootPart" then
+            local clone = Instance.new("Part")
+            clone.Name = child.Name
+            clone.Size = child.Size
+            clone.CFrame = child.CFrame
+            clone.Anchored = true
+            clone.CanCollide = false
+            clone.Material = Enum.Material.SmoothPlastic
+            clone.Color = Color3.fromRGB(41, 50, 71) -- Oil color
+            clone.Transparency = 0.3
+            clone.Parent = cloneModel
+            
+            -- Create oil drip effect from clone
+            local drip = Instance.new("ParticleEmitter")
+            drip.Texture = "rbxassetid://2882437425"
+            drip.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+            drip.Size = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.1),
+                NumberSequenceKeypoint.new(1, 0.05)
+            })
+            drip.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.2),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            drip.Lifetime = NumberRange.new(0.5, 1)
+            drip.Speed = NumberRange.new(1, 3)
+            drip.Rate = 5
+            drip.EmissionDirection = Enum.NormalId.Bottom
+            drip.Parent = clone
+            
+            table.insert(bodyParts, {original = child, clone = clone})
+        end
+    end
+    
+    -- Create a root part for the clone
+    local cloneRoot = Instance.new("Part")
+    cloneRoot.Name = "HumanoidRootPart"
+    cloneRoot.Size = Vector3.new(2, 2, 1)
+    cloneRoot.CFrame = rootPart.CFrame * CFrame.new(offset or Vector3.new(math.random(-5, 5), 0, math.random(-5, 5)))
+    cloneRoot.Anchored = true
+    cloneRoot.CanCollide = false
+    cloneRoot.Transparency = 1
+    cloneRoot.Parent = cloneModel
+    
+    -- Create a puddle beneath the clone
+    local puddle = Instance.new("Part")
+    puddle.Size = Vector3.new(2, 0.05, 2)
+    puddle.Anchored = true
+    puddle.CanCollide = false
+    puddle.Transparency = 0.3
+    puddle.Material = Enum.Material.SmoothPlastic
+    puddle.Color = Color3.fromRGB(41, 50, 71)
+    puddle.CFrame = cloneRoot.CFrame * CFrame.new(0, -3, 0)
+    puddle.Parent = cloneModel
+    
+    -- Add the clone to the workspace
+    cloneModel.Parent = workspace
+    
+    -- Create fade-in effect
+    for _, part in pairs(bodyParts) do
+        part.clone.Transparency = 1
+        TweenService:Create(
+            part.clone,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Transparency = 0.3}
+        ):Play()
+    end
+    
+    -- Make the puddle grow
+    TweenService:Create(
+        puddle,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(3, 0.05, 3)}
+    ):Play()
+    
+    -- Create fade-out at the end of duration
+    task.delay(duration - 0.5, function()
+        for _, part in pairs(bodyParts) do
+            TweenService:Create(
+                part.clone,
+                TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+                {Transparency = 1}
+            ):Play()
+        end
+        
+        TweenService:Create(
+            puddle,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Transparency = 1}
+        ):Play()
+    end)
+    
+    -- Remove the clone after duration
+    Debris:AddItem(cloneModel, duration)
+    
+    -- Return the clone model and a function to update its position
+    return cloneModel, function(newCFrame)
+        if cloneModel and cloneModel:FindFirstChild("HumanoidRootPart") then
+            cloneRoot.CFrame = newCFrame
+            puddle.CFrame = cloneRoot.CFrame * CFrame.new(0, -3, 0)
+            
+            -- Update all body parts
+            for _, part in pairs(bodyParts) do
+                local offset = part.original.CFrame:ToObjectSpace(rootPart.CFrame)
+                part.clone.CFrame = cloneRoot.CFrame * offset
+            end
+        end
+    end
+end
+
+-- Create a court surface effect for Slick Court Takeover
+local function createCourtSurface(player, radius, duration)
+    local character = player.Character
+    if not character then return end
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+    
+    local TweenService = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
+    
+    -- Create the main oil surface
+    local surface = Instance.new("Part")
+    surface.Size = Vector3.new(radius * 2, 0.05, radius * 2)
+    surface.Anchored = true
+    surface.CanCollide = false
+    surface.Transparency = 0.4
+    surface.Material = Enum.Material.SmoothPlastic
+    surface.Color = Color3.fromRGB(41, 50, 71)
+    surface.CFrame = CFrame.new(rootPart.Position.X, rootPart.Position.Y - 3, rootPart.Position.Z)
+    surface.Parent = workspace
+    
+    -- Create a border effect
+    local border = Instance.new("Part")
+    border.Shape = Enum.PartType.Cylinder
+    border.Size = Vector3.new(0.1, radius * 2 * math.pi, 0.1)
+    border.Orientation = Vector3.new(0, 0, 90)
+    border.Anchored = true
+    border.CanCollide = false
+    border.Transparency = 0.2
+    border.Material = Enum.Material.Neon
+    border.Color = Color3.fromRGB(41, 128, 255)
+    border.CFrame = surface.CFrame
+    border.Parent = workspace
+    
+    -- Create oil particles on the surface
+    local particles = Instance.new("ParticleEmitter")
+    particles.Texture = "rbxassetid://2882437425"
+    particles.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+    particles.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(0.5, 1),
+        NumberSequenceKeypoint.new(1, 0.2)
+    })
+    particles.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.1),
+        NumberSequenceKeypoint.new(0.7, 0.5),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    particles.Lifetime = NumberRange.new(1, 2)
+    particles.Speed = NumberRange.new(0, 1)
+    particles.SpreadAngle = Vector2.new(180, 180)
+    particles.Rate = 10
+    particles.EmissionDirection = Enum.NormalId.Top
+    particles.Parent = surface
+    
+    -- Grow the surface initially
+    surface.Size = Vector3.new(0, 0.05, 0)
+    TweenService:Create(
+        surface,
+        TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
+        {Size = Vector3.new(radius * 2, 0.05, radius * 2)}
+    ):Play()
+    
+    -- Grow the border initially
+    border.Size = Vector3.new(0.1, 0, 0.1)
+    TweenService:Create(
+        border,
+        TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
+        {Size = Vector3.new(0.1, radius * 2 * math.pi, 0.1)}
+    ):Play()
+    
+    -- Create fade-out effect at the end of duration
+    task.delay(duration - 1, function()
+        TweenService:Create(
+            surface,
+            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Transparency = 1}
+        ):Play()
+        
+        TweenService:Create(
+            border,
+            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Transparency = 1}
+        ):Play()
+        
+        particles.Enabled = false
+    end)
+    
+    -- Clean up
+    Debris:AddItem(surface, duration)
+    Debris:AddItem(border, duration)
+    
+    return surface
+end
+
+-- Create a straight pathway for Refinery Rush
+local function createRefineryPathway(player, distance, width, duration)
+    local character = player.Character
+    if not character then return end
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+    
+    local TweenService = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
+    
+    local look = rootPart.CFrame.LookVector
+    
+    -- Create the main pathway
+    local pathway = Instance.new("Part")
+    pathway.Size = Vector3.new(width, 0.05, distance)
+    pathway.Anchored = true
+    pathway.CanCollide = false
+    pathway.Transparency = 0.3
+    pathway.Material = Enum.Material.SmoothPlastic
+    pathway.Color = Color3.fromRGB(41, 50, 71)
+    pathway.CFrame = CFrame.new(
+        rootPart.Position + (look * (distance/2)) - Vector3.new(0, 3, 0),
+        rootPart.Position + (look * distance) - Vector3.new(0, 3, 0)
+    )
+    pathway.Parent = workspace
+    
+    -- Create borders on both sides
+    local leftBorder = Instance.new("Part")
+    leftBorder.Size = Vector3.new(0.2, 0.1, distance)
+    leftBorder.Anchored = true
+    leftBorder.CanCollide = false
+    leftBorder.Transparency = 0.2
+    leftBorder.Material = Enum.Material.Neon
+    leftBorder.Color = Color3.fromRGB(41, 128, 255)
+    leftBorder.CFrame = pathway.CFrame * CFrame.new(width/2, 0.1, 0)
+    leftBorder.Parent = workspace
+    
+    local rightBorder = Instance.new("Part")
+    rightBorder.Size = Vector3.new(0.2, 0.1, distance)
+    rightBorder.Anchored = true
+    rightBorder.CanCollide = false
+    rightBorder.Transparency = 0.2
+    rightBorder.Material = Enum.Material.Neon
+    rightBorder.Color = Color3.fromRGB(41, 128, 255)
+    rightBorder.CFrame = pathway.CFrame * CFrame.new(-width/2, 0.1, 0)
+    rightBorder.Parent = workspace
+    
+    -- Create arrow markers along the pathway
+    for i = 1, math.floor(distance / 5) do
+        local arrow = Instance.new("Part")
+        arrow.Size = Vector3.new(1, 0.1, 2)
+        arrow.Anchored = true
+        arrow.CanCollide = false
+        arrow.Transparency = 0.2
+        arrow.Material = Enum.Material.Neon
+        arrow.Color = Color3.fromRGB(255, 255, 255)
+        arrow.CFrame = pathway.CFrame * CFrame.new(0, 0.1, -distance/2 + (i * 5))
+        arrow.Parent = workspace
+        
+        Debris:AddItem(arrow, duration)
+    end
+    
+    -- Create oil particle trail effect
+    local trail = Instance.new("Trail")
+    trail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+    trail.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    trail.Lifetime = 0.5
+    trail.MinLength = 0.1
+    trail.WidthScale = NumberSequence.new(1.5)
+    
+    local att0 = Instance.new("Attachment")
+    att0.Position = Vector3.new(0, -2.9, -0.5)
+    att0.Parent = rootPart
+    
+    local att1 = Instance.new("Attachment")
+    att1.Position = Vector3.new(0, -2.9, 0.5)
+    att1.Parent = rootPart
+    
+    trail.Attachment0 = att0
+    trail.Attachment1 = att1
+    trail.Parent = rootPart
+    
+    -- Create grow effect for the pathway
+    pathway.Size = Vector3.new(width, 0.05, 0)
+    TweenService:Create(
+        pathway,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(width, 0.05, distance)}
+    ):Play()
+    
+    leftBorder.Size = Vector3.new(0.2, 0.1, 0)
+    TweenService:Create(
+        leftBorder,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(0.2, 0.1, distance)}
+    ):Play()
+    
+    rightBorder.Size = Vector3.new(0.2, 0.1, 0)
+    TweenService:Create(
+        rightBorder,
+        TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(0.2, 0.1, distance)}
+    ):Play()
+    
+    -- Create fade-out effect at the end of duration
+    task.delay(duration - 1, function()
+        TweenService:Create(
+            pathway,
+            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Transparency = 1}
+        ):Play()
+        
+        TweenService:Create(
+            leftBorder,
+            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Transparency = 1}
+        ):Play()
+        
+        TweenService:Create(
+            rightBorder,
+            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            {Transparency = 1}
+        ):Play()
+    end)
+    
+    -- Clean up
+    Debris:AddItem(pathway, duration)
+    Debris:AddItem(leftBorder, duration)
+    Debris:AddItem(rightBorder, duration)
+    Debris:AddItem(trail, duration)
+    Debris:AddItem(att0, duration)
+    Debris:AddItem(att1, duration)
+    
+    return pathway
 end
 
 abilities.Diddy = {
@@ -355,6 +756,339 @@ abilities.Diddy = {
         ["Desc"] = "Teleport 12 studs forward instantly and attempt to steal the ball from an opponent",
         ["RequiresBall"] = false,
         ["Cooldown"] = 10
+    },
+    {
+        ["Ability"] = {
+            Execute = function(player)
+                local TweenService = game:GetService("TweenService")
+                local Debris = game:GetService("Debris")
+                local RunService = game:GetService("RunService")
+                
+                local character = player.Character
+                if not character then 
+                    warn("Character not found")
+                    return 
+                end
+                
+                local humanoid = character:FindFirstChild("Humanoid")
+                if not humanoid then
+                    warn("Humanoid not found")
+                    return
+                end
+                
+                local rootPart = character:FindFirstChild("HumanoidRootPart")
+                if not rootPart then 
+                    warn("HumanoidRootPart not found")
+                    return 
+                end
+                
+                -- Create initial effect
+                createWaterVFX(rootPart, 2, 3, Color3.fromRGB(41, 50, 71))
+                
+                -- Number of clones to create
+                local numClones = 4
+                local clones = {}
+                local updateFuncs = {}
+                
+                -- Create a sound effect
+                local sound = Instance.new("Sound")
+                sound.SoundId = "rbxassetid://4612374909" -- Splash sound
+                sound.Volume = 1
+                sound.PlaybackSpeed = 0.8
+                sound.Parent = rootPart
+                sound:Play()
+                
+                -- Create the clones in a circle around the player
+                for i = 1, numClones do
+                    local angle = (i / numClones) * math.pi * 2
+                    local offset = Vector3.new(math.cos(angle) * 5, 0, math.sin(angle) * 5)
+                    
+                    local clone, updateFunc = createOilClone(character, 8, offset)
+                    if clone then
+                        table.insert(clones, clone)
+                        table.insert(updateFuncs, updateFunc)
+                    end
+                end
+                
+                print("Created", #clones, "oil clones")
+                
+                -- Clone movement logic
+                local function moveClones()
+                    local startTime = tick()
+                    local duration = 8 -- seconds
+                    
+                    while tick() - startTime < duration do
+                        for i, updateFunc in ipairs(updateFuncs) do
+                            if updateFunc then
+                                -- Different movement patterns for different clones
+                                if i % 2 == 0 then
+                                    -- Circular movement
+                                    local angle = ((tick() - startTime) / 2 + (i / numClones) * math.pi * 2) % (math.pi * 2)
+                                    local offset = CFrame.new(math.cos(angle) * 6, 0, math.sin(angle) * 6)
+                                    updateFunc(rootPart.CFrame * offset)
+                                else
+                                    -- Zig-zag following
+                                    local wiggle = math.sin((tick() - startTime) * 5) * 3
+                                    local offset = CFrame.new(wiggle, 0, -5 + (i * 2))
+                                    updateFunc(rootPart.CFrame * offset)
+                                end
+                            end
+                        end
+                        
+                        RunService.Heartbeat:Wait()
+                    end
+                end
+                
+                -- Start clone movement in a coroutine
+                coroutine.wrap(moveClones)()
+                
+                -- Speed boost effect
+                local originalSpeed = humanoid.WalkSpeed
+                humanoid.WalkSpeed = originalSpeed * 1.3
+                
+                -- Create a trail effect
+                local trail = Instance.new("Trail")
+                trail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+                trail.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.2),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                trail.Lifetime = 1
+                trail.MinLength = 0.1
+                trail.WidthScale = NumberSequence.new(2)
+                
+                local att0 = Instance.new("Attachment")
+                att0.Position = Vector3.new(0, -2.9, -0.5)
+                att0.Parent = rootPart
+                
+                local att1 = Instance.new("Attachment")
+                att1.Position = Vector3.new(0, -2.9, 0.5)
+                att1.Parent = rootPart
+                
+                trail.Attachment0 = att0
+                trail.Attachment1 = att1
+                trail.Parent = rootPart
+                
+                -- Restore original speed after duration
+                task.delay(8, function()
+                    humanoid.WalkSpeed = originalSpeed
+                end)
+                
+                Debris:AddItem(trail, 8)
+                Debris:AddItem(att0, 8)
+                Debris:AddItem(att1, 8)
+                Debris:AddItem(sound, 3)
+            end
+        },
+        ["Name"] = "Slick Shadow",
+        ["Desc"] = "💫 ULTIMATE ABILITY: Create 4 oil clones that mimic your movements and confuse opponents, giving you a slight speed boost",
+        ["RequiresBall"] = false,
+        ["Cooldown"] = 20
+    },
+    {
+        ["Ability"] = {
+            Execute = function(player)
+                local TweenService = game:GetService("TweenService")
+                local Debris = game:GetService("Debris")
+                
+                local character = player.Character
+                if not character then 
+                    warn("Character not found")
+                    return 
+                end
+                
+                local humanoid = character:FindFirstChild("Humanoid")
+                if not humanoid then
+                    warn("Humanoid not found")
+                    return
+                end
+                
+                local rootPart = character:FindFirstChild("HumanoidRootPart")
+                if not rootPart then 
+                    warn("HumanoidRootPart not found")
+                    return 
+                end
+                
+                -- Create initial effect
+                createWaterVFX(rootPart, 2, 3, Color3.fromRGB(41, 50, 71))
+                
+                -- Create a sound effect
+                local sound = Instance.new("Sound")
+                sound.SoundId = "rbxassetid://4612374909" -- Splash sound
+                sound.Volume = 1
+                sound.PlaybackSpeed = 0.8
+                sound.Parent = rootPart
+                sound:Play()
+                
+                -- Create the court surface
+                local surface = createCourtSurface(player, 30, 10)
+                
+                -- Effect for player (immunity to slipping)
+                local glow = Instance.new("ParticleEmitter")
+                glow.Texture = "rbxassetid://241629053" -- Glow texture
+                glow.Color = ColorSequence.new(Color3.fromRGB(41, 128, 255))
+                glow.Size = NumberSequence.new(1)
+                glow.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.5),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                glow.Lifetime = NumberRange.new(0.5, 1)
+                glow.Speed = NumberRange.new(1, 2)
+                glow.SpreadAngle = Vector2.new(180, 180)
+                glow.Rate = 20
+                glow.Parent = rootPart
+                
+                -- Create pulsing effect on the court
+                local function pulseCourt()
+                    for i = 1, 10 do
+                        -- Create ripple effect
+                        local ripple = Instance.new("Part")
+                        ripple.Shape = Enum.PartType.Cylinder
+                        ripple.Size = Vector3.new(0.05, 0, 0.05)
+                        ripple.Orientation = Vector3.new(0, 0, 90)
+                        ripple.Anchored = true
+                        ripple.CanCollide = false
+                        ripple.Transparency = 0
+                        ripple.Material = Enum.Material.Neon
+                        ripple.Color = Color3.fromRGB(41, 128, 255)
+                        ripple.CFrame = CFrame.new(rootPart.Position.X, rootPart.Position.Y - 2.9, rootPart.Position.Z)
+                        ripple.Parent = workspace
+                        
+                        -- Animate the ripple
+                        TweenService:Create(
+                            ripple,
+                            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {Size = Vector3.new(0.05, 60, 0.05), Transparency = 1}
+                        ):Play()
+                        
+                        Debris:AddItem(ripple, 1)
+                        
+                        task.wait(1)
+                    end
+                end
+                
+                -- Start pulsing effect
+                coroutine.wrap(pulseCourt)()
+                
+                -- Disable glow after duration
+                task.delay(10, function()
+                    glow.Enabled = false
+                end)
+                
+                Debris:AddItem(glow, 11)
+                Debris:AddItem(sound, 3)
+                
+                print("Slick Court Takeover activated for 10 seconds")
+            end
+        },
+        ["Name"] = "Slick Court Takeover",
+        ["Desc"] = "💫 ULTIMATE ABILITY: Transform the entire court floor into an oil slick for 10 seconds, causing all players except you to have reduced traction",
+        ["RequiresBall"] = false,
+        ["Cooldown"] = 30
+    },
+    {
+        ["Ability"] = {
+            Execute = function(player)
+                local TweenService = game:GetService("TweenService")
+                local Debris = game:GetService("Debris")
+                
+                local character = player.Character
+                if not character then 
+                    warn("Character not found")
+                    return 
+                end
+                
+                local humanoid = character:FindFirstChild("Humanoid")
+                if not humanoid then
+                    warn("Humanoid not found")
+                    return
+                end
+                
+                local rootPart = character:FindFirstChild("HumanoidRootPart")
+                if not rootPart then 
+                    warn("HumanoidRootPart not found")
+                    return 
+                end
+                
+                -- Create initial effect
+                createWaterVFX(rootPart, 2, 2, Color3.fromRGB(41, 50, 71))
+                
+                -- Create a sound effect
+                local sound = Instance.new("Sound")
+                sound.SoundId = "rbxassetid://5416548293" -- Whoosh sound
+                sound.Volume = 1
+                sound.PlaybackSpeed = 1.5
+                sound.Parent = rootPart
+                sound:Play()
+                
+                -- Create the pathway
+                local pathway = createRefineryPathway(player, 50, 5, 5)
+                
+                -- Speed boost effect
+                local originalSpeed = humanoid.WalkSpeed
+                humanoid.WalkSpeed = originalSpeed * 2
+                
+                -- Create a trail effect
+                local trail = Instance.new("Trail")
+                trail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+                trail.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.2),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                trail.Lifetime = 0.5
+                trail.MinLength = 0.1
+                trail.WidthScale = NumberSequence.new(3)
+                
+                local att0 = Instance.new("Attachment")
+                att0.Position = Vector3.new(0, -2.9, -0.5)
+                att0.Parent = rootPart
+                
+                local att1 = Instance.new("Attachment")
+                att1.Position = Vector3.new(0, -2.9, 0.5)
+                att1.Parent = rootPart
+                
+                trail.Attachment0 = att0
+                trail.Attachment1 = att1
+                trail.Parent = rootPart
+                
+                -- Create boost particles
+                local boost = Instance.new("ParticleEmitter")
+                boost.Texture = "rbxassetid://2882437425"
+                boost.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+                boost.Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1),
+                    NumberSequenceKeypoint.new(1, 0.2)
+                })
+                boost.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.1),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                boost.Lifetime = NumberRange.new(0.5, 1)
+                boost.Speed = NumberRange.new(10, 15)
+                boost.SpreadAngle = Vector2.new(15, 15)
+                boost.Rate = 50
+                boost.EmissionDirection = Enum.NormalId.Back
+                boost.Parent = rootPart
+                
+                -- Restore original speed after duration
+                task.delay(5, function()
+                    humanoid.WalkSpeed = originalSpeed
+                    boost.Enabled = false
+                end)
+                
+                Debris:AddItem(trail, 5)
+                Debris:AddItem(att0, 5)
+                Debris:AddItem(att1, 5)
+                Debris:AddItem(boost, 6)
+                Debris:AddItem(sound, 2)
+                
+                print("Refinery Rush activated for 5 seconds")
+            end
+        },
+        ["Name"] = "Refinery Rush",
+        ["Desc"] = "💫 ULTIMATE ABILITY: Create a straight pathway of oil allowing instant acceleration to double speed for 5 seconds, perfect for fast breaks",
+        ["RequiresBall"] = false,
+        ["Cooldown"] = 25
     }
 }
 
@@ -362,6 +1096,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Original abilities (Oil Dribble and Oil Steal)
 local Ability1Button = PlayerGui:WaitForChild("InGame"):WaitForChild("BG"):WaitForChild("Bottom"):WaitForChild("Ability1")
 local oilDribbleAbility = abilities.Diddy[1]
 
@@ -386,4 +1121,224 @@ Ability2Button.MouseButton1Click:Connect(function()
     end
 end)
 
-print("Diddy style, Oil Dribble (zig-zag), and Oil Steal (teleport) abilities initialized")
+-- Create the ultimate abilities UI container (initially hidden)
+local UltimateFrame = Instance.new("Frame")
+UltimateFrame.Size = UDim2.new(0, 300, 0, 60)
+UltimateFrame.Position = UDim2.new(0.5, -150, 0, 10)
+UltimateFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+UltimateFrame.BackgroundTransparency = 0.3
+UltimateFrame.BorderSizePixel = 0
+UltimateFrame.Visible = false -- Start hidden
+UltimateFrame.Parent = PlayerGui:WaitForChild("InGame")
+
+local UltimateTitle = Instance.new("TextLabel")
+UltimateTitle.Size = UDim2.new(1, 0, 0, 20)
+UltimateTitle.Position = UDim2.new(0, 0, 0, 0)
+UltimateTitle.Text = "💫 Ultimate Abilities Available!"
+UltimateTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+UltimateTitle.BackgroundTransparency = 1
+UltimateTitle.Font = Enum.Font.GothamBold
+UltimateTitle.TextSize = 14
+UltimateTitle.Parent = UltimateFrame
+
+-- Add a corner to the frame
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = UltimateFrame
+
+-- Add an animation to the Ultimate Title
+local function animateTitle()
+    local originalSize = UltimateTitle.TextSize
+    while true do
+        TweenService:Create(UltimateTitle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextSize = originalSize + 2}):Play()
+        task.wait(0.5)
+        TweenService:Create(UltimateTitle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {TextSize = originalSize}):Play()
+        task.wait(0.5)
+    end
+end
+
+-- Create buttons for the new abilities
+local function createUltimateButton(ability, index)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0.3, -10, 0, 30)
+    button.Position = UDim2.new((index - 3) * 0.33 + 0.02, 0, 0.5, 0)
+    button.Text = ability.Name
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.BackgroundColor3 = Color3.fromRGB(41, 50, 71)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 12
+    button.Parent = UltimateFrame
+    
+    -- Add a corner to the button
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = button
+    
+    -- Add a cooldown indicator
+    local cooldown = Instance.new("Frame")
+    cooldown.Size = UDim2.new(1, 0, 0, 3)
+    cooldown.Position = UDim2.new(0, 0, 1, -3)
+    cooldown.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+    cooldown.BorderSizePixel = 0
+    cooldown.Parent = button
+    
+    -- Add tooltip with description
+    local tooltip = Instance.new("TextLabel")
+    tooltip.Size = UDim2.new(0, 200, 0, 50)
+    tooltip.Position = UDim2.new(0.5, -100, 0, -60)
+    tooltip.Text = ability.Desc
+    tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tooltip.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    tooltip.BackgroundTransparency = 0.2
+    tooltip.Font = Enum.Font.Gotham
+    tooltip.TextSize = 12
+    tooltip.TextWrapped = true
+    tooltip.Visible = false
+    tooltip.Parent = button
+    
+    -- Add corner to tooltip
+    local tooltipCorner = Instance.new("UICorner")
+    tooltipCorner.CornerRadius = UDim.new(0, 6)
+    tooltipCorner.Parent = tooltip
+    
+    -- Show tooltip on hover
+    button.MouseEnter:Connect(function()
+        tooltip.Visible = true
+    end)
+    
+    button.MouseLeave:Connect(function()
+        tooltip.Visible = false
+    end)
+    
+    -- Handle click
+    local cooldownActive = false
+    
+    button.MouseButton1Click:Connect(function()
+        if not cooldownActive and ability.Ability and ability.Ability.Execute then
+            -- Execute ability
+            print("Executing " .. ability.Name .. " ability")
+            ability.Ability.Execute(LocalPlayer)
+            
+            -- Start cooldown
+            cooldownActive = true
+            
+            -- Animate cooldown
+            cooldown.Size = UDim2.new(0, 0, 0, 3)
+            local tween = game:GetService("TweenService"):Create(
+                cooldown,
+                TweenInfo.new(ability.Cooldown, Enum.EasingStyle.Linear),
+                {Size = UDim2.new(1, 0, 0, 3)}
+            )
+            tween:Play()
+            
+            -- Reset after cooldown
+            task.delay(ability.Cooldown, function()
+                cooldownActive = false
+            end)
+        elseif cooldownActive then
+            print(ability.Name .. " is on cooldown")
+        else
+            warn(ability.Name .. " ability execution failed!")
+        end
+    end)
+    
+    return button
+end
+
+-- Create buttons for the new ultimate abilities
+local slickShadowButton = createUltimateButton(abilities.Diddy[3], 3)
+local slickCourtButton = createUltimateButton(abilities.Diddy[4], 4)
+local refineryRushButton = createUltimateButton(abilities.Diddy[5], 5)
+
+-- Add glow effects to the ultimate buttons
+local function addButtonGlow(button)
+    local glow = Instance.new("UIGradient")
+    glow.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(41, 50, 71)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(61, 70, 91)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(41, 50, 71))
+    })
+    glow.Rotation = 0
+    glow.Parent = button
+    
+    -- Animate the glow
+    task.spawn(function()
+        while button and button.Parent do
+            for i = 0, 360, 2 do
+                if not button or not button.Parent then
+                    break
+                end
+                glow.Rotation = i
+                task.wait(0.02)
+            end
+        end
+    end)
+end
+
+addButtonGlow(slickShadowButton)
+addButtonGlow(slickCourtButton)
+addButtonGlow(refineryRushButton)
+
+-- Function to show ultimate abilities when ultimate is active
+local function updateUltimateUI()
+    local wasVisible = UltimateFrame.Visible
+    local isActive = isUltimateActive()
+    
+    UltimateFrame.Visible = isActive
+    
+    -- If it just became visible, play entrance animation
+    if isActive and not wasVisible then
+        UltimateFrame.Position = UDim2.new(0.5, -150, -0.1, 0)
+        UltimateFrame.BackgroundTransparency = 1
+        
+        -- Animate the entrance
+        game:GetService("TweenService"):Create(
+            UltimateFrame,
+            TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+            {Position = UDim2.new(0.5, -150, 0, 10), BackgroundTransparency = 0.3}
+        ):Play()
+        
+        -- Start title animation
+        task.spawn(animateTitle)
+        
+        -- Play sound effect
+        local sound = Instance.new("Sound")
+        sound.SoundId = "rbxassetid://6895079853" -- Energy activation sound
+        sound.Volume = 0.5
+        sound.Parent = UltimateFrame
+        sound:Play()
+        game:GetService("Debris"):AddItem(sound, 2)
+    end
+    
+    -- If it just became hidden, play exit animation
+    if not isActive and wasVisible then
+        -- Animate the exit
+        local exitTween = game:GetService("TweenService"):Create(
+            UltimateFrame,
+            TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+            {Position = UDim2.new(0.5, -150, -0.1, 0), BackgroundTransparency = 1}
+        )
+        exitTween:Play()
+        
+        -- Actually hide it after the animation completes
+        exitTween.Completed:Connect(function()
+            UltimateFrame.Visible = false
+        end)
+    end
+end
+
+-- Start a heartbeat loop to continuously check ultimate status
+task.spawn(function()
+    local RunService = game:GetService("RunService")
+    
+    while true do
+        updateUltimateUI()
+        RunService.Heartbeat:Wait()
+    end
+end)
+
+print("Diddy style, Oil Dribble (zig-zag), Oil Steal (teleport), and Ultimate abilities initialized")
+print("- Ultimate abilities will appear when ultimate is active:")
+print("  - Slick Shadow: Create 4 oil clones that mimic your movements")
+print("  - Slick Court Takeover: Transform the court floor into an oil slick")
+print("  - Refinery Rush: Create a straight pathway for instant acceleration")
