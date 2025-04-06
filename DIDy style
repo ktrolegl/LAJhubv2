@@ -13,17 +13,34 @@ end
 -- Set the Style value to "Diddy"
 styleValue.Value = "Diddy"
 
-local StylesModule = game:GetService("ReplicatedStorage").Shared.Tables.Styles
-local styles = require(StylesModule)
+local function safeRequire(path)
+    local success, result = pcall(function()
+        if typeof(path) == "Instance" then
+            return require(path)
+        end
+        return {}
+    end)
+    return success and result or {}
+end
 
+-- Safely get module paths
+local StylesModule = game:GetService("ReplicatedStorage"):FindFirstChild("Shared") and 
+                    game:GetService("ReplicatedStorage").Shared:FindFirstChild("Tables") and 
+                    game:GetService("ReplicatedStorage").Shared.Tables:FindFirstChild("Styles")
+local styles = safeRequire(StylesModule)
+
+-- Set style even if module loading fails
 styles["Diddy"] = {
     ["Name"] = "Diddy",
     ["Desc"] = "A slippery court maestro, Diddy uses oil-based techniques to outmaneuver opponents and dominate the game.",
     ["Rarity"] = "Mythic"
 }
 
-local AbilitiesModule = game:GetService("ReplicatedStorage").Controllers.AbilityController.Abilities
-local abilities = require(AbilitiesModule)
+-- Safely get abilities module
+local AbilitiesModule = game:GetService("ReplicatedStorage"):FindFirstChild("Controllers") and
+                       game:GetService("ReplicatedStorage").Controllers:FindFirstChild("AbilityController") and
+                       game:GetService("ReplicatedStorage").Controllers.AbilityController:FindFirstChild("Abilities")
+local abilities = safeRequire(AbilitiesModule) or {}
 
 -- Helper function to check if ultimate is active
 local function isUltimateActive()
