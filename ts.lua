@@ -6,9 +6,9 @@ local player = Players.LocalPlayer
 
 -- List of valid keys
 local validKeys = {
-    ["oil"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/DIDy%20style",
-    ["LAJPRO"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/DIDy%20style",
-    ["game_anti_detection"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/DIDy%20style"
+    ["oil"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/LAJ%20HUB%20script",
+    ["LAJPRO"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/LAJ%20HUB%20script",
+    ["game_anti_detection"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/LAJ%20HUB%20script"
 }
 
 -- Create ScreenGui
