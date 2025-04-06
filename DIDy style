@@ -13,34 +13,17 @@ end
 -- Set the Style value to "Diddy"
 styleValue.Value = "Diddy"
 
-local function safeRequire(path)
-    local success, result = pcall(function()
-        if typeof(path) == "Instance" then
-            return require(path)
-        end
-        return {}
-    end)
-    return success and result or {}
-end
+local StylesModule = game:GetService("ReplicatedStorage").Shared.Tables.Styles
+local styles = require(StylesModule)
 
--- Safely get module paths
-local StylesModule = game:GetService("ReplicatedStorage"):FindFirstChild("Shared") and 
-                    game:GetService("ReplicatedStorage").Shared:FindFirstChild("Tables") and 
-                    game:GetService("ReplicatedStorage").Shared.Tables:FindFirstChild("Styles")
-local styles = safeRequire(StylesModule)
-
--- Set style even if module loading fails
 styles["Diddy"] = {
     ["Name"] = "Diddy",
     ["Desc"] = "A slippery court maestro, Diddy uses oil-based techniques to outmaneuver opponents and dominate the game.",
     ["Rarity"] = "Mythic"
 }
 
--- Safely get abilities module
-local AbilitiesModule = game:GetService("ReplicatedStorage"):FindFirstChild("Controllers") and
-                       game:GetService("ReplicatedStorage").Controllers:FindFirstChild("AbilityController") and
-                       game:GetService("ReplicatedStorage").Controllers.AbilityController:FindFirstChild("Abilities")
-local abilities = safeRequire(AbilitiesModule) or {}
+local AbilitiesModule = game:GetService("ReplicatedStorage").Controllers.AbilityController.Abilities
+local abilities = require(AbilitiesModule)
 
 -- Helper function to check if ultimate is active
 local function isUltimateActive()
@@ -1354,11 +1337,8 @@ task.spawn(function()
     end
 end)
 
-print("Diddy style initialized successfully")
-print("Abilities loaded:")
-print("• Oil Dribble - Zig-zag maneuver")
-print("• Oil Steal - Teleport steal")
-print("Ultimate abilities (activate when ultimate is ready):")
-print("• Slick Shadow - Create 4 oil clones")
-print("• Slick Court Takeover - Transform court into oil slick") 
-print("• Refinery Rush - Create speed pathway")
+print("Diddy style, Oil Dribble (zig-zag), Oil Steal (teleport), and Ultimate abilities initialized")
+print("- Ultimate abilities will appear when ultimate is active:")
+print("  - Slick Shadow: Create 4 oil clones that mimic your movements")
+print("  - Slick Court Takeover: Transform the court floor into an oil slick")
+print("  - Refinery Rush: Create a straight pathway for instant acceleration")
