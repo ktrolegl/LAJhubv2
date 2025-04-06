@@ -1,0 +1,286 @@
+-- Set the player's style to "Diddy"
+local player = game:GetService("Players").LocalPlayer
+
+-- Check if the Style value already exists
+local styleValue = player:FindFirstChild("Style")
+if not styleValue then
+    -- Create a new StringValue for Style
+    styleValue = Instance.new("StringValue")
+    styleValue.Name = "Style"
+    styleValue.Parent = player
+end
+
+-- Set the Style value to "Diddy"
+styleValue.Value = "Diddy"
+
+local StylesModule = game:GetService("ReplicatedStorage").Shared.Tables.Styles
+local styles = require(StylesModule)
+
+styles["Diddy"] = {
+    ["Name"] = "Diddy",
+    ["Desc"] = "A slippery court maestro, Diddy uses oil-based techniques to outmaneuver opponents and dominate the game.",
+    ["Rarity"] = "Mythic"
+}
+
+local AbilitiesModule = game:GetService("ReplicatedStorage").Controllers.AbilityController.Abilities
+local abilities = require(AbilitiesModule)
+
+-- Helper function to create water particles
+local function createWaterVFX(parent, duration, size, color)
+    local TweenService = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
+    
+    -- Create water particle emitter
+    local waterParticle = Instance.new("ParticleEmitter")
+    waterParticle.Texture = "rbxassetid://2882437425" -- Water splash texture
+    waterParticle.Color = ColorSequence.new(color or Color3.fromRGB(41, 128, 255))
+    waterParticle.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, size * 0.5),
+        NumberSequenceKeypoint.new(0.5, size),
+        NumberSequenceKeypoint.new(1, size * 0.2)
+    })
+    waterParticle.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.1),
+        NumberSequenceKeypoint.new(0.7, 0.4),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    waterParticle.Lifetime = NumberRange.new(0.5, 1)
+    waterParticle.Speed = NumberRange.new(3, 6)
+    waterParticle.SpreadAngle = Vector2.new(25, 25)
+    waterParticle.Rate = 50
+    waterParticle.EmissionDirection = Enum.NormalId.Bottom
+    waterParticle.Parent = parent
+    
+    -- Create a puddle effect if needed
+    local puddle = Instance.new("Part")
+    puddle.Size = Vector3.new(2.5, 0.05, 2.5)
+    puddle.Anchored = true
+    puddle.CanCollide = false
+    puddle.Transparency = 0.3
+    puddle.Material = Enum.Material.SmoothPlastic
+    puddle.Color = Color3.fromRGB(41, 128, 255)
+    puddle.CFrame = parent.CFrame * CFrame.new(0, -3, 0)
+    puddle.Parent = workspace
+    
+    -- Apply a growing/fading tween to the puddle
+    TweenService:Create(
+        puddle,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = Vector3.new(5, 0.05, 5), Transparency = 0.5}
+    ):Play()
+    
+    -- Emit particles for a short time
+    waterParticle:Emit(20)
+    
+    -- Clean up after specified duration
+    task.delay(0.2, function()
+        waterParticle.Enabled = false
+    end)
+    
+    Debris:AddItem(waterParticle, 1.5)
+    Debris:AddItem(puddle, duration or 3)
+    
+    return waterParticle, puddle
+end
+
+-- Helper function to teleport player with effects
+local function teleportWithEffects(player, distance)
+    local character = player.Character
+    if not character then return end
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+    
+    -- Store original position for effect creation
+    local originalPos = rootPart.Position
+    local originalCF = rootPart.CFrame
+    local look = originalCF.LookVector
+    
+    -- Create effect at original position
+    createWaterVFX(rootPart, 2, 2.5)
+    
+    -- Teleport instantly
+    rootPart.CFrame = originalCF + look * distance
+    
+    -- Create a part at the original position for the final effect
+    local originPart = Instance.new("Part")
+    originPart.Anchored = true
+    originPart.CanCollide = false
+    originPart.Transparency = 1
+    originPart.Size = Vector3.new(1, 1, 1)
+    originPart.Position = originalPos
+    originPart.Parent = workspace
+    
+    -- Create effect at teleport destination
+    createWaterVFX(rootPart, 3, 3)
+    
+    -- Create connecting effect between positions
+    local distancePart = Instance.new("Part")
+    distancePart.Size = Vector3.new(0.5, 0.5, distance)
+    distancePart.Anchored = true
+    distancePart.CanCollide = false
+    distancePart.Transparency = 0.8
+    distancePart.Material = Enum.Material.Neon
+    distancePart.Color = Color3.fromRGB(41, 128, 255)
+    distancePart.CFrame = CFrame.new(originalPos + (look * distance/2), originalPos + look * distance)
+    distancePart.Parent = workspace
+    
+    -- Add decay effect to the connecting beam
+    local TweenService = game:GetService("TweenService")
+    local Debris = game:GetService("Debris")
+    
+    TweenService:Create(
+        distancePart, 
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Transparency = 1, Size = Vector3.new(0.1, 0.1, distance)}
+    ):Play()
+    
+    -- Clean up
+    Debris:AddItem(distancePart, 0.6)
+    Debris:AddItem(originPart, 0.6)
+    
+    return rootPart.CFrame
+end
+
+abilities.Diddy = {
+    {
+        ["Ability"] = {
+            Execute = function(player)
+                local TweenService = game:GetService("TweenService")
+                local RS = game:GetService("ReplicatedStorage")
+                local Debris = game:GetService("Debris")
+                
+                local ball = RS:GetChildren()[13]
+                if not ball or not ball:IsA("BasePart") then 
+                    warn("Ball not found or not a BasePart")
+                    return 
+                end
+                
+                print("Ball found:", ball.Name)
+
+                local character = player.Character
+                if not character then return end
+                local rootPart = character:FindFirstChild("HumanoidRootPart")
+                if not rootPart then return end
+                
+                -- Create a trail of water behind the player
+                local waterTrail = Instance.new("Trail")
+                waterTrail.Color = ColorSequence.new(Color3.fromRGB(41, 128, 255))
+                waterTrail.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.3),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+                waterTrail.Lifetime = 1
+                waterTrail.MinLength = 0.1
+                waterTrail.WidthScale = NumberSequence.new(2)
+                
+                local attachment0 = Instance.new("Attachment")
+                attachment0.Position = Vector3.new(0, -2.9, 0)
+                attachment0.Parent = rootPart
+                
+                local attachment1 = Instance.new("Attachment")
+                attachment1.Position = Vector3.new(0, -2.9, 0.5)
+                attachment1.Parent = rootPart
+                
+                waterTrail.Attachment0 = attachment0
+                waterTrail.Attachment1 = attachment1
+                waterTrail.Parent = rootPart
+                
+                Debris:AddItem(waterTrail, 3)
+                Debris:AddItem(attachment0, 3)
+                Debris:AddItem(attachment1, 3)
+
+                local function performZigZag()
+                    local originalCF = rootPart.CFrame
+                    local right = originalCF.RightVector
+                    local look = originalCF.LookVector
+
+                    -- Define the zig-zag pattern with 7-stud wide movements
+                    local moves = {
+                        {dir = (right * 12) + (look * 1.5), duration = 0.15},  -- Move right and slightly forward
+                        {dir = (-right * 12) + (look * 3), duration = 0.15},  -- Move left and forward
+                        {dir = (right * 12) + (look * 3), duration = 0.15},   -- Move right and forward
+                        {dir = (-right * 12) + (look * 1.5), duration = 0.15}, -- Move left and slightly forward
+                        {dir = look * 9, duration = 0.2}  -- Final forward movement to total 9 studs forward
+                    }
+
+                    -- Create initial water effect
+                    createWaterVFX(rootPart, 2, 1.5)
+                    
+                    -- Perform each move in the zig-zag sequence
+                    local currentCF = originalCF
+                    for _, move in ipairs(moves) do
+                        local targetCF = currentCF + move.dir
+                        local tween = TweenService:Create(
+                            rootPart,
+                            TweenInfo.new(move.duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {CFrame = targetCF}
+                        )
+                        tween:Play()
+                        tween.Completed:Wait()
+                        currentCF = targetCF
+                        
+                        -- Create water splash at each point of the zig-zag
+                        createWaterVFX(rootPart, 1, 1)
+                    end
+                    
+                    -- Create a final, bigger splash
+                    createWaterVFX(rootPart, 3, 2.5)
+                end
+
+                coroutine.wrap(performZigZag)()
+            end
+        },
+        ["Name"] = "Oil Dribble",
+        ["Desc"] = "Summon slick oil forces to glide across the court in a zig-zag pattern, leaving a slippery trail of chaos",
+        ["RequiresBall"] = true,
+        ["Cooldown"] = 8
+    },
+    {
+        ["Ability"] = {
+            Execute = function(player)
+                local RS = game:GetService("ReplicatedStorage")
+                local Knit = require(RS.Packages.Knit)
+
+                -- Teleport 12 studs forward
+                teleportWithEffects(player, 12)
+                
+                -- Attempt to steal the ball after teleporting
+                Knit.Services.BallService.RE.Steal:FireServer()
+            end
+        },
+        ["Name"] = "Oil Steal",
+        ["Desc"] = "Teleport 12 studs forward instantly and attempt to steal the ball from an opponent",
+        ["RequiresBall"] = false,
+        ["Cooldown"] = 10
+    }
+}
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local Ability1Button = PlayerGui:WaitForChild("InGame"):WaitForChild("BG"):WaitForChild("Bottom"):WaitForChild("Ability1")
+local oilDribbleAbility = abilities.Diddy[1]
+
+Ability1Button.MouseButton1Click:Connect(function()
+    if oilDribbleAbility.Ability and oilDribbleAbility.Ability.Execute then
+        print("Executing Oil Dribble ability")
+        oilDribbleAbility.Ability.Execute(LocalPlayer)
+    else
+        warn("Oil Dribble ability execution failed!")
+    end
+end)
+
+local Ability2Button = PlayerGui:WaitForChild("InGame"):WaitForChild("BG"):WaitForChild("Bottom"):WaitForChild("Ability2")
+local oilStealAbility = abilities.Diddy[2]
+
+Ability2Button.MouseButton1Click:Connect(function()
+    if oilStealAbility.Ability and oilStealAbility.Ability.Execute then
+        print("Executing Oil Steal ability")
+        oilStealAbility.Ability.Execute(LocalPlayer)
+    else
+        warn("Oil Steal ability execution failed!")
+    end
+end)
+
+print("Diddy style, Oil Dribble (zig-zag), and Oil Steal (teleport) abilities initialized")
