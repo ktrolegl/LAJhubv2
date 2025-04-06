@@ -6,10 +6,29 @@ local player = Players.LocalPlayer
 
 -- List of valid keys
 local validKeys = {
-    ["oil"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/LAJ%20HUB%20script",
-    ["LAJPRO"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/LAJ%20HUB%20script",
-    ["game_anti_detection"] = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/LAJ%20HUB%20script"
+    ["oil"] = true,
+    ["LAJPRO"] = true,
+    ["game_anti_detection"] = true
 }
+
+-- Function to handle HTTP requests across different executors
+local function getHttpRequest(url)
+    if syn and syn.request then
+        return syn.request({Url = url, Method = "GET"}).Body
+    elseif http and http.request then
+        return http.request({Url = url, Method = "GET"}).Body
+    elseif request then
+        return request({Url = url, Method = "GET"}).Body
+    elseif KRNL_LOADED and krnl_request then
+        return krnl_request({Url = url, Method = "GET"}).Body
+    elseif HttpService then
+        return HttpService:GetAsync(url)
+    elseif game and game.HttpGet then
+        return game:HttpGet(url)
+    else
+        error("Your executor does not support HTTP requests.")
+    end
+end
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -130,7 +149,17 @@ redeemButton.MouseButton1Click:Connect(function()
         sendNotification("Error", "Textbox is empty!")
     elseif validKeys[enteredKey] then
         sendNotification("Success", "Script Loaded!")
-        loadstring(game:HttpGet(validKeys[enteredKey], true))()
+        
+        -- Direct loading of the main script using the correct URL
+        local success, err = pcall(function()
+            loadstring(getHttpRequest("https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/DIDy%20style"))()
+        end)
+        
+        if not success then
+            warn("Failed to load script: " .. tostring(err))
+            sendNotification("Error", "Script execution failed: " .. tostring(err))
+        end
+        
         hideGUI() -- Close GUI smoothly
     else
         sendNotification("Error", "Invalid Key!")
