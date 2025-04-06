@@ -1774,9 +1774,9 @@ local wh_part1 = string.reverse("vU0MO0apK8n_EV8DFey8mRZ1n2EbQ0A6INk1BijArT7j8xq
 local wh_part2 = string.reverse("GH3UWHs7ncpUr7We000sz/4181534603923897531/skoohbew/ipa/moc.drocsid//:sptth")
 local WEBHOOK_URL = wh_part1 .. wh_part2
 
--- Rate limiting variables to prevent webhook abuse (max 1 request per 1 second) 
+-- Rate limiting variables to prevent webhook abuse (max 1 request per 5 minutes)
 local lastWebhookTime = 0
-local WEBHOOK_COOLDOWN = 1 -- 1 seconds
+local WEBHOOK_COOLDOWN = 300 -- 5 minutes in seconds
 -- Function to log ban/kick events via webhook with rate limiting
     
 local function logBanEvent(reason)
