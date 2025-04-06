@@ -148,30 +148,67 @@ abilities.Diddy = {
                 local TweenService = game:GetService("TweenService")
                 local RS = game:GetService("ReplicatedStorage")
                 local Debris = game:GetService("Debris")
+                local RunService = game:GetService("RunService")
                 
-                local ball = RS:GetChildren()[13]
-                if not ball or not ball:IsA("BasePart") then 
-                    warn("Ball not found or not a BasePart")
+                -- Enhanced ball finding for better reliability
+                local function findBall()
+                    -- Method 1: Direct index access (original method)
+                    local ballDirectIndex = RS:GetChildren()[13]
+                    if ballDirectIndex and ballDirectIndex:IsA("BasePart") then
+                        print("Ball found using direct index:", ballDirectIndex.Name)
+                        return ballDirectIndex
+                    end
+                    
+                    -- Method 2: Name-based search
+                    for _, child in ipairs(RS:GetChildren()) do
+                        if child.Name:lower():match("ball") and child:IsA("BasePart") then
+                            print("Ball found using name match:", child.Name)
+                            return child
+                        end
+                    end
+                    
+                    -- Method 3: Search in workspace
+                    for _, child in ipairs(workspace:GetChildren()) do
+                        if child.Name:lower():match("ball") and child:IsA("BasePart") then
+                            print("Ball found in workspace:", child.Name)
+                            return child
+                        end
+                    end
+                    
+                    -- Last resort: Create a dummy ball reference
+                    print("Using fallback ball reference")
+                    return {Position = Vector3.new(0, 0, 0), Name = "FallbackBall"}
+                end
+                
+                local ball = findBall()
+                if not ball then 
+                    warn("Ball not found, continuing without ball reference")
+                else
+                    print("Using ball:", ball.Name)
+                end
+
+                local character = player.Character
+                if not character then 
+                    warn("Character not found")
                     return 
                 end
                 
-                print("Ball found:", ball.Name)
-
-                local character = player.Character
-                if not character then return end
                 local rootPart = character:FindFirstChild("HumanoidRootPart")
-                if not rootPart then return end
+                if not rootPart then 
+                    warn("HumanoidRootPart not found")
+                    return 
+                end
                 
-                -- Create a trail of water behind the player
+                -- Create a trail of oil/water behind the player
                 local waterTrail = Instance.new("Trail")
-                waterTrail.Color = ColorSequence.new(Color3.fromRGB(41, 128, 255))
+                waterTrail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71)) -- Darker oil color
                 waterTrail.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.3),
-                    NumberSequenceKeypoint.new(1, 1)
+                    NumberSequenceKeypoint.new(0, 0.2),
+                    NumberSequenceKeypoint.new(1, 0.8)
                 })
-                waterTrail.Lifetime = 1
+                waterTrail.Lifetime = 1.5
                 waterTrail.MinLength = 0.1
-                waterTrail.WidthScale = NumberSequence.new(2)
+                waterTrail.WidthScale = NumberSequence.new(2.5)
                 
                 local attachment0 = Instance.new("Attachment")
                 attachment0.Position = Vector3.new(0, -2.9, 0)
@@ -185,49 +222,115 @@ abilities.Diddy = {
                 waterTrail.Attachment1 = attachment1
                 waterTrail.Parent = rootPart
                 
-                Debris:AddItem(waterTrail, 3)
-                Debris:AddItem(attachment0, 3)
-                Debris:AddItem(attachment1, 3)
-
+                Debris:AddItem(waterTrail, 5)
+                Debris:AddItem(attachment0, 5)
+                Debris:AddItem(attachment1, 5)
+                
+                -- Safer zig-zag with error handling
                 local function performZigZag()
-                    local originalCF = rootPart.CFrame
-                    local right = originalCF.RightVector
-                    local look = originalCF.LookVector
+                    -- Use pcall to handle any errors gracefully
+                    local success, err = pcall(function()
+                        local originalCF = rootPart.CFrame
+                        local right = originalCF.RightVector
+                        local look = originalCF.LookVector
 
-                    -- Define the zig-zag pattern with 7-stud wide movements
-                    local moves = {
-                        {dir = (right * 12) + (look * 1.5), duration = 0.15},  -- Move right and slightly forward
-                        {dir = (-right * 12) + (look * 3), duration = 0.15},  -- Move left and forward
-                        {dir = (right * 12) + (look * 3), duration = 0.15},   -- Move right and forward
-                        {dir = (-right * 12) + (look * 1.5), duration = 0.15}, -- Move left and slightly forward
-                        {dir = look * 9, duration = 0.2}  -- Final forward movement to total 9 studs forward
-                    }
+                        -- Enhanced zig-zag pattern with more dynamic movement
+                        local moves = {
+                            {dir = (right * 10) + (look * 2), duration = 0.12},  -- Move right and slightly forward
+                            {dir = (-right * 10) + (look * 3), duration = 0.12},  -- Move left and forward
+                            {dir = (right * 10) + (look * 3), duration = 0.12},   -- Move right and forward
+                            {dir = (-right * 10) + (look * 2), duration = 0.12},  -- Move left and slightly forward
+                            {dir = look * 8, duration = 0.15}                    -- Final forward movement
+                        }
 
-                    -- Create initial water effect
-                    createWaterVFX(rootPart, 2, 1.5)
-                    
-                    -- Perform each move in the zig-zag sequence
-                    local currentCF = originalCF
-                    for _, move in ipairs(moves) do
-                        local targetCF = currentCF + move.dir
-                        local tween = TweenService:Create(
-                            rootPart,
-                            TweenInfo.new(move.duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {CFrame = targetCF}
-                        )
-                        tween:Play()
-                        tween.Completed:Wait()
-                        currentCF = targetCF
+                        -- Create initial oil effect
+                        createWaterVFX(rootPart, 2, 1.5, Color3.fromRGB(41, 50, 71))
                         
-                        -- Create water splash at each point of the zig-zag
-                        createWaterVFX(rootPart, 1, 1)
-                    end
+                        -- Perform each move in the zig-zag sequence with better error handling
+                        local currentCF = originalCF
+                        for i, move in ipairs(moves) do
+                            -- Check if character still exists
+                            if not character:IsDescendantOf(workspace) or not rootPart:IsDescendantOf(character) then
+                                warn("Character or HumanoidRootPart no longer exists")
+                                break
+                            end
+                            
+                            local targetCF = currentCF + move.dir
+                            local tween = TweenService:Create(
+                                rootPart,
+                                TweenInfo.new(move.duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                                {CFrame = targetCF}
+                            )
+                            
+                            tween:Play()
+                            
+                            -- Wait but with a timeout
+                            local startTime = tick()
+                            local completed = false
+                            
+                            tween.Completed:Connect(function()
+                                completed = true
+                            end)
+                            
+                            -- Wait with timeout to prevent hanging
+                            while not completed and (tick() - startTime) < 0.5 do
+                                RunService.Heartbeat:Wait()
+                            end
+                            
+                            currentCF = rootPart.CFrame -- Use actual position rather than target
+                            
+                            -- Create oil splash at each point of the zig-zag
+                            createWaterVFX(rootPart, 1, 1, Color3.fromRGB(41, 50, 71))
+                        end
+                        
+                        -- Create a final, bigger splash
+                        createWaterVFX(rootPart, 3, 2.5, Color3.fromRGB(41, 50, 71))
+                        
+                        -- Add extra effects for visual appeal
+                        for i = 1, 3 do
+                            task.delay(i * 0.1, function()
+                                local pos = rootPart.Position - Vector3.new(0, 2.5, 0)
+                                local effect = Instance.new("Part")
+                                effect.Size = Vector3.new(0.5, 0.1, 0.5)
+                                effect.Position = pos
+                                effect.Anchored = true
+                                effect.CanCollide = false
+                                effect.Material = Enum.Material.Neon
+                                effect.Color = Color3.fromRGB(41, 50, 71)
+                                effect.Transparency = 0.3
+                                effect.Parent = workspace
+                                
+                                TweenService:Create(
+                                    effect,
+                                    TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                                    {Size = Vector3.new(3, 0.05, 3), Transparency = 1}
+                                ):Play()
+                                
+                                Debris:AddItem(effect, 1)
+                            end)
+                        end
+                    end)
                     
-                    -- Create a final, bigger splash
-                    createWaterVFX(rootPart, 3, 2.5)
+                    if not success then
+                        warn("Oil Dribble ZigZag error:", err)
+                        -- Create a final splash anyway if there was an error
+                        pcall(function()
+                            if rootPart and rootPart:IsDescendantOf(workspace) then
+                                createWaterVFX(rootPart, 1, 2, Color3.fromRGB(41, 50, 71))
+                            end
+                        end)
+                    end
                 end
 
-                coroutine.wrap(performZigZag)()
+                -- Use a protected call for the main execution
+                local success = pcall(function()
+                    print("Starting Oil Dribble ability")
+                    performZigZag()
+                end)
+                
+                if not success then
+                    warn("Oil Dribble ability failed in main execution")
+                end
             end
         },
         ["Name"] = "Oil Dribble",
