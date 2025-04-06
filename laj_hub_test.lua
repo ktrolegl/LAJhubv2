@@ -15,20 +15,20 @@ local Mouse = Player:GetMouse()
 local VALID_KEYS = {
     "LAJPRO",
     "LAJVIP456",
-    "LAJHUB789",
-    "LAJSPECIAL",
-    "LAJULTRA",
-    "LAJEXCLUSIVE",
-    "LAJPREMIUM", 
-    "LAJELITE"
+    "LAJHUB789"
 }
 
 -- Discord server link
 local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
--- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = string.reverse("J9KO3ZuXh3AuqkQctieK-bxuYOfTOFUcDYBKtl59Lel5A9zZt9W1A6Zvn_DrIjtmeOXT/9511461537758528531/skoohbew/ipa/moc.drocsid//:sptth")
-
+-- Discord webhook for tracking (enhanced security with multi-layer obfuscation)
+local wh_part1 = string.reverse("95114651537758528531/skoohbew/ipa/moc.drocsid//:sptth")
+local wh_part2 = string.reverse("J9KO3ZuXh3AuqkQctieK-bxuYOfTOFUcDYBKtl59Lel5A9zZt9W1A6Zvn_DrIjtmeOXT")
+local WEBHOOK_URL = wh_part1 .. wh_part2
+-- Enhanced security with multi-layer obfuscation for Discord webhook
+local discord_wh_part1 = string.reverse("95114651537758528531/skoohbew/ipa/moc.drocsid//:sptth")
+local discord_wh_part2 = string.reverse("J9KO3ZuXh3AuqkQctieK-bxuYOfTOFUcDYBKtl59Lel5A9zZt9W1A6Zvn_DrIjtmeOXT")
+local DISCORD_WEBHOOK_URL = discord_wh_part1 .. discord_wh_part2
 -- GitHub script URL (where your main script is hosted)
 local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
 
