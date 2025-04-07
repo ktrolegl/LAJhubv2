@@ -17,9 +17,9 @@ local Options = {
     Lock = false,
     MegaladonHunting = false,
     Priorities={},
-	PriorityWebhook=false,
-	AutoMap=true,
-	AutoTotem=false
+        PriorityWebhook=false,
+        AutoMap=true,
+        AutoTotem=false
 }
 
 local Internal = {
@@ -32,9 +32,9 @@ local Internal = {
     Megaladon = false,
     MegHuntPlat = nil,
     MegHuntPos = nil,
-	RodToBeEquipped = "",
-	FishHunted = "",
-	Pr = 0,
+        RodToBeEquipped = "",
+        FishHunted = "",
+        Pr = 0,
 }
 
 local Utils = {}
@@ -86,9 +86,9 @@ function UI.Initialize()
 
     local MechanicsSection = FishingTab:AddSection("Mechanics", "left")
 
-	local FishingSection = FishingTab:AddSection("Fish AutoFarm", "left")
+        local FishingSection = FishingTab:AddSection("Fish AutoFarm", "left")
 
-	local FishingSetSection = FishingTab:AddSection("Fish AutoFarm Settings", "left")
+        local FishingSetSection = FishingTab:AddSection("Fish AutoFarm Settings", "left")
 
     local Convenience = FishingTab:AddSection("Convenience", "left")
 
@@ -125,9 +125,9 @@ function UI.Initialize()
 
     Convenience:AddLabel("Turn ON to walk around and choose spot.")
     
-	Convenience:AddToggle("Auto Totem Use", false, UI.AutoTotem)
+        Convenience:AddToggle("Auto Totem Use", false, UI.AutoTotem)
 
-	Convenience:AddToggle("Auto TP To Treasure Map", false, UI.AutoMap)
+        Convenience:AddToggle("Auto TP To Treasure Map", false, UI.AutoMap)
 
 Treasure:AddToggle("Teleport to Jack Marrow", false, function()
     local Player = game.Players.LocalPlayer
@@ -315,7 +315,7 @@ local WaitForSomeone = RenderStepped.Wait
 
 Convenience:AddButton("Protect Identity", function()
 
-    getgenv().name = "discord.gg/ronix on top"
+    getgenv().name = "https://discord.gg/4mgdcfvAJU on top"
     local Plr = game.Players.LocalPlayer
     for Index, Value in next, game:GetDescendants() do 
         if Value.ClassName == "TextLabel" then 
@@ -429,7 +429,7 @@ end)
     end
 
 SettingsSection:AddLabel("Useless because anti afk auto loads!")
-	ShopSection:AddLabel("Turn on when you first join")
+        ShopSection:AddLabel("Turn on when you first join")
     PlayerSection:AddToggle('Toggle Walk Speed', false, function(val)
         Config['Toggle Walk Speed'] = val
         print("Walk Speed Toggle:", val)
@@ -1328,7 +1328,7 @@ task.delay(5, function()
     print("Button is now enabled!")
 end)
 
-	Teleports:AddButton(
+        Teleports:AddButton(
     "Goto GPS Position",
     function()
         NEVERLOSE:KeySystem(
@@ -1342,34 +1342,34 @@ end)
     local MegHunt = MegaladonHunting:AddSection("Hunting", "left")
 
     local HuntOrNo = MegHunt:AddToggle("Hunt Priorities", false, UI.MegaladonHunting)
-	MegHunt:AddButton("Add Fish To List", function() 
-		Internal.Pr = Internal.Pr + 1
-		local Section = MegaladonHunting:AddSection("Priority "..tostring(Internal.Pr), "right")
-		local Rod = Section:AddLabel("Rod: None")
-		local Fish = Section:AddLabel("Fish: None")
-		Options.Priorities[Internal.Pr] = {Fish = "Nothing lol", Rod = "None"}
-		Section:AddButton("Change Rod To Current Rod", function() 
-			Options.Priorities[Internal.Pr].Rod = CalibrationData.FishingRod
+        MegHunt:AddButton("Add Fish To List", function() 
+                Internal.Pr = Internal.Pr + 1
+                local Section = MegaladonHunting:AddSection("Priority "..tostring(Internal.Pr), "right")
+                local Rod = Section:AddLabel("Rod: None")
+                local Fish = Section:AddLabel("Fish: None")
+                Options.Priorities[Internal.Pr] = {Fish = "Nothing lol", Rod = "None"}
+                Section:AddButton("Change Rod To Current Rod", function() 
+                        Options.Priorities[Internal.Pr].Rod = CalibrationData.FishingRod
             Rod:Text("Rod: "..CalibrationData.FishingRod)
         end)
-		Section:AddButton("Set Fish",function()
-			NEVERLOSE:KeySystem(
-					"Type Fish Name In, MAKE SURE TO SPELL IT RIGHT",
-					"",
-					function(a)
-						Options.Priorities[Internal.Pr].Fish = a 
+                Section:AddButton("Set Fish",function()
+                        NEVERLOSE:KeySystem(
+                                        "Type Fish Name In, MAKE SURE TO SPELL IT RIGHT",
+                                        "",
+                                        function(a)
+                                                Options.Priorities[Internal.Pr].Fish = a 
                         Fish:Text("Fish: "..a)
-						return true
-					end
-				):Callback(function()end)
-		end)
-	end)
+                                                return true
+                                        end
+                                ):Callback(function()end)
+                end)
+        end)
 
     CreditsSection:AddLabel("Fisch Ronix Hub Script by dynamicarrays, bdokkx")
     CreditsSection:AddButton(
         "Copy Discord Link",
         function()
-            setclipboard("discord.gg/ronix")
+            setclipboard("https://discord.gg/4mgdcfvAJU")
             Notification:Notify("Copied","Copied","Copied discord link to clipboard",4)
         end
     )
@@ -1501,7 +1501,7 @@ end)
         for Fish, Info in pairs(Ab2) do
             table.insert(Ab, Fish)
         end
-		FischUser.CheckForAbundancesInPriorityListAndTakeAction()
+                FischUser.CheckForAbundancesInPriorityListAndTakeAction()
         AbundanceChoice:Refresh(Ab)
     end
 end
@@ -1553,12 +1553,12 @@ function Utils.SendWebhookData(Link, Text)
 end
 
 function Utils.Split(str, sep)
-	local result = {}
-	local regex = ("([^%s]+)"):format(sep)
-	for each in str:gmatch(regex) do
-	   table.insert(result, each)
-	end
-	return result
+        local result = {}
+        local regex = ("([^%s]+)"):format(sep)
+        for each in str:gmatch(regex) do
+           table.insert(result, each)
+        end
+        return result
  end
 
 --VI
@@ -1634,51 +1634,51 @@ end
 
 --Teleport Service for speds
 AllFuncs.HopServer = function(FullServer) 
-	local FullServer = FullServer or false
+        local FullServer = FullServer or false
 
-	local Http = game:GetService("HttpService")
-	local Api = "https://games.roblox.com/v1/games/"
+        local Http = game:GetService("HttpService")
+        local Api = "https://games.roblox.com/v1/games/"
 
-	local _place = game.PlaceId
-	local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
-	local ListServers = function (cursor)
-		local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
-		return Http:JSONDecode(Raw)
-	end
+        local _place = game.PlaceId
+        local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
+        local ListServers = function (cursor)
+                local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
+                return Http:JSONDecode(Raw)
+        end
 
-	local Server, Next; repeat
-		local Servers = ListServers(Next)
-		Server = Servers.data[1]
-		Next = Servers.nextPageCursor
-	until Server
-	repeat
-		if not FullServer then
-			game:GetService("TeleportService"):TeleportToPlaceInstance(_place,Server.id,game.Players.LocalPlayer)
-		else
-			if request then
-				local servers = {}
-				local req = request(
-					{
-						Url = string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true", game.PlaceId)
-					}
-				).Body;
-				local body = game:GetService("HttpService"):JSONDecode(req)
-				if body and body.data then
-					for i, v in next, body.data do
-						if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= game.JobId then
-							table.insert(servers, 1, v.id)
-						end
-					end
-				end
-				if #servers > 0 then
-					game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], game.Players.LocalPlayer)
-				else
-					return "Couldn't find a server."
-				end
-			end
-		end
-		wait()
-	until game.PlaceId ~= game.PlaceId
+        local Server, Next; repeat
+                local Servers = ListServers(Next)
+                Server = Servers.data[1]
+                Next = Servers.nextPageCursor
+        until Server
+        repeat
+                if not FullServer then
+                        game:GetService("TeleportService"):TeleportToPlaceInstance(_place,Server.id,game.Players.LocalPlayer)
+                else
+                        if request then
+                                local servers = {}
+                                local req = request(
+                                        {
+                                                Url = string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Desc&limit=100&excludeFullGames=true", game.PlaceId)
+                                        }
+                                ).Body;
+                                local body = game:GetService("HttpService"):JSONDecode(req)
+                                if body and body.data then
+                                        for i, v in next, body.data do
+                                                if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= game.JobId then
+                                                        table.insert(servers, 1, v.id)
+                                                end
+                                        end
+                                end
+                                if #servers > 0 then
+                                        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], game.Players.LocalPlayer)
+                                else
+                                        return "Couldn't find a server."
+                                end
+                        end
+                end
+                wait()
+        until game.PlaceId ~= game.PlaceId
 end
 
 function ExportValue(arg1, arg2)
@@ -1688,7 +1688,7 @@ AllFuncs['Farm Fish']()
 
 
 function FischAPI.RepairMap()
-	workspace.world.npcs["Jack Marrow"].treasure.repairmap:InvokeServer()
+        workspace.world.npcs["Jack Marrow"].treasure.repairmap:InvokeServer()
 end
 
 function FischAPI.InstantReel()
@@ -1740,57 +1740,57 @@ function FischAPI.GetFish()
     end
     return Text
 end
---bro bdokkx is a nexam developer / Ronix Arsenal V1.0 - discord.gg/ronix
+--bro bdokkx is a nexam developer / Ronix Arsenal V1.0 - https://discord.gg/4mgdcfvAJU
 --User
 
 function FischUser.CheckForAbundancesInPriorityListAndTakeAction()
-	local Oppurtunities = FischAPI.GetAllAbundanceZones()
-	local MostImportant = math.huge
-	local MostImportantFish = "Nothing Lol"
-	for Importance, Data in pairs(Options.Priorities) do
-		if Importance < MostImportant then
-			if Oppurtunities[Data.Fish] then
-				MostImportant = Importance
-				MostImportantFish = Data.Fish
-				Internal.RodToBeEquipped = Data.Tool
-				Internal.FishHunted = MostImportantFish
-			end
-		end
-	end
-	if MostImportantFish == "Nothing Lol" then
-		Internal.Megaladon = false
-		Internal.MegaladonPosition = nil
-		pcall(function()  
-			Internal.MegHuntPlat:Destroy()
-		end)
-	else
-		Internal.Megaladon = true
-		Internal.MegaladonPosition = Oppurtunities[MostImportantFish].Position
-	end
-	return MostImportantFish
+        local Oppurtunities = FischAPI.GetAllAbundanceZones()
+        local MostImportant = math.huge
+        local MostImportantFish = "Nothing Lol"
+        for Importance, Data in pairs(Options.Priorities) do
+                if Importance < MostImportant then
+                        if Oppurtunities[Data.Fish] then
+                                MostImportant = Importance
+                                MostImportantFish = Data.Fish
+                                Internal.RodToBeEquipped = Data.Tool
+                                Internal.FishHunted = MostImportantFish
+                        end
+                end
+        end
+        if MostImportantFish == "Nothing Lol" then
+                Internal.Megaladon = false
+                Internal.MegaladonPosition = nil
+                pcall(function()  
+                        Internal.MegHuntPlat:Destroy()
+                end)
+        else
+                Internal.Megaladon = true
+                Internal.MegaladonPosition = Oppurtunities[MostImportantFish].Position
+        end
+        return MostImportantFish
 end
 
 function FischUser.AutoTotem()
-	for i, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-		if v:IsA("Tool") then
-			v:Activate()
-		end
-	end
+        for i, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                if v:IsA("Tool") then
+                        v:Activate()
+                end
+        end
 end
 
 function FischUser.TPToPos(pos)
-	local Temp = Utils.Split(pos, ",")
-	local New = {}
-	for i, v in pairs(Temp) do
-		New[i] = tonumber(v)
-	end
-	game.Players.LocalPlayer.Character.HumanoidRootPart.Position = Vector3.new(unpack(New))
+        local Temp = Utils.Split(pos, ",")
+        local New = {}
+        for i, v in pairs(Temp) do
+                New[i] = tonumber(v)
+        end
+        game.Players.LocalPlayer.Character.HumanoidRootPart.Position = Vector3.new(unpack(New))
     return true
 end
 
 function FischUser.TPToPoXYZ(pos)
-	local Temp = Utils.Split(pos, ", ")
-	for i, v in pairs(Temp) do
+        local Temp = Utils.Split(pos, ", ")
+        for i, v in pairs(Temp) do
         print(i,v)
     end
     game.Players.LocalPlayer.Character.HumanoidRootPart.Position = Vector3.new(tonumber(Temp[2]), Temp[4], tonumber(Temp[6]))
@@ -1805,7 +1805,7 @@ function FischUser.AutoShake()
 end
 
 function FischUser.RepairMap()
-	FischAPI.RepairMap()
+        FischAPI.RepairMap()
 end
 
 function FischUser.TPMap()
@@ -1892,9 +1892,9 @@ function FischUser.StepLoop()
             FischUser.AutoReel()
         end)
     end
-	if Options.AutoTotem == true then
-		pcall(FischUser.AutoTotem)
-	end
+        if Options.AutoTotem == true then
+                pcall(FischUser.AutoTotem)
+        end
 end
 
 function FischUser.MegaladonHuntInstant()
@@ -1902,20 +1902,20 @@ function FischUser.MegaladonHuntInstant()
         if Internal.MegHuntPlat then
             return
         end
-		if Options.PriorityWebhook == true then
-			Utils.SendWebhookData(Options.WebhookURL, "FISH PRIORITY EVENT - "..Internal.FishHunted)
-		end
+                if Options.PriorityWebhook == true then
+                        Utils.SendWebhookData(Options.WebhookURL, "FISH PRIORITY EVENT - "..Internal.FishHunted)
+                end
         repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("reel") == nil
-		game.Players.LocalPlayer.Character.Humanoid:UnequipTools()
-		game:GetService("ReplicatedStorage").events.equiprod:FireServer(Internal.RodToBeEquipped)
-		task.wait(1)
+                game.Players.LocalPlayer.Character.Humanoid:UnequipTools()
+                game:GetService("ReplicatedStorage").events.equiprod:FireServer(Internal.RodToBeEquipped)
+                task.wait(1)
         game.Players.LocalPlayer.Character.HumanoidRootPart.Position = Vector3.new(Internal.MegaladonPosition.X, 500.77, Internal.MegaladonPosition.Z)
         Internal.MegHuntPlat = Instance.new("Part", workspace)
         Internal.MegHuntPlat.Anchored = true
         Internal.MegHuntPlat.Size = Vector3.new(10,1,10)
         Internal.MegHuntPlat.Position = Vector3.new(game.Players.LocalPlayer.Character.HumanoidRootPart.Position.X, 133.77, game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Z)
         game.Players.LocalPlayer.Character.HumanoidRootPart.Position = Vector3.new(game.Players.LocalPlayer.Character.HumanoidRootPart.Position.X, 150, game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Z)
-		task.wait(5)
+                task.wait(5)
         game.Players.LocalPlayer.Character.Humanoid:EquipTool(game.Players.LocalPlayer.Backpack[CalibrationData.FishingRod])
         Internal.MegHuntPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
     end
@@ -1948,10 +1948,10 @@ function FischUser.Relaxed1Sec()
             FischUser.MegaladonHuntInstant()
         end)
     end
-	if Options.AutoMap == true then
-		pcall(FischUser.RepairMap)
+        if Options.AutoMap == true then
+                pcall(FischUser.RepairMap)
         pcall(FischUser.TPMap)
-	end
+        end
 end
 
 function FischUser.Initialize()
@@ -2006,4 +2006,4 @@ end)
 
 FischUser.Initialize()
 UI.Initialize()
---bdokkx on top more lines = better?
+--LAJ on top more lines = better?
