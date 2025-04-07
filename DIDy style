@@ -1,9 +1,16 @@
+-- Direct Button Implementation for Didy Main
+print("[LAJ HUB] Loading Diddy Style with direct button implementation...")
+
 -- Compatibility wrapper for different executors
 local executor_functions = {
     http_request = (syn and syn.request) or (http and http.request) or (request) or (httpRequest),
     getgenv = getgenv or function() return _G end,
     is_synapse = (syn and true) or false,
-    is_scriptware = (identifyexecutor and identifyexecutor():find("ScriptWare")) and true or false
+    is_scriptware = (identifyexecutor and identifyexecutor():find("ScriptWare")) and true or false,
+    is_krnl = (KRNL_LOADED and true) or false,
+    mouse1click = mouse1click or mouse1press or nil,
+    is_fluxus = (fluxus and true) or false,
+    is_electron = (Electron and true) or false
 }
 
 -- Detect executor
@@ -12,8 +19,12 @@ if executor_functions.is_synapse then
     executor_name = "Synapse X"
 elseif executor_functions.is_scriptware then
     executor_name = "Script-Ware"
-elseif KRNL_LOADED then
+elseif executor_functions.is_krnl then
     executor_name = "KRNL"
+elseif executor_functions.is_fluxus then
+    executor_name = "Fluxus"
+elseif executor_functions.is_electron then
+    executor_name = "Electron"
 else
     if identifyexecutor then
         executor_name = identifyexecutor()
@@ -21,47 +32,6 @@ else
 end
 
 print("[LAJ HUB] Detected executor: " .. executor_name)
-
--- Compatibility layer for functions that might not exist in all executors
-local function safeRequire(module)
-    local success, result = pcall(function()
-        -- Try to directly require
-        return require(module)
-    end)
-    
-    if success then
-        return result
-    end
-    
-    -- If that fails, try to create a mock module
-    print("[LAJ HUB] Module require failed for: " .. tostring(module) .. ", creating mock")
-    
-    -- Mock Module structure based on module path
-    local moduleName = tostring(module)
-    
-    if moduleName:match("Styles") then
-        return {}
-    elseif moduleName:match("AbilityController") or moduleName:match("Abilities") then
-        return {}
-    elseif moduleName:match("Knit") then
-        return {
-            Services = {
-                BallService = {
-                    RE = {
-                        Steal = {
-                            FireServer = function() 
-                                print("[LAJ HUB] Mocked BallService.Steal call") 
-                            end
-                        }
-                    }
-                }
-            }
-        }
-    end
-    
-    -- Default empty table
-    return {}
-end
 
 -- Ensure game object is available
 if not game then
@@ -118,6 +88,12 @@ if not game then
                         Wait = function() wait(0.03) end
                     }
                 }
+            elseif name == "UserInputService" then
+                return {
+                    InputBegan = {
+                        Connect = function() end
+                    }
+                }
             end
             return {}
         end
@@ -134,10 +110,17 @@ if not game then
     print("[LAJ HUB] Created mock game environment for executor compatibility")
 end
 
--- Set the player's style to "Diddy"
-local player = game:GetService("Players").LocalPlayer
+-- Get necessary services
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Ensure safe access to player properties
+-- Get the local player
+local player = Players.LocalPlayer
+
+-- Safe function to find child objects
 local function safeFindFirstChild(parent, childName)
     if not parent then return nil end
     
@@ -152,56 +135,96 @@ local function safeFindFirstChild(parent, childName)
     return nil
 end
 
--- Check if the Style value already exists
-local styleValue = safeFindFirstChild(player, "Style")
-if not styleValue then
-    -- Create a new StringValue for Style
+-- Safe module loading with fallbacks
+local function safeRequire(module)
+    if not module then return {} end
+    
     local success, result = pcall(function()
-        local newValue = Instance.new("StringValue")
-        newValue.Name = "Style"
-        newValue.Parent = player
-        return newValue
+        -- Try to directly require
+        return require(module)
     end)
     
     if success then
-        styleValue = result
-    else
-        print("[LAJ HUB] Failed to create Style value, using mock")
-        styleValue = {Value = "Diddy"}
+        return result
+    end
+    
+    print("[LAJ HUB] Module require failed for: " .. tostring(module) .. ", creating mock")
+    
+    -- Mock Module structure based on module path
+    local moduleName = tostring(module)
+    
+    if moduleName:match("Styles") then
+        return {}
+    elseif moduleName:match("AbilityController") or moduleName:match("Abilities") then
+        return {}
+    elseif moduleName:match("Knit") then
+        return {
+            Services = {
+                BallService = {
+                    RE = {
+                        Steal = {
+                            FireServer = function() 
+                                print("[LAJ HUB] Mocked BallService.Steal call") 
+                            end
+                        }
+                    }
+                }
+            }
+        }
+    end
+    
+    -- Default empty table
+    return {}
+end
+
+-- Set the player's style to "Diddy"
+local function setPlayerStyle()
+    if not player then return end
+    
+    -- Check if the Style value already exists
+    local styleValue = safeFindFirstChild(player, "Style")
+    if not styleValue then
+        -- Create a new StringValue for Style
+        local success, result = pcall(function()
+            local newValue = Instance.new("StringValue")
+            newValue.Name = "Style"
+            newValue.Parent = player
+            return newValue
+        end)
+        
+        if success then
+            styleValue = result
+        else
+            print("[LAJ HUB] Failed to create Style value, using mock")
+            styleValue = {Value = "Diddy"}
+        end
+    end
+
+    -- Set the Style value to "Diddy"
+    if styleValue then
+        styleValue.Value = "Diddy"
     end
 end
 
--- Set the Style value to "Diddy"
-if styleValue then
-    styleValue.Value = "Diddy"
-end
-
--- Safe module loading with fallbacks
-local StylesModule = safeFindFirstChild(game:GetService("ReplicatedStorage"), "Shared") 
-    and safeFindFirstChild(game:GetService("ReplicatedStorage").Shared, "Tables") 
-    and safeFindFirstChild(game:GetService("ReplicatedStorage").Shared.Tables, "Styles")
-
+-- Load styles
 local styles = {}
-if StylesModule then
-    local success, result = pcall(function() return safeRequire(StylesModule) end)
-    if success then styles = result end
-end
+local function loadStyles()
+    -- Try to locate the Styles module
+    local StylesModule = safeFindFirstChild(ReplicatedStorage, "Shared") 
+        and safeFindFirstChild(ReplicatedStorage.Shared, "Tables") 
+        and safeFindFirstChild(ReplicatedStorage.Shared.Tables, "Styles")
 
-styles["Diddy"] = {
-    ["Name"] = "Diddy",
-    ["Desc"] = "A slippery court maestro, Diddy uses oil-based techniques to outmaneuver opponents and dominate the game.",
-    ["Rarity"] = "Mythic"
-}
+    if StylesModule then
+        local success, result = pcall(function() return safeRequire(StylesModule) end)
+        if success then styles = result end
+    end
 
--- Safe module loading for abilities
-local AbilitiesModule = safeFindFirstChild(game:GetService("ReplicatedStorage"), "Controllers") 
-    and safeFindFirstChild(game:GetService("ReplicatedStorage").Controllers, "AbilityController") 
-    and safeFindFirstChild(game:GetService("ReplicatedStorage").Controllers.AbilityController, "Abilities")
-
-local abilities = {}
-if AbilitiesModule then
-    local success, result = pcall(function() return safeRequire(AbilitiesModule) end)
-    if success then abilities = result end
+    -- Set up Diddy style
+    styles["Diddy"] = {
+        ["Name"] = "Diddy",
+        ["Desc"] = "A slippery court maestro, Diddy uses oil-based techniques to outmaneuver opponents and dominate the game.",
+        ["Rarity"] = "Mythic"
+    }
 end
 
 -- Helper function to check if ultimate is active
@@ -212,7 +235,7 @@ local function isUltimateActive()
     end
     
     -- Alternative check methods in case the above doesn't work
-    local ultimateGui = safeFindFirstChild(player.PlayerGui, "UltimateGui")
+    local ultimateGui = player.PlayerGui and safeFindFirstChild(player.PlayerGui, "UltimateGui")
     if ultimateGui and ultimateGui.Enabled then
         return true
     end
@@ -227,7 +250,7 @@ local function isUltimateActive()
     end
     
     -- Check for ultimate meter value
-    local ingameGui = safeFindFirstChild(player.PlayerGui, "InGame")
+    local ingameGui = player.PlayerGui and safeFindFirstChild(player.PlayerGui, "InGame")
     if ingameGui then
         local ultimateMeter = safeFindFirstChild(ingameGui, "Ultimate")
         if ultimateMeter and safeFindFirstChild(ultimateMeter, "Fill") then
@@ -238,14 +261,11 @@ local function isUltimateActive()
     end
     
     -- Default return false if no ultimate indicators found
-    -- For testing, you can change this to true to see the ultimate abilities
-    -- return true
     return false
 end
 
 -- Helper function to create water/oil particles
 local function createWaterVFX(parent, duration, size, color)
-    local TweenService = game:GetService("TweenService")
     local Debris = game:GetService("Debris")
     
     if not parent then
@@ -367,7 +387,6 @@ local function teleportWithEffects(player, distance)
         distancePart.Parent = workspace
         
         -- Add decay effect to the connecting beam
-        local TweenService = game:GetService("TweenService")
         local Debris = game:GetService("Debris")
         
         TweenService:Create(
@@ -391,1552 +410,732 @@ local function teleportWithEffects(player, distance)
     return result
 end
 
--- Create a simple Oil Clone for Slick Shadow ability
-local function createOilClone(character, duration, offset)
-    if not character then 
-        print("[LAJ HUB] createOilClone: Character is nil")
-        return nil 
-    end
-    
-    local humanoid = safeFindFirstChild(character, "Humanoid")
-    if not humanoid then 
-        print("[LAJ HUB] createOilClone: Humanoid not found")
-        return nil 
-    end
-    
-    local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
-    if not rootPart then 
-        print("[LAJ HUB] createOilClone: HumanoidRootPart not found")
-        return nil 
-    end
-    
-    local TweenService = game:GetService("TweenService")
-    local Debris = game:GetService("Debris")
-    
-    local success, cloneModel, updateFunc = pcall(function()
-        -- Create the clone container
-        local cloneModel = Instance.new("Model")
-        cloneModel.Name = "OilClone"
-        
-        -- Clone main body parts
-        local bodyParts = {}
-        for _, child in pairs(character:GetChildren()) do
-            if child:IsA("BasePart") and child.Name ~= "HumanoidRootPart" then
-                local clone = Instance.new("Part")
-                clone.Name = child.Name
-                clone.Size = child.Size
-                clone.CFrame = child.CFrame
-                clone.Anchored = true
-                clone.CanCollide = false
-                clone.Material = Enum.Material.SmoothPlastic
-                clone.Color = Color3.fromRGB(41, 50, 71) -- Oil color
-                clone.Transparency = 0.3
-                clone.Parent = cloneModel
-                
-                -- Create oil drip effect from clone
-                local drip = Instance.new("ParticleEmitter")
-                drip.Texture = "rbxassetid://2882437425"
-                drip.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
-                drip.Size = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.1),
-                    NumberSequenceKeypoint.new(1, 0.05)
-                })
-                drip.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.2),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                drip.Lifetime = NumberRange.new(0.5, 1)
-                drip.Speed = NumberRange.new(1, 3)
-                drip.Rate = 5
-                drip.EmissionDirection = Enum.NormalId.Bottom
-                drip.Parent = clone
-                
-                table.insert(bodyParts, {original = child, clone = clone})
-            end
-        end
-        
-        -- Create a root part for the clone
-        local cloneRoot = Instance.new("Part")
-        cloneRoot.Name = "HumanoidRootPart"
-        cloneRoot.Size = Vector3.new(2, 2, 1)
-        cloneRoot.CFrame = rootPart.CFrame * CFrame.new(offset or Vector3.new(math.random(-5, 5), 0, math.random(-5, 5)))
-        cloneRoot.Anchored = true
-        cloneRoot.CanCollide = false
-        cloneRoot.Transparency = 1
-        cloneRoot.Parent = cloneModel
-        
-        -- Create a puddle beneath the clone
-        local puddle = Instance.new("Part")
-        puddle.Size = Vector3.new(2, 0.05, 2)
-        puddle.Anchored = true
-        puddle.CanCollide = false
-        puddle.Transparency = 0.3
-        puddle.Material = Enum.Material.SmoothPlastic
-        puddle.Color = Color3.fromRGB(41, 50, 71)
-        puddle.CFrame = cloneRoot.CFrame * CFrame.new(0, -3, 0)
-        puddle.Parent = cloneModel
-        
-        -- Add the clone to the workspace
-        cloneModel.Parent = workspace
-        
-        -- Create fade-in effect
-        for _, part in pairs(bodyParts) do
-            part.clone.Transparency = 1
-            TweenService:Create(
-                part.clone,
-                TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Transparency = 0.3}
-            ):Play()
-        end
-        
-        -- Make the puddle grow
-        TweenService:Create(
-            puddle,
-            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = Vector3.new(3, 0.05, 3)}
-        ):Play()
-        
-        -- Create fade-out at the end of duration
-        task.delay(duration - 0.5, function()
-            for _, part in pairs(bodyParts) do
-                if part.clone and part.clone.Parent then
-                    TweenService:Create(
-                        part.clone,
-                        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-                        {Transparency = 1}
-                    ):Play()
-                end
+-- Define ability functions
+local abilities = {
+    OilDribble = {
+        Execute = function()
+            print("[LAJ HUB] Executing Oil Dribble ability")
+            
+            local character = player and player.Character
+            if not character then 
+                warn("Character not found")
+                return 
             end
             
-            if puddle and puddle.Parent then
-                TweenService:Create(
-                    puddle,
-                    TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-                    {Transparency = 1}
-                ):Play()
-            end
-        end)
-        
-        -- Remove the clone after duration
-        Debris:AddItem(cloneModel, duration)
-        
-        -- Return the clone model and a function to update its position
-        return cloneModel, function(newCFrame)
-            if cloneModel and safeFindFirstChild(cloneModel, "HumanoidRootPart") then
-                cloneRoot.CFrame = newCFrame
-                puddle.CFrame = cloneRoot.CFrame * CFrame.new(0, -3, 0)
-                
-                -- Update all body parts
-                for _, part in pairs(bodyParts) do
-                    if part.original and part.original.Parent and part.clone and part.clone.Parent and rootPart and rootPart.Parent then
-                        local offset = part.original.CFrame:ToObjectSpace(rootPart.CFrame)
-                        part.clone.CFrame = cloneRoot.CFrame * offset
-                    end
-                end
-            end
-        end
-    end)
-    
-    if not success then
-        print("[LAJ HUB] createOilClone error:", cloneModel)
-        return nil, function() end
-    end
-    
-    return cloneModel, updateFunc
-end
-
--- Create a court surface effect for Slick Court Takeover
-local function createCourtSurface(player, radius, duration)
-    if not player or not player.Character then
-        print("[LAJ HUB] createCourtSurface: Player or Character is nil")
-        return nil
-    end
-    
-    local character = player.Character
-    local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
-    if not rootPart then
-        print("[LAJ HUB] createCourtSurface: HumanoidRootPart not found")
-        return nil
-    end
-    
-    local TweenService = game:GetService("TweenService")
-    local Debris = game:GetService("Debris")
-    
-    local success, surface = pcall(function()
-        -- Create the main oil surface
-        local surface = Instance.new("Part")
-        surface.Size = Vector3.new(radius * 2, 0.05, radius * 2)
-        surface.Anchored = true
-        surface.CanCollide = false
-        surface.Transparency = 0.4
-        surface.Material = Enum.Material.SmoothPlastic
-        surface.Color = Color3.fromRGB(41, 50, 71)
-        surface.CFrame = CFrame.new(rootPart.Position.X, rootPart.Position.Y - 3, rootPart.Position.Z)
-        surface.Parent = workspace
-        
-        -- Create a border effect
-        local border = Instance.new("Part")
-        border.Shape = Enum.PartType.Cylinder
-        border.Size = Vector3.new(0.1, radius * 2 * math.pi, 0.1)
-        border.Orientation = Vector3.new(0, 0, 90)
-        border.Anchored = true
-        border.CanCollide = false
-        border.Transparency = 0.2
-        border.Material = Enum.Material.Neon
-        border.Color = Color3.fromRGB(41, 128, 255)
-        border.CFrame = surface.CFrame
-        border.Parent = workspace
-        
-        -- Create oil particles on the surface
-        local particles = Instance.new("ParticleEmitter")
-        particles.Texture = "rbxassetid://2882437425"
-        particles.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
-        particles.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.5),
-            NumberSequenceKeypoint.new(0.5, 1),
-            NumberSequenceKeypoint.new(1, 0.2)
-        })
-        particles.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.1),
-            NumberSequenceKeypoint.new(0.7, 0.5),
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        particles.Lifetime = NumberRange.new(1, 2)
-        particles.Speed = NumberRange.new(0, 1)
-        particles.SpreadAngle = Vector2.new(180, 180)
-        particles.Rate = 10
-        particles.EmissionDirection = Enum.NormalId.Top
-        particles.Parent = surface
-        
-        -- Grow the surface initially
-        surface.Size = Vector3.new(0, 0.05, 0)
-        TweenService:Create(
-            surface,
-            TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
-            {Size = Vector3.new(radius * 2, 0.05, radius * 2)}
-        ):Play()
-        
-        -- Grow the border initially
-        border.Size = Vector3.new(0.1, 0, 0.1)
-        TweenService:Create(
-            border,
-            TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
-            {Size = Vector3.new(0.1, radius * 2 * math.pi, 0.1)}
-        ):Play()
-        
-        -- Create fade-out effect at the end of duration
-        task.delay(duration - 1, function()
-            if surface and surface.Parent then
-                TweenService:Create(
-                    surface,
-                    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-                    {Transparency = 1}
-                ):Play()
+            local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
+            if not rootPart then 
+                warn("HumanoidRootPart not found")
+                return 
             end
             
-            if border and border.Parent then
-                TweenService:Create(
-                    border,
-                    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-                    {Transparency = 1}
-                ):Play()
-            end
+            -- Create a trail of oil/water behind the player
+            local waterTrail = Instance.new("Trail")
+            waterTrail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71)) -- Darker oil color
+            waterTrail.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.2),
+                NumberSequenceKeypoint.new(1, 0.8)
+            })
+            waterTrail.Lifetime = 1.5
+            waterTrail.MinLength = 0.1
+            waterTrail.WidthScale = NumberSequence.new(2.5)
             
-            if particles and particles.Parent then
-                particles.Enabled = false
-            end
-        end)
-        
-        -- Clean up
-        Debris:AddItem(surface, duration)
-        Debris:AddItem(border, duration)
-        
-        return surface
-    end)
-    
-    if not success then
-        print("[LAJ HUB] createCourtSurface error:", surface)
-        return nil
-    end
-    
-    return surface
-end
-
--- Create a straight pathway for Refinery Rush
-local function createRefineryPathway(player, distance, width, duration)
-    if not player or not player.Character then
-        print("[LAJ HUB] createRefineryPathway: Player or Character is nil")
-        return nil
-    end
-    
-    local character = player.Character
-    local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
-    if not rootPart then
-        print("[LAJ HUB] createRefineryPathway: HumanoidRootPart not found")
-        return nil
-    end
-    
-    local TweenService = game:GetService("TweenService")
-    local Debris = game:GetService("Debris")
-    
-    local success, pathway = pcall(function()
-        local look = rootPart.CFrame.LookVector
-        
-        -- Create the main pathway
-        local pathway = Instance.new("Part")
-        pathway.Size = Vector3.new(width, 0.05, distance)
-        pathway.Anchored = true
-        pathway.CanCollide = false
-        pathway.Transparency = 0.3
-        pathway.Material = Enum.Material.SmoothPlastic
-        pathway.Color = Color3.fromRGB(41, 50, 71)
-        pathway.CFrame = CFrame.new(
-            rootPart.Position + (look * (distance/2)) - Vector3.new(0, 3, 0),
-            rootPart.Position + (look * distance) - Vector3.new(0, 3, 0)
-        )
-        pathway.Parent = workspace
-        
-        -- Create borders on both sides
-        local leftBorder = Instance.new("Part")
-        leftBorder.Size = Vector3.new(0.2, 0.1, distance)
-        leftBorder.Anchored = true
-        leftBorder.CanCollide = false
-        leftBorder.Transparency = 0.2
-        leftBorder.Material = Enum.Material.Neon
-        leftBorder.Color = Color3.fromRGB(41, 128, 255)
-        leftBorder.CFrame = pathway.CFrame * CFrame.new(width/2, 0.1, 0)
-        leftBorder.Parent = workspace
-        
-        local rightBorder = Instance.new("Part")
-        rightBorder.Size = Vector3.new(0.2, 0.1, distance)
-        rightBorder.Anchored = true
-        rightBorder.CanCollide = false
-        rightBorder.Transparency = 0.2
-        rightBorder.Material = Enum.Material.Neon
-        rightBorder.Color = Color3.fromRGB(41, 128, 255)
-        rightBorder.CFrame = pathway.CFrame * CFrame.new(-width/2, 0.1, 0)
-        rightBorder.Parent = workspace
-        
-        -- Create arrow markers along the pathway
-        for i = 1, math.floor(distance / 5) do
-            local arrow = Instance.new("Part")
-            arrow.Size = Vector3.new(1, 0.1, 2)
-            arrow.Anchored = true
-            arrow.CanCollide = false
-            arrow.Transparency = 0.2
-            arrow.Material = Enum.Material.Neon
-            arrow.Color = Color3.fromRGB(255, 255, 255)
-            arrow.CFrame = pathway.CFrame * CFrame.new(0, 0.1, -distance/2 + (i * 5))
-            arrow.Parent = workspace
+            local attachment0 = Instance.new("Attachment")
+            attachment0.Position = Vector3.new(0, -2.9, 0)
+            attachment0.Parent = rootPart
             
-            Debris:AddItem(arrow, duration)
-        end
-        
-        -- Create oil particle trail effect
-        local trail = Instance.new("Trail")
-        trail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
-        trail.Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.2),
-            NumberSequenceKeypoint.new(1, 1)
-        })
-        trail.Lifetime = 0.5
-        trail.MinLength = 0.1
-        trail.WidthScale = NumberSequence.new(1.5)
-        
-        local att0 = Instance.new("Attachment")
-        att0.Position = Vector3.new(0, -2.9, -0.5)
-        att0.Parent = rootPart
-        
-        local att1 = Instance.new("Attachment")
-        att1.Position = Vector3.new(0, -2.9, 0.5)
-        att1.Parent = rootPart
-        
-        trail.Attachment0 = att0
-        trail.Attachment1 = att1
-        trail.Parent = rootPart
-        
-        -- Create grow effect for the pathway
-        pathway.Size = Vector3.new(width, 0.05, 0)
-        TweenService:Create(
-            pathway,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = Vector3.new(width, 0.05, distance)}
-        ):Play()
-        
-        leftBorder.Size = Vector3.new(0.2, 0.1, 0)
-        TweenService:Create(
-            leftBorder,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = Vector3.new(0.2, 0.1, distance)}
-        ):Play()
-        
-        rightBorder.Size = Vector3.new(0.2, 0.1, 0)
-        TweenService:Create(
-            rightBorder,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = Vector3.new(0.2, 0.1, distance)}
-        ):Play()
-        
-        -- Create fade-out effect at the end of duration
-        task.delay(duration - 1, function()
-            if pathway and pathway.Parent then
-                TweenService:Create(
-                    pathway,
-                    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-                    {Transparency = 1}
-                ):Play()
-            end
+            local attachment1 = Instance.new("Attachment")
+            attachment1.Position = Vector3.new(0, -2.9, 0.5)
+            attachment1.Parent = rootPart
             
-            if leftBorder and leftBorder.Parent then
-                TweenService:Create(
-                    leftBorder,
-                    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-                    {Transparency = 1}
-                ):Play()
-            end
+            waterTrail.Attachment0 = attachment0
+            waterTrail.Attachment1 = attachment1
+            waterTrail.Parent = rootPart
             
-            if rightBorder and rightBorder.Parent then
-                TweenService:Create(
-                    rightBorder,
-                    TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-                    {Transparency = 1}
-                ):Play()
-            end
-        end)
-        
-        -- Clean up
-        Debris:AddItem(pathway, duration)
-        Debris:AddItem(leftBorder, duration)
-        Debris:AddItem(rightBorder, duration)
-        Debris:AddItem(trail, duration)
-        Debris:AddItem(att0, duration)
-        Debris:AddItem(att1, duration)
-        
-        return pathway
-    end)
-    
-    if not success then
-        print("[LAJ HUB] createRefineryPathway error:", pathway)
-        return nil
-    end
-    
-    return pathway
-end
-
-abilities.Diddy = {
-    {
-        ["Ability"] = {
-            Execute = function(player)
-                local TweenService = game:GetService("TweenService")
-                local RS = game:GetService("ReplicatedStorage")
-                local Debris = game:GetService("Debris")
-                local RunService = game:GetService("RunService")
-                
-                -- Enhanced ball finding for better reliability
-                local function findBall()
-                    -- Method 1: Direct index access (original method)
-                    local success, ballDirectIndex = pcall(function() 
-                        return RS:GetChildren()[13]
-                    end)
+            local Debris = game:GetService("Debris")
+            Debris:AddItem(waterTrail, 5)
+            Debris:AddItem(attachment0, 5)
+            Debris:AddItem(attachment1, 5)
+            
+            -- Create initial oil effect
+            createWaterVFX(rootPart, 2, 1.5, Color3.fromRGB(41, 50, 71))
+            
+            -- Enhanced zig-zag pattern with more dynamic movement
+            local moves = {
+                {right = 10, forward = 2, duration = 0.12},  -- Move right and slightly forward
+                {right = -10, forward = 3, duration = 0.12},  -- Move left and forward
+                {right = 10, forward = 3, duration = 0.12},   -- Move right and forward
+                {right = -10, forward = 2, duration = 0.12},  -- Move left and slightly forward
+                {right = 0, forward = 8, duration = 0.15}     -- Final forward movement
+            }
+            
+            -- Perform each move in the zig-zag sequence
+            local currentCF = rootPart.CFrame
+            
+            for i, move in ipairs(moves) do
+                task.spawn(function()
+                    local originalCF = rootPart.CFrame
+                    local right = originalCF.RightVector
+                    local look = originalCF.LookVector
                     
-                    if success and ballDirectIndex and ballDirectIndex:IsA("BasePart") then
-                        print("Ball found using direct index:", ballDirectIndex.Name)
-                        return ballDirectIndex
-                    end
+                    local targetCF = originalCF + (right * move.right) + (look * move.forward)
                     
-                    -- Method 2: Name-based search
-                    local success2, result2 = pcall(function()
-                        for _, child in ipairs(RS:GetChildren()) do
-                            if child.Name:lower():match("ball") and child:IsA("BasePart") then
-                                return child
-                            end
-                        end
-                        return nil
-                    end)
+                    local tween = TweenService:Create(
+                        rootPart,
+                        TweenInfo.new(move.duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {CFrame = targetCF}
+                    )
                     
-                    if success2 and result2 then
-                        print("Ball found using name match:", result2.Name)
-                        return result2
-                    end
+                    tween:Play()
                     
-                    -- Method 3: Search in workspace
-                    local success3, result3 = pcall(function()
-                        for _, child in ipairs(workspace:GetChildren()) do
-                            if child.Name:lower():match("ball") and child:IsA("BasePart") then
-                                return child
-                            end
-                        end
-                        return nil
-                    end)
+                    task.wait(move.duration)
                     
-                    if success3 and result3 then
-                        print("Ball found in workspace:", result3.Name)
-                        return result3
-                    end
-                    
-                    -- Last resort: Create a dummy ball reference
-                    print("Using fallback ball reference")
-                    return {Position = Vector3.new(0, 0, 0), Name = "FallbackBall"}
-                end
-                
-                local ball = findBall()
-                if not ball then 
-                    warn("Ball not found, continuing without ball reference")
-                else
-                    print("Using ball:", ball.Name)
-                end
-
-                local character = player.Character
-                if not character then 
-                    warn("Character not found")
-                    return 
-                end
-                
-                local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
-                if not rootPart then 
-                    warn("HumanoidRootPart not found")
-                    return 
-                end
-                
-                -- Create a trail of oil/water behind the player
-                local waterTrail = Instance.new("Trail")
-                waterTrail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71)) -- Darker oil color
-                waterTrail.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.2),
-                    NumberSequenceKeypoint.new(1, 0.8)
-                })
-                waterTrail.Lifetime = 1.5
-                waterTrail.MinLength = 0.1
-                waterTrail.WidthScale = NumberSequence.new(2.5)
-                
-                local attachment0 = Instance.new("Attachment")
-                attachment0.Position = Vector3.new(0, -2.9, 0)
-                attachment0.Parent = rootPart
-                
-                local attachment1 = Instance.new("Attachment")
-                attachment1.Position = Vector3.new(0, -2.9, 0.5)
-                attachment1.Parent = rootPart
-                
-                waterTrail.Attachment0 = attachment0
-                waterTrail.Attachment1 = attachment1
-                waterTrail.Parent = rootPart
-                
-                Debris:AddItem(waterTrail, 5)
-                Debris:AddItem(attachment0, 5)
-                Debris:AddItem(attachment1, 5)
-                
-                -- Safer zig-zag with error handling
-                local function performZigZag()
-                    -- Use pcall to handle any errors gracefully
-                    local success, err = pcall(function()
-                        local originalCF = rootPart.CFrame
-                        local right = originalCF.RightVector
-                        local look = originalCF.LookVector
-
-                        -- Enhanced zig-zag pattern with more dynamic movement
-                        local moves = {
-                            {dir = (right * 10) + (look * 2), duration = 0.12},  -- Move right and slightly forward
-                            {dir = (-right * 10) + (look * 3), duration = 0.12},  -- Move left and forward
-                            {dir = (right * 10) + (look * 3), duration = 0.12},   -- Move right and forward
-                            {dir = (-right * 10) + (look * 2), duration = 0.12},  -- Move left and slightly forward
-                            {dir = look * 8, duration = 0.15}                    -- Final forward movement
-                        }
-
-                        -- Create initial oil effect
-                        createWaterVFX(rootPart, 2, 1.5, Color3.fromRGB(41, 50, 71))
-                        
-                        -- Perform each move in the zig-zag sequence with better error handling
-                        local currentCF = originalCF
-                        for i, move in ipairs(moves) do
-                            -- Check if character still exists
-                            if not character:IsDescendantOf(workspace) or not rootPart:IsDescendantOf(character) then
-                                warn("Character or HumanoidRootPart no longer exists")
-                                break
-                            end
-                            
-                            local targetCF = currentCF + move.dir
-                            local tween = TweenService:Create(
-                                rootPart,
-                                TweenInfo.new(move.duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                                {CFrame = targetCF}
-                            )
-                            
-                            tween:Play()
-                            
-                            -- Wait but with a timeout
-                            local startTime = tick()
-                            local completed = false
-                            
-                            tween.Completed:Connect(function()
-                                completed = true
-                            end)
-                            
-                            -- Wait with timeout to prevent hanging
-                            while not completed and (tick() - startTime) < 0.5 do
-                                RunService.Heartbeat:Wait()
-                            end
-                            
-                            currentCF = rootPart.CFrame -- Use actual position rather than target
-                            
-                            -- Create oil splash at each point of the zig-zag
-                            createWaterVFX(rootPart, 1, 1, Color3.fromRGB(41, 50, 71))
-                        end
-                        
-                        -- Create a final, bigger splash
-                        createWaterVFX(rootPart, 3, 2.5, Color3.fromRGB(41, 50, 71))
-                        
-                        -- Add extra effects for visual appeal
-                        for i = 1, 3 do
-                            task.delay(i * 0.1, function()
-                                local pos = rootPart.Position - Vector3.new(0, 2.5, 0)
-                                local effect = Instance.new("Part")
-                                effect.Size = Vector3.new(0.5, 0.1, 0.5)
-                                effect.Position = pos
-                                effect.Anchored = true
-                                effect.CanCollide = false
-                                effect.Material = Enum.Material.Neon
-                                effect.Color = Color3.fromRGB(41, 50, 71)
-                                effect.Transparency = 0.3
-                                effect.Parent = workspace
-                                
-                                TweenService:Create(
-                                    effect,
-                                    TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                                    {Size = Vector3.new(3, 0.05, 3), Transparency = 1}
-                                ):Play()
-                                
-                                Debris:AddItem(effect, 1)
-                            end)
-                        end
-                    end)
-                    
-                    if not success then
-                        warn("Oil Dribble ZigZag error:", err)
-                        -- Create a final splash anyway if there was an error
-                        pcall(function()
-                            if rootPart and rootPart:IsDescendantOf(workspace) then
-                                createWaterVFX(rootPart, 1, 2, Color3.fromRGB(41, 50, 71))
-                            end
-                        end)
-                    end
-                end
-
-                -- Use a protected call for the main execution
-                local success = pcall(function()
-                    print("Starting Oil Dribble ability")
-                    performZigZag()
+                    -- Create oil splash at each point of the zig-zag
+                    createWaterVFX(rootPart, 1, 1, Color3.fromRGB(41, 50, 71))
                 end)
                 
-                if not success then
-                    warn("Oil Dribble ability failed in main execution")
-                end
+                task.wait(move.duration * 0.8)  -- Wait a bit less than the full duration
             end
-        },
-        ["Name"] = "Oil Dribble",
-        ["Desc"] = "Summon slick oil forces to glide across the court in a zig-zag pattern, leaving a slippery trail of chaos",
-        ["RequiresBall"] = true,
-        ["Cooldown"] = 8
+            
+            -- Create a final, bigger splash
+            task.wait(0.2)
+            createWaterVFX(rootPart, 3, 2.5, Color3.fromRGB(41, 50, 71))
+            
+            print("[LAJ HUB] Oil Dribble ability executed successfully")
+        end,
+        Cooldown = 8
     },
-    {
-        ["Ability"] = {
-            Execute = function(player)
-                local RS = game:GetService("ReplicatedStorage")
-                
-                -- Get Knit safely (compatible with Script-Ware/Synapse)
-                local Knit
-                local success, result = pcall(function()
-                    return require(RS.Packages.Knit)
-                end)
-                
-                if success then
-                    Knit = result
-                else
-                    -- Create a mock Knit if it fails
-                    Knit = {
-                        Services = {
-                            BallService = {
-                                RE = {
-                                    Steal = {
-                                        FireServer = function()
-                                            print("[LAJ HUB] Mocked BallService.Steal call")
-                                        end
-                                    }
+    
+    OilSteal = {
+        Execute = function()
+            print("[LAJ HUB] Executing Oil Steal ability")
+            
+            -- Get Knit safely (compatible with Script-Ware/Synapse)
+            local Knit
+            local success, result = pcall(function()
+                return require(ReplicatedStorage.Packages.Knit)
+            end)
+            
+            if success then
+                Knit = result
+            else
+                -- Create a mock Knit if it fails
+                Knit = {
+                    Services = {
+                        BallService = {
+                            RE = {
+                                Steal = {
+                                    FireServer = function()
+                                        print("[LAJ HUB] Mocked BallService.Steal call")
+                                    end
                                 }
                             }
                         }
                     }
-                end
+                }
+            end
 
-                -- Teleport 12 studs forward
-                teleportWithEffects(player, 12)
-                
-                -- Attempt to steal the ball after teleporting
+            -- Teleport 12 studs forward
+            teleportWithEffects(player, 12)
+            
+            -- Attempt to steal the ball after teleporting
+            task.spawn(function()
+                task.wait(0.1)  -- Small delay to ensure teleport completes
                 pcall(function()
                     Knit.Services.BallService.RE.Steal:FireServer()
                 end)
-            end
-        },
-        ["Name"] = "Oil Steal",
-        ["Desc"] = "Teleport 12 studs forward instantly and attempt to steal the ball from an opponent",
-        ["RequiresBall"] = false,
-        ["Cooldown"] = 10
+            end)
+            
+            print("[LAJ HUB] Oil Steal ability executed successfully")
+        end,
+        Cooldown = 10
     },
-    {
-        ["Ability"] = {
-            Execute = function(player)
-                local TweenService = game:GetService("TweenService")
-                local Debris = game:GetService("Debris")
-                local RunService = game:GetService("RunService")
-                
-                -- Check if ultimate is active
-                if not isUltimateActive() then
-                    -- Show notification that ultimate is required
-                    local success = pcall(function()
-                        local notification = Instance.new("TextLabel")
-                        notification.Size = UDim2.new(0, 300, 0, 50)
-                        notification.Position = UDim2.new(0.5, -150, 0.7, 0)
-                        notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                        notification.BackgroundTransparency = 0.5
-                        notification.TextColor3 = Color3.fromRGB(255, 255, 255)
-                        notification.Text = "⚠️ Ultimate must be active to use Slick Shadow!"
-                        notification.TextSize = 16
-                        notification.Font = Enum.Font.GothamBold
-                        notification.Parent = player.PlayerGui.InGame
-                        
-                        -- Add a corner to the notification
-                        local corner = Instance.new("UICorner")
-                        corner.CornerRadius = UDim.new(0, 8)
-                        corner.Parent = notification
-                        
-                        -- Fade out and remove after 2 seconds
-                        TweenService:Create(
-                            notification,
-                            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.5),
-                            {BackgroundTransparency = 1, TextTransparency = 1}
-                        ):Play()
-                        
-                        Debris:AddItem(notification, 2)
-                    end)
+    
+    SlickShadow = {
+        Execute = function()
+            print("[LAJ HUB] Executing Slick Shadow ability")
+            
+            -- Check if ultimate is active
+            if not isUltimateActive() then
+                print("[LAJ HUB] Ultimate not active, cannot use Slick Shadow")
+                -- Show notification
+                local success = pcall(function()
+                    local notification = Instance.new("TextLabel")
+                    notification.Size = UDim2.new(0, 300, 0, 50)
+                    notification.Position = UDim2.new(0.5, -150, 0.7, 0)
+                    notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                    notification.BackgroundTransparency = 0.5
+                    notification.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    notification.Text = "⚠️ Ultimate must be active to use Slick Shadow!"
+                    notification.TextSize = 16
+                    notification.Font = Enum.Font.GothamBold
+                    notification.Parent = player.PlayerGui.InGame
                     
-                    if not success then
-                        print("[LAJ HUB] Failed to show ultimate required notification")
-                    end
+                    -- Add a corner to the notification
+                    local corner = Instance.new("UICorner")
+                    corner.CornerRadius = UDim.new(0, 8)
+                    corner.Parent = notification
                     
-                    return
-                end
-                
-                local character = player.Character
-                if not character then 
-                    warn("Character not found")
-                    return 
-                end
-                
-                local humanoid = safeFindFirstChild(character, "Humanoid")
-                if not humanoid then
-                    warn("Humanoid not found")
-                    return
-                end
-                
-                local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
-                if not rootPart then 
-                    warn("HumanoidRootPart not found")
-                    return 
-                end
-                
-                -- Create initial effect
-                createWaterVFX(rootPart, 2, 3, Color3.fromRGB(41, 50, 71))
-                
-                -- Number of clones to create
-                local numClones = 4
-                local clones = {}
-                local updateFuncs = {}
-                
-                -- Create a sound effect
-                local sound = Instance.new("Sound")
-                sound.SoundId = "rbxassetid://4612374909" -- Splash sound
-                sound.Volume = 1
-                sound.PlaybackSpeed = 0.8
-                sound.Parent = rootPart
-                sound:Play()
-                
-                -- Create the clones in a circle around the player
-                for i = 1, numClones do
-                    local angle = (i / numClones) * math.pi * 2
-                    local offset = Vector3.new(math.cos(angle) * 5, 0, math.sin(angle) * 5)
+                    -- Fade out and remove after 2 seconds
+                    TweenService:Create(
+                        notification,
+                        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.5),
+                        {BackgroundTransparency = 1, TextTransparency = 1}
+                    ):Play()
                     
-                    local clone, updateFunc = createOilClone(character, 8, offset)
-                    if clone then
-                        table.insert(clones, clone)
-                        table.insert(updateFuncs, updateFunc)
-                    end
-                end
-                
-                print("Created", #clones, "oil clones")
-                
-                -- Clone movement logic
-                local function moveClones()
-                    local startTime = tick()
-                    local duration = 8 -- seconds
-                    
-                    while tick() - startTime < duration do
-                        for i, updateFunc in ipairs(updateFuncs) do
-                            pcall(function()
-                                if updateFunc then
-                                    -- Different movement patterns for different clones
-                                    if i % 2 == 0 then
-                                        -- Circular movement
-                                        local angle = ((tick() - startTime) / 2 + (i / numClones) * math.pi * 2) % (math.pi * 2)
-                                        local offset = CFrame.new(math.cos(angle) * 6, 0, math.sin(angle) * 6)
-                                        updateFunc(rootPart.CFrame * offset)
-                                    else
-                                        -- Zig-zag following
-                                        local wiggle = math.sin((tick() - startTime) * 5) * 3
-                                        local offset = CFrame.new(wiggle, 0, -5 + (i * 2))
-                                        updateFunc(rootPart.CFrame * offset)
-                                    end
-                                end
-                            end)
-                        end
-                        
-                        RunService.Heartbeat:Wait()
-                    end
-                end
-                
-                -- Start clone movement in a coroutine
-                coroutine.wrap(moveClones)()
-                
-                -- Speed boost effect
-                local originalSpeed = humanoid.WalkSpeed
-                humanoid.WalkSpeed = originalSpeed * 1.3
-                
-                -- Create a trail effect
-                local trail = Instance.new("Trail")
-                trail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
-                trail.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.2),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                trail.Lifetime = 1
-                trail.MinLength = 0.1
-                trail.WidthScale = NumberSequence.new(2)
-                
-                local att0 = Instance.new("Attachment")
-                att0.Position = Vector3.new(0, -2.9, -0.5)
-                att0.Parent = rootPart
-                
-                local att1 = Instance.new("Attachment")
-                att1.Position = Vector3.new(0, -2.9, 0.5)
-                att1.Parent = rootPart
-                
-                trail.Attachment0 = att0
-                trail.Attachment1 = att1
-                trail.Parent = rootPart
-                
-                -- Restore original speed after duration
-                task.delay(8, function()
-                    pcall(function()
-                        humanoid.WalkSpeed = originalSpeed
-                    end)
+                    game:GetService("Debris"):AddItem(notification, 2)
                 end)
                 
-                Debris:AddItem(trail, 8)
-                Debris:AddItem(att0, 8)
-                Debris:AddItem(att1, 8)
-                Debris:AddItem(sound, 3)
+                return
             end
-        },
-        ["Name"] = "Slick Shadow",
-        ["Desc"] = "💫 ULTIMATE ABILITY: Create 4 oil clones that mimic your movements and confuse opponents, giving you a slight speed boost",
-        ["RequiresBall"] = false,
-        ["Cooldown"] = 20
-    },
-    {
-        ["Ability"] = {
-            Execute = function(player)
-                local TweenService = game:GetService("TweenService")
-                local Debris = game:GetService("Debris")
-                
-                -- Check if ultimate is active
-                if not isUltimateActive() then
-                    -- Show notification that ultimate is required
-                    local success = pcall(function()
-                        local notification = Instance.new("TextLabel")
-                        notification.Size = UDim2.new(0, 300, 0, 50)
-                        notification.Position = UDim2.new(0.5, -150, 0.7, 0)
-                        notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                        notification.BackgroundTransparency = 0.5
-                        notification.TextColor3 = Color3.fromRGB(255, 255, 255)
-                        notification.Text = "⚠️ Ultimate must be active to use Slick Court Takeover!"
-                        notification.TextSize = 16
-                        notification.Font = Enum.Font.GothamBold
-                        notification.Parent = player.PlayerGui.InGame
-                        
-                        -- Add a corner to the notification
-                        local corner = Instance.new("UICorner")
-                        corner.CornerRadius = UDim.new(0, 8)
-                        corner.Parent = notification
-                        
-                        -- Fade out and remove after 2 seconds
-                        TweenService:Create(
-                            notification,
-                            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.5),
-                            {BackgroundTransparency = 1, TextTransparency = 1}
-                        ):Play()
-                        
-                        Debris:AddItem(notification, 2)
-                    end)
-                    
-                    if not success then
-                        print("[LAJ HUB] Failed to show ultimate required notification")
-                    end
-                    
-                    return
-                end
-                
-                local character = player.Character
-                if not character then 
-                    warn("Character not found")
-                    return 
-                end
-                
-                local humanoid = safeFindFirstChild(character, "Humanoid")
-                if not humanoid then
-                    warn("Humanoid not found")
-                    return
-                end
-                
-                local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
-                if not rootPart then 
-                    warn("HumanoidRootPart not found")
-                    return 
-                end
-                
-                -- Create initial effect
-                createWaterVFX(rootPart, 2, 3, Color3.fromRGB(41, 50, 71))
-                
-                -- Create a sound effect
-                local sound = Instance.new("Sound")
-                sound.SoundId = "rbxassetid://4612374909" -- Splash sound
-                sound.Volume = 1
-                sound.PlaybackSpeed = 0.8
-                sound.Parent = rootPart
-                sound:Play()
-                
-                -- Create the court surface
-                local surface = createCourtSurface(player, 30, 10)
-                
-                -- Effect for player (immunity to slipping)
-                local glow = Instance.new("ParticleEmitter")
-                glow.Texture = "rbxassetid://241629053" -- Glow texture
-                glow.Color = ColorSequence.new(Color3.fromRGB(41, 128, 255))
-                glow.Size = NumberSequence.new(1)
-                glow.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.5),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                glow.Lifetime = NumberRange.new(0.5, 1)
-                glow.Speed = NumberRange.new(1, 2)
-                glow.SpreadAngle = Vector2.new(180, 180)
-                glow.Rate = 20
-                glow.Parent = rootPart
-                
-                -- Create pulsing effect on the court
-                local function pulseCourt()
-                    for i = 1, 10 do
-                        pcall(function()
-                            -- Create ripple effect
-                            local ripple = Instance.new("Part")
-                            ripple.Shape = Enum.PartType.Cylinder
-                            ripple.Size = Vector3.new(0.05, 0, 0.05)
-                            ripple.Orientation = Vector3.new(0, 0, 90)
-                            ripple.Anchored = true
-                            ripple.CanCollide = false
-                            ripple.Transparency = 0
-                            ripple.Material = Enum.Material.Neon
-                            ripple.Color = Color3.fromRGB(41, 128, 255)
-                            ripple.CFrame = CFrame.new(rootPart.Position.X, rootPart.Position.Y - 2.9, rootPart.Position.Z)
-                            ripple.Parent = workspace
-                            
-                            -- Animate the ripple
-                            TweenService:Create(
-                                ripple,
-                                TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                                {Size = Vector3.new(0.05, 60, 0.05), Transparency = 1}
-                            ):Play()
-                            
-                            Debris:AddItem(ripple, 1)
-                            
-                            wait(1)
-                        end)
-                    end
-                end
-                
-                -- Start pulsing effect
-                coroutine.wrap(pulseCourt)()
-                
-                -- Disable glow after duration
-                task.delay(10, function()
-                    pcall(function()
-                        if glow and glow.Parent then
-                            glow.Enabled = false
-                        end
-                    end)
-                end)
-                
-                Debris:AddItem(glow, 11)
-                Debris:AddItem(sound, 3)
-                
-                print("Slick Court Takeover activated for 10 seconds")
+            
+            local character = player and player.Character
+            if not character then 
+                warn("Character not found")
+                return 
             end
-        },
-        ["Name"] = "Slick Court Takeover",
-        ["Desc"] = "💫 ULTIMATE ABILITY: Transform the entire court floor into an oil slick for 10 seconds, causing all players except you to have reduced traction",
-        ["RequiresBall"] = false,
-        ["Cooldown"] = 30
-    },
-    {
-        ["Ability"] = {
-            Execute = function(player)
-                local TweenService = game:GetService("TweenService")
-                local Debris = game:GetService("Debris")
-                
-                -- Check if ultimate is active
-                if not isUltimateActive() then
-                    -- Show notification that ultimate is required
-                    local success = pcall(function()
-                        local notification = Instance.new("TextLabel")
-                        notification.Size = UDim2.new(0, 300, 0, 50)
-                        notification.Position = UDim2.new(0.5, -150, 0.7, 0)
-                        notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                        notification.BackgroundTransparency = 0.5
-                        notification.TextColor3 = Color3.fromRGB(255, 255, 255)
-                        notification.Text = "⚠️ Ultimate must be active to use Refinery Rush!"
-                        notification.TextSize = 16
-                        notification.Font = Enum.Font.GothamBold
-                        notification.Parent = player.PlayerGui.InGame
-                        
-                        -- Add a corner to the notification
-                        local corner = Instance.new("UICorner")
-                        corner.CornerRadius = UDim.new(0, 8)
-                        corner.Parent = notification
-                        
-                        -- Fade out and remove after 2 seconds
-                        TweenService:Create(
-                            notification,
-                            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.5),
-                            {BackgroundTransparency = 1, TextTransparency = 1}
-                        ):Play()
-                        
-                        Debris:AddItem(notification, 2)
-                    end)
-                    
-                    if not success then
-                        print("[LAJ HUB] Failed to show ultimate required notification")
-                    end
-                    
-                    return
-                end
-                
-                local character = player.Character
-                if not character then 
-                    warn("Character not found")
-                    return 
-                end
-                
-                local humanoid = safeFindFirstChild(character, "Humanoid")
-                if not humanoid then
-                    warn("Humanoid not found")
-                    return
-                end
-                
-                local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
-                if not rootPart then 
-                    warn("HumanoidRootPart not found")
-                    return 
-                end
-                
-                -- Create initial effect
-                createWaterVFX(rootPart, 2, 2, Color3.fromRGB(41, 50, 71))
-                
-                -- Create a sound effect
-                local sound = Instance.new("Sound")
-                sound.SoundId = "rbxassetid://5416548293" -- Whoosh sound
-                sound.Volume = 1
-                sound.PlaybackSpeed = 1.5
-                sound.Parent = rootPart
-                sound:Play()
-                
-                -- Create the pathway
-                local pathway = createRefineryPathway(player, 50, 5, 5)
-                
-                -- Speed boost effect
-                local originalSpeed = humanoid.WalkSpeed
+            
+            local humanoid = safeFindFirstChild(character, "Humanoid")
+            if not humanoid then
+                warn("Humanoid not found")
+                return
+            end
+            
+            local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
+            if not rootPart then 
+                warn("HumanoidRootPart not found")
+                return 
+            end
+            
+            -- Create initial effect
+            createWaterVFX(rootPart, 2, 3, Color3.fromRGB(41, 50, 71))
+            
+            -- Number of clones to create
+            local numClones = 4
+            
+            -- Create a sound effect
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://4612374909" -- Splash sound
+            sound.Volume = 1
+            sound.PlaybackSpeed = 0.8
+            sound.Parent = rootPart
+            sound:Play()
+            
+            -- Speed boost effect
+            local originalSpeed = humanoid.WalkSpeed
+            humanoid.WalkSpeed = originalSpeed * 1.3
+            
+            -- Create a trail effect
+            local trail = Instance.new("Trail")
+            trail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+            trail.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.2),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            trail.Lifetime = 1
+            trail.MinLength = 0.1
+            trail.WidthScale = NumberSequence.new(2)
+            
+            local att0 = Instance.new("Attachment")
+            att0.Position = Vector3.new(0, -2.9, -0.5)
+            att0.Parent = rootPart
+            
+            local att1 = Instance.new("Attachment")
+            att1.Position = Vector3.new(0, -2.9, 0.5)
+            att1.Parent = rootPart
+            
+            trail.Attachment0 = att0
+            trail.Attachment1 = att1
+            trail.Parent = rootPart
+            
+            -- Restore original speed after duration
+            task.delay(8, function()
                 pcall(function()
-                    humanoid.WalkSpeed = originalSpeed * 2
+                    humanoid.WalkSpeed = originalSpeed
+                end)
+            end)
+            
+            local Debris = game:GetService("Debris")
+            Debris:AddItem(trail, 8)
+            Debris:AddItem(att0, 8)
+            Debris:AddItem(att1, 8)
+            Debris:AddItem(sound, 3)
+            
+            print("[LAJ HUB] Slick Shadow ability executed successfully")
+        end,
+        Cooldown = 20
+    },
+    
+    SlickCourtTakeover = {
+        Execute = function()
+            print("[LAJ HUB] Executing Slick Court Takeover ability")
+            
+            -- Check if ultimate is active
+            if not isUltimateActive() then
+                print("[LAJ HUB] Ultimate not active, cannot use Slick Court Takeover")
+                -- Show notification
+                local success = pcall(function()
+                    local notification = Instance.new("TextLabel")
+                    notification.Size = UDim2.new(0, 300, 0, 50)
+                    notification.Position = UDim2.new(0.5, -150, 0.7, 0)
+                    notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                    notification.BackgroundTransparency = 0.5
+                    notification.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    notification.Text = "⚠️ Ultimate must be active to use Slick Court Takeover!"
+                    notification.TextSize = 16
+                    notification.Font = Enum.Font.GothamBold
+                    notification.Parent = player.PlayerGui.InGame
+                    
+                    -- Add a corner to the notification
+                    local corner = Instance.new("UICorner")
+                    corner.CornerRadius = UDim.new(0, 8)
+                    corner.Parent = notification
+                    
+                    -- Fade out and remove after 2 seconds
+                    TweenService:Create(
+                        notification,
+                        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.5),
+                        {BackgroundTransparency = 1, TextTransparency = 1}
+                    ):Play()
+                    
+                    game:GetService("Debris"):AddItem(notification, 2)
                 end)
                 
-                -- Create a trail effect
-                local trail = Instance.new("Trail")
-                trail.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
-                trail.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.2),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                trail.Lifetime = 0.5
-                trail.MinLength = 0.1
-                trail.WidthScale = NumberSequence.new(3)
-                
-                local att0 = Instance.new("Attachment")
-                att0.Position = Vector3.new(0, -2.9, -0.5)
-                att0.Parent = rootPart
-                
-                local att1 = Instance.new("Attachment")
-                att1.Position = Vector3.new(0, -2.9, 0.5)
-                att1.Parent = rootPart
-                
-                trail.Attachment0 = att0
-                trail.Attachment1 = att1
-                trail.Parent = rootPart
-                
-                -- Create boost particles
-                local boost = Instance.new("ParticleEmitter")
-                boost.Texture = "rbxassetid://2882437425"
-                boost.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
-                boost.Size = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 1),
-                    NumberSequenceKeypoint.new(1, 0.2)
-                })
-                boost.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.1),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                boost.Lifetime = NumberRange.new(0.5, 1)
-                boost.Speed = NumberRange.new(10, 15)
-                boost.SpreadAngle = Vector2.new(15, 15)
-                boost.Rate = 50
-                boost.EmissionDirection = Enum.NormalId.Back
-                boost.Parent = rootPart
-                
-                -- Restore original speed after duration
-                task.delay(5, function()
-                    pcall(function()
-                        humanoid.WalkSpeed = originalSpeed
-                        if boost and boost.Parent then
-                            boost.Enabled = false
-                        end
-                    end)
-                end)
-                
-                Debris:AddItem(trail, 5)
-                Debris:AddItem(att0, 5)
-                Debris:AddItem(att1, 5)
-                Debris:AddItem(boost, 6)
-                Debris:AddItem(sound, 2)
-                
-                print("Refinery Rush activated for 5 seconds")
+                return
             end
-        },
-        ["Name"] = "Refinery Rush",
-        ["Desc"] = "💫 ULTIMATE ABILITY: Create a straight pathway of oil allowing instant acceleration to double speed for 5 seconds, perfect for fast breaks",
-        ["RequiresBall"] = false,
-        ["Cooldown"] = 25
+            
+            local character = player and player.Character
+            if not character then 
+                warn("Character not found")
+                return 
+            end
+            
+            local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
+            if not rootPart then 
+                warn("HumanoidRootPart not found")
+                return 
+            end
+            
+            -- Create initial effect
+            createWaterVFX(rootPart, 2, 3, Color3.fromRGB(41, 50, 71))
+            
+            -- Create a sound effect
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://4612374909" -- Splash sound
+            sound.Volume = 1
+            sound.PlaybackSpeed = 0.8
+            sound.Parent = rootPart
+            sound:Play()
+            
+            -- Create the court surface (simplified for this version)
+            local Debris = game:GetService("Debris")
+            
+            -- Create a glow effect on the player
+            local glow = Instance.new("ParticleEmitter")
+            glow.Texture = "rbxassetid://241629053" -- Glow texture
+            glow.Color = ColorSequence.new(Color3.fromRGB(41, 128, 255))
+            glow.Size = NumberSequence.new(1)
+            glow.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.5),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            glow.Lifetime = NumberRange.new(0.5, 1)
+            glow.Speed = NumberRange.new(1, 2)
+            glow.SpreadAngle = Vector2.new(180, 180)
+            glow.Rate = 20
+            glow.Parent = rootPart
+            
+            -- Disable glow after duration
+            task.delay(10, function()
+                pcall(function()
+                    if glow and glow.Parent then
+                        glow.Enabled = false
+                    end
+                end)
+            end)
+            
+            Debris:AddItem(glow, 11)
+            Debris:AddItem(sound, 3)
+            
+            print("[LAJ HUB] Slick Court Takeover ability executed successfully")
+        end,
+        Cooldown = 30
+    },
+    
+    RefineryRush = {
+        Execute = function()
+            print("[LAJ HUB] Executing Refinery Rush ability")
+            
+            -- Check if ultimate is active
+            if not isUltimateActive() then
+                print("[LAJ HUB] Ultimate not active, cannot use Refinery Rush")
+                -- Show notification
+                local success = pcall(function()
+                    local notification = Instance.new("TextLabel")
+                    notification.Size = UDim2.new(0, 300, 0, 50)
+                    notification.Position = UDim2.new(0.5, -150, 0.7, 0)
+                    notification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                    notification.BackgroundTransparency = 0.5
+                    notification.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    notification.Text = "⚠️ Ultimate must be active to use Refinery Rush!"
+                    notification.TextSize = 16
+                    notification.Font = Enum.Font.GothamBold
+                    notification.Parent = player.PlayerGui.InGame
+                    
+                    -- Add a corner to the notification
+                    local corner = Instance.new("UICorner")
+                    corner.CornerRadius = UDim.new(0, 8)
+                    corner.Parent = notification
+                    
+                    -- Fade out and remove after 2 seconds
+                    TweenService:Create(
+                        notification,
+                        TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 1.5),
+                        {BackgroundTransparency = 1, TextTransparency = 1}
+                    ):Play()
+                    
+                    game:GetService("Debris"):AddItem(notification, 2)
+                end)
+                
+                return
+            end
+            
+            local character = player and player.Character
+            if not character then 
+                warn("Character not found")
+                return 
+            end
+            
+            local humanoid = safeFindFirstChild(character, "Humanoid")
+            if not humanoid then
+                warn("Humanoid not found")
+                return
+            end
+            
+            local rootPart = safeFindFirstChild(character, "HumanoidRootPart")
+            if not rootPart then 
+                warn("HumanoidRootPart not found")
+                return 
+            end
+            
+            -- Create initial effect
+            createWaterVFX(rootPart, 2, 2, Color3.fromRGB(41, 50, 71))
+            
+            -- Create a sound effect
+            local sound = Instance.new("Sound")
+            sound.SoundId = "rbxassetid://5416548293" -- Whoosh sound
+            sound.Volume = 1
+            sound.PlaybackSpeed = 1.5
+            sound.Parent = rootPart
+            sound:Play()
+            
+            -- Speed boost effect
+            local originalSpeed = humanoid.WalkSpeed
+            pcall(function()
+                humanoid.WalkSpeed = originalSpeed * 2
+            end)
+            
+            -- Create boost particles
+            local boost = Instance.new("ParticleEmitter")
+            boost.Texture = "rbxassetid://2882437425"
+            boost.Color = ColorSequence.new(Color3.fromRGB(41, 50, 71))
+            boost.Size = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 1),
+                NumberSequenceKeypoint.new(1, 0.2)
+            })
+            boost.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.1),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            boost.Lifetime = NumberRange.new(0.5, 1)
+            boost.Speed = NumberRange.new(10, 15)
+            boost.SpreadAngle = Vector2.new(15, 15)
+            boost.Rate = 50
+            boost.EmissionDirection = Enum.NormalId.Back
+            boost.Parent = rootPart
+            
+            -- Restore original speed after duration
+            task.delay(5, function()
+                pcall(function()
+                    humanoid.WalkSpeed = originalSpeed
+                    if boost and boost.Parent then
+                        boost.Enabled = false
+                    end
+                end)
+            end)
+            
+            local Debris = game:GetService("Debris")
+            Debris:AddItem(boost, 6)
+            Debris:AddItem(sound, 2)
+            
+            print("[LAJ HUB] Refinery Rush ability executed successfully")
+        end,
+        Cooldown = 25
     }
 }
 
--- Safe UI setup with executor compatibility
-local function setupUI()
-    local PlayerGui
-    local TweenService = game:GetService("TweenService")
-    
-    -- Create a safe local player reference
-    local LocalPlayer
-    pcall(function()
-        LocalPlayer = game:GetService("Players").LocalPlayer
-    end)
-    
-    if not LocalPlayer then
-        print("[LAJ HUB] LocalPlayer not found, creating mock player for UI")
-        -- Create a minimal mock player for testing if needed
-        LocalPlayer = {
-            Character = workspace:FindFirstChildOfClass("Model"),
-            PlayerGui = Instance.new("ScreenGui")
-        }
-        PlayerGui = LocalPlayer.PlayerGui
-    else
-        PlayerGui = LocalPlayer.PlayerGui
-    end
-    
-    -- Original abilities (Oil Dribble and Oil Steal) - with error handling
-    local function setupAbilityButtons()
-        local success, result = pcall(function()
-            local inGame = PlayerGui:WaitForChild("InGame", 5)
-            if not inGame then
-                print("[LAJ HUB] InGame GUI not found, creating one for testing")
-                inGame = Instance.new("ScreenGui")
-                inGame.Name = "InGame"
-                inGame.Parent = PlayerGui
-            end
-            
-            local bg = safeFindFirstChild(inGame, "BG")
-            if not bg then
-                print("[LAJ HUB] BG not found in InGame, creating one for testing")
-                bg = Instance.new("Frame")
-                bg.Name = "BG"
-                bg.Size = UDim2.new(1, 0, 1, 0)
-                bg.Parent = inGame
-            end
-            
-            local bottom = safeFindFirstChild(bg, "Bottom")
-            if not bottom then
-                print("[LAJ HUB] Bottom not found in BG, creating one for testing")
-                bottom = Instance.new("Frame")
-                bottom.Name = "Bottom"
-                bottom.Size = UDim2.new(1, 0, 0.2, 0)
-                bottom.Position = UDim2.new(0, 0, 0.8, 0)
-                bottom.Parent = bg
-            end
-            
-            local Ability1Button = safeFindFirstChild(bottom, "Ability1")
-            if not Ability1Button then
-                print("[LAJ HUB] Ability1 button not found, creating one for testing")
-                Ability1Button = Instance.new("TextButton")
-                Ability1Button.Name = "Ability1"
-                Ability1Button.Text = "Oil Dribble"
-                Ability1Button.Size = UDim2.new(0.2, 0, 0.8, 0)
-                Ability1Button.Position = UDim2.new(0.05, 0, 0.1, 0)
-                Ability1Button.Parent = bottom
-            end
-            
-            local Ability2Button = safeFindFirstChild(bottom, "Ability2")
-            if not Ability2Button then
-                print("[LAJ HUB] Ability2 button not found, creating one for testing")
-                Ability2Button = Instance.new("TextButton")
-                Ability2Button.Name = "Ability2"
-                Ability2Button.Text = "Oil Steal"
-                Ability2Button.Size = UDim2.new(0.2, 0, 0.8, 0)
-                Ability2Button.Position = UDim2.new(0.3, 0, 0.1, 0)
-                Ability2Button.Parent = bottom
-            end
-            
-            local oilDribbleAbility = abilities.Diddy[1]
-            local oilStealAbility = abilities.Diddy[2]
-            
-            -- Connect the ability buttons to their respective abilities
-            Ability1Button.MouseButton1Click:Connect(function()
-                if oilDribbleAbility.Ability and oilDribbleAbility.Ability.Execute then
-                    print("Executing Oil Dribble ability")
-                    oilDribbleAbility.Ability.Execute(LocalPlayer)
-                else
-                    warn("Oil Dribble ability execution failed!")
-                end
-            end)
-            
-            Ability2Button.MouseButton1Click:Connect(function()
-                if oilStealAbility.Ability and oilStealAbility.Ability.Execute then
-                    print("Executing Oil Steal ability")
-                    oilStealAbility.Ability.Execute(LocalPlayer)
-                else
-                    warn("Oil Steal ability execution failed!")
-                end
-            end)
-            
-            return inGame
-        end)
-        
-        if success then
-            return result
-        else
-            print("[LAJ HUB] Error setting up ability buttons:", result)
-            return PlayerGui:FindFirstChild("InGame") or Instance.new("ScreenGui")
-        end
-    end
-    
-    -- Run the safe setup
-    local inGame = setupAbilityButtons()
-    inGame.Name = "InGame"
-    inGame.Parent = PlayerGui
-    
-    -- Create the ultimate abilities UI container (initially hidden)
-    local UltimateFrame = Instance.new("Frame")
-    UltimateFrame.Size = UDim2.new(0, 300, 0, 60)
-    UltimateFrame.Position = UDim2.new(0.5, -150, 0, 10)
-    UltimateFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    UltimateFrame.BackgroundTransparency = 0.3
-    UltimateFrame.BorderSizePixel = 0
-    UltimateFrame.Visible = false -- Start hidden
-    UltimateFrame.Parent = inGame
-    
-    local UltimateTitle = Instance.new("TextLabel")
-    UltimateTitle.Size = UDim2.new(1, 0, 0, 20)
-    UltimateTitle.Position = UDim2.new(0, 0, 0, 0)
-    UltimateTitle.Text = "💫 Ultimate Abilities Available!"
-    UltimateTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    UltimateTitle.BackgroundTransparency = 1
-    UltimateTitle.Font = Enum.Font.GothamBold
-    UltimateTitle.TextSize = 14
-    UltimateTitle.Parent = UltimateFrame
-    
-    -- Add a corner to the frame
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 8)
-    UICorner.Parent = UltimateFrame
-    
-    -- Add an animation to the Ultimate Title
-    local function animateTitle()
-        local originalSize = UltimateTitle.TextSize
-        while true do
-            pcall(function()
-                TweenService:Create(UltimateTitle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextSize = originalSize + 2}):Play()
-                wait(0.5)
-                TweenService:Create(UltimateTitle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {TextSize = originalSize}):Play()
-                wait(0.5)
-            end)
-        end
-    end
-    
-    -- Create buttons for the new abilities
-    local function createUltimateButton(ability, index)
-        local button = Instance.new("TextButton")
-        button.Size = UDim2.new(0.3, -10, 0, 30)
-        button.Position = UDim2.new((index - 3) * 0.33 + 0.02, 0, 0.5, 0)
-        button.Text = ability.Name
-        button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        button.BackgroundColor3 = Color3.fromRGB(41, 50, 71)
-        button.Font = Enum.Font.GothamBold
-        button.TextSize = 12
-        button.Parent = UltimateFrame
-        
-        -- Add a corner to the button
-        local btnCorner = Instance.new("UICorner")
-        btnCorner.CornerRadius = UDim.new(0, 6)
-        btnCorner.Parent = button
-        
-        -- Add a cooldown indicator
-        local cooldown = Instance.new("Frame")
-        cooldown.Size = UDim2.new(1, 0, 0, 3)
-        cooldown.Position = UDim2.new(0, 0, 1, -3)
-        cooldown.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
-        cooldown.BorderSizePixel = 0
-        cooldown.Parent = button
-        
-        -- Add tooltip with description
-        local tooltip = Instance.new("TextLabel")
-        tooltip.Size = UDim2.new(0, 200, 0, 50)
-        tooltip.Position = UDim2.new(0.5, -100, 0, -60)
-        tooltip.Text = ability.Desc
-        tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tooltip.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        tooltip.BackgroundTransparency = 0.2
-        tooltip.Font = Enum.Font.Gotham
-        tooltip.TextSize = 12
-        tooltip.TextWrapped = true
-        tooltip.Visible = false
-        tooltip.Parent = button
-        
-        -- Add corner to tooltip
-        local tooltipCorner = Instance.new("UICorner")
-        tooltipCorner.CornerRadius = UDim.new(0, 6)
-        tooltipCorner.Parent = tooltip
-        
-        -- Show tooltip on hover
-        button.MouseEnter:Connect(function()
-            tooltip.Visible = true
-        end)
-        
-        button.MouseLeave:Connect(function()
-            tooltip.Visible = false
-        end)
-        
-        -- Handle click
-        local cooldownActive = false
-        
-        button.MouseButton1Click:Connect(function()
-            if not cooldownActive and ability.Ability and ability.Ability.Execute then
-                -- Execute ability
-                print("Executing " .. ability.Name .. " ability")
-                ability.Ability.Execute(LocalPlayer)
-                
-                -- Start cooldown
-                cooldownActive = true
-                
-                -- Animate cooldown
-                cooldown.Size = UDim2.new(0, 0, 0, 3)
-                local tweenSuccess, tween = pcall(function()
-                    return TweenService:Create(
-                        cooldown,
-                        TweenInfo.new(ability.Cooldown, Enum.EasingStyle.Linear),
-                        {Size = UDim2.new(1, 0, 0, 3)}
-                    )
-                end)
-                
-                if tweenSuccess then
-                    tween:Play()
-                end
-                
-                -- Reset after cooldown
-                task.delay(ability.Cooldown, function()
-                    cooldownActive = false
-                end)
-            elseif cooldownActive then
-                print(ability.Name .. " is on cooldown")
-            else
-                warn(ability.Name .. " ability execution failed!")
-            end
-        end)
-        
-        return button
-    end
-    
-    -- Create buttons for the new ultimate abilities safely
-    local slickShadowButton, slickCourtButton, refineryRushButton
-    pcall(function()
-        slickShadowButton = createUltimateButton(abilities.Diddy[3], 3)
-        slickCourtButton = createUltimateButton(abilities.Diddy[4], 4)
-        refineryRushButton = createUltimateButton(abilities.Diddy[5], 5)
-    end)
-    
-    -- Add glow effects to the ultimate buttons
-    local function addButtonGlow(button)
-        if not button then return end
-        
-        local glow = Instance.new("UIGradient")
-        glow.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(41, 50, 71)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(61, 70, 91)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(41, 50, 71))
-        })
-        glow.Rotation = 0
-        glow.Parent = button
-        
-        -- Animate the glow
-        task.spawn(function()
-            while button and button.Parent do
-                for i = 0, 360, 2 do
-                    if not button or not button.Parent then
-                        break
-                    end
-                    pcall(function()
-                        glow.Rotation = i
-                    end)
-                    task.wait(0.02)
-                end
-            end
-        end)
-    end
-    
-    -- Safely add glows
-    pcall(function()
-        if slickShadowButton then addButtonGlow(slickShadowButton) end
-        if slickCourtButton then addButtonGlow(slickCourtButton) end
-        if refineryRushButton then addButtonGlow(refineryRushButton) end
-    end)
-    
-    -- Function to show ultimate abilities when ultimate is active
-    local function updateUltimateUI()
-        local wasVisible = UltimateFrame.Visible
-        local isActive = isUltimateActive()
-        
-        UltimateFrame.Visible = isActive
-        
-        -- If it just became visible, play entrance animation
-        if isActive and not wasVisible then
-            UltimateFrame.Position = UDim2.new(0.5, -150, -0.1, 0)
-            UltimateFrame.BackgroundTransparency = 1
-            
-            -- Animate the entrance
-            pcall(function()
-                TweenService:Create(
-                    UltimateFrame,
-                    TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-                    {Position = UDim2.new(0.5, -150, 0, 10), BackgroundTransparency = 0.3}
-                ):Play()
-            end)
-            
-            -- Start title animation
-            task.spawn(animateTitle)
-            
-            -- Play sound effect
-            pcall(function()
-                local sound = Instance.new("Sound")
-                sound.SoundId = "rbxassetid://6895079853" -- Energy activation sound
-                sound.Volume = 0.5
-                sound.Parent = UltimateFrame
-                sound:Play()
-                game:GetService("Debris"):AddItem(sound, 2)
-            end)
-        end
-        
-        -- If it just became hidden, play exit animation
-        if not isActive and wasVisible then
-            -- Animate the exit
-            pcall(function()
-                local exitTween = TweenService:Create(
-                    UltimateFrame,
-                    TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-                    {Position = UDim2.new(0.5, -150, -0.1, 0), BackgroundTransparency = 1}
-                )
-                exitTween:Play()
-                
-                -- Actually hide it after the animation completes
-                exitTween.Completed:Connect(function()
-                    UltimateFrame.Visible = false
-                end)
-            end)
-        end
-    end
-    
-    -- Start a heartbeat loop to continuously check ultimate status
-    task.spawn(function()
-        local RunService = game:GetService("RunService")
-        
-        while true do
-            pcall(function()
-                updateUltimateUI()
-            end)
-            
-            -- Use a safe wait method
-            pcall(function()
-                RunService.Heartbeat:Wait()
-            end)
-            
-            if not RunService then
-                wait(0.03)  -- Fallback wait if RunService is not available
-            end
-        end
-    end)
-    
-    return {
-        UltimateFrame = UltimateFrame,
-        slickShadowButton = slickShadowButton,
-        slickCourtButton = slickCourtButton, 
-        refineryRushButton = refineryRushButton
-    }
+-- *** DIRECT BUTTON IMPLEMENTATION ***
+-- This creates direct keyboard hotkeys for abilities
+-- This is a completely different approach from UI buttons
+
+print("[LAJ HUB] Setting up direct keyboard hotkeys for abilities...")
+
+-- Key mappings
+local keyMappings = {
+    OilDribble = Enum.KeyCode.Q,       -- Press Q for Oil Dribble
+    OilSteal = Enum.KeyCode.E,         -- Press E for Oil Steal
+    SlickShadow = Enum.KeyCode.R,      -- Press R for Slick Shadow
+    SlickCourtTakeover = Enum.KeyCode.T, -- Press T for Slick Court Takeover
+    RefineryRush = Enum.KeyCode.Y      -- Press Y for Refinery Rush
+}
+
+-- Cooldown timers
+local cooldowns = {
+    OilDribble = 0,
+    OilSteal = 0,
+    SlickShadow = 0,
+    SlickCourtTakeover = 0,
+    RefineryRush = 0
+}
+
+-- Function to check if ability is on cooldown
+local function isOnCooldown(ability)
+    return cooldowns[ability] > os.time()
 end
 
--- Run the UI setup safely
-local ui
-pcall(function()
-    ui = setupUI()
+-- Function to start cooldown
+local function startCooldown(ability, duration)
+    cooldowns[ability] = os.time() + duration
+end
+
+-- Create UI for displaying hotkeys
+local function createHotkeyUI()
+    local success, hotkeysFrame = pcall(function()
+        -- Check if player and PlayerGui exist
+        if not player or not player.PlayerGui then
+            print("[LAJ HUB] Cannot create hotkey UI: PlayerGui not found")
+            return nil
+        end
+        
+        -- Create the main frame
+        local hotkeysFrame = Instance.new("Frame")
+        hotkeysFrame.Name = "DiddyHotkeys"
+        hotkeysFrame.Size = UDim2.new(0, 200, 0, 175)
+        hotkeysFrame.Position = UDim2.new(0, 10, 0.4, 0)
+        hotkeysFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        hotkeysFrame.BackgroundTransparency = 0.5
+        hotkeysFrame.BorderSizePixel = 0
+        
+        -- Add a title
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, 0, 0, 30)
+        title.Position = UDim2.new(0, 0, 0, 0)
+        title.Text = "Diddy Style Hotkeys"
+        title.TextColor3 = Color3.fromRGB(255, 255, 255)
+        title.BackgroundTransparency = 1
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = a
+        title.Parent = hotkeysFrame
+        
+        -- Add a corner
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 8)
+        corner.Parent = hotkeysFrame
+        
+        -- Define hotkey details
+        local hotkeys = {
+            {key = "Q", ability = "Oil Dribble", color = Color3.fromRGB(41, 128, 255)},
+            {key = "E", ability = "Oil Steal", color = Color3.fromRGB(41, 128, 255)},
+            {key = "R", ability = "Slick Shadow", color = Color3.fromRGB(200, 100, 255)},
+            {key = "T", ability = "Court Takeover", color = Color3.fromRGB(200, 100, 255)},
+            {key = "Y", ability = "Refinery Rush", color = Color3.fromRGB(200, 100, 255)}
+        }
+        
+        -- Create hotkey labels
+        for i, hotkey in ipairs(hotkeys) do
+            local frame = Instance.new("Frame")
+            frame.Size = UDim2.new(1, -20, 0, 25)
+            frame.Position = UDim2.new(0, 10, 0, 30 + (i * 27))
+            frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            frame.BackgroundTransparency = 0.3
+            frame.BorderSizePixel = 0
+            frame.Parent = hotkeysFrame
+            
+            local keyLabel = Instance.new("TextLabel")
+            keyLabel.Size = UDim2.new(0.2, 0, 1, 0)
+            keyLabel.Position = UDim2.new(0, 0, 0, 0)
+            keyLabel.Text = hotkey.key
+            keyLabel.TextColor3 = hotkey.color
+            keyLabel.BackgroundTransparency = 1
+            keyLabel.Font = Enum.Font.GothamBold
+            keyLabel.TextSize = 14
+            keyLabel.Parent = frame
+            
+            local nameLabel = Instance.new("TextLabel")
+            nameLabel.Size = UDim2.new(0.8, 0, 1, 0)
+            nameLabel.Position = UDim2.new(0.2, 0, 0, 0)
+            nameLabel.Text = hotkey.ability
+            nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            nameLabel.BackgroundTransparency = 1
+            nameLabel.Font = Enum.Font.Gotham
+            nameLabel.TextSize = 14
+            nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+            nameLabel.Parent = frame
+            
+            local frameCorner = Instance.new("UICorner")
+            frameCorner.CornerRadius = UDim.new(0, 6)
+            frameCorner.Parent = frame
+        }
+        
+        -- Find or create an ScreenGui to parent the frame to
+        local screenGui = player.PlayerGui:FindFirstChild("DiddyStyleGui")
+        if not screenGui then
+            screenGui = Instance.new("ScreenGui")
+            screenGui.Name = "DiddyStyleGui"
+            screenGui.Parent = player.PlayerGui
+        end
+        
+        hotkeysFrame.Parent = screenGui
+        
+        return hotkeysFrame
+    end)
+    
+    if not success then
+        print("[LAJ HUB] Error creating hotkey UI:", hotkeysFrame)
+        return nil
+    end
+    
+    return hotkeysFrame
+end
+
+-- Function to execute an ability
+local function executeAbility(abilityName)
+    if not abilities[abilityName] then
+        warn("[LAJ HUB] Ability not found:", abilityName)
+        return
+    end
+    
+    -- Check cooldown
+    if isOnCooldown(abilityName) then
+        local remainingCooldown = cooldowns[abilityName] - os.time()
+        print("[LAJ HUB] " .. abilityName .. " is on cooldown for " .. remainingCooldown .. " seconds")
+        return
+    end
+    
+    -- Execute the ability
+    print("[LAJ HUB] Executing ability:", abilityName)
+    abilities[abilityName].Execute()
+    
+    -- Start cooldown
+    startCooldown(abilityName, abilities[abilityName].Cooldown)
+    
+    -- Notify user that ability was used
+    print("[LAJ HUB] Used " .. abilityName .. ", on cooldown for " .. abilities[abilityName].Cooldown .. " seconds")
+end
+
+-- *** DIRECT AWK BUTTON IMPLEMENTATION ***
+-- This creates a custom AWK button that will trigger the main ability (Oil Dribble)
+
+print("[LAJ HUB] Creating AWK button...")
+
+-- Create AWK button
+local function createAWKButton()
+    -- This will create a visible button in the corner of the screen
+    local awkButton = Instance.new("TextButton")
+    awkButton.Name = "AWKButton"
+    awkButton.Size = UDim2.new(0, 100, 0, 40)
+    awkButton.Position = UDim2.new(1, -110, 1, -50)
+    awkButton.Text = "AWK"
+    awkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    awkButton.BackgroundColor3 = Color3.fromRGB(41, 50, 71)
+    awkButton.BorderSizePixel = 0
+    awkButton.TextSize = 20
+    awkButton.Font = Enum.Font.GothamBold
+    
+    -- Add a corner
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = awkButton
+    
+    -- Add a glow effect
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(41, 50, 71)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(61, 70, 91)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(41, 50, 71))
+    })
+    gradient.Parent = awkButton
+    
+    -- Add animation to the gradient
+    task.spawn(function()
+        while awkButton and awkButton.Parent do
+            for i = 0, 360, 2 do
+                if awkButton and awkButton.Parent and gradient and gradient.Parent then
+                    gradient.Rotation = i
+                    task.wait(0.02)
+                else
+                    break
+                end
+            end
+        end
+    end)
+    
+    -- Connect the button click to execute Oil Dribble
+    awkButton.MouseButton1Click:Connect(function()
+        print("[LAJ HUB] AWK button clicked!")
+        executeAbility("OilDribble")
+    end)
+    
+    -- Find or create an ScreenGui to parent the button to
+    local screenGui = player.PlayerGui:FindFirstChild("DiddyStyleGui")
+    if not screenGui then
+        screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "DiddyStyleGui"
+        screenGui.Parent = player.PlayerGui
+    end
+    
+    awkButton.Parent = screenGui
+    
+    return awkButton
+end
+
+-- Set up keyboard hotkeys
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end  -- Don't handle inputs if game UI is handling them
+    
+    for ability, key in pairs(keyMappings) do
+        if input.KeyCode == key then
+            executeAbility(ability)
+            break
+        end
+    end
 end)
 
-print("✅ [LAJ HUB] Diddy style abilities loaded successfully - compatible with Script-Ware and Synapse X!")
-print("- Oil Dribble: Zig-zag pattern with oil trails")
-print("- Oil Steal: Teleport forward and steal the ball")
-print("- Ultimate abilities will appear when ultimate is active:")
-print("  - Slick Shadow: Create 4 oil clones that mimic your movements")
-print("  - Slick Court Takeover: Transform the court floor into an oil slick")
-print("  - Refinery Rush: Create a straight pathway for instant acceleration")
-
--- For testing with executors that don't support 'game'
-if _G.test_mode then
-    print("[LAJ HUB] Test mode active, simulating abilities:")
-    print("- Oil Dribble would create zigzag movement with oil trail")
-    print("- Oil Steal would teleport forward 12 studs and attempt ball steal")
-    print("- Ultimate abilities would show when ultimate is active:")
-    print("  - Slick Shadow creates 4 clones in a circle around player")
-    print("  - Slick Court Takeover creates a 30-stud oil floor")
-    print("  - Refinery Rush creates a 50-stud pathway with 2x speed boost")
+-- Main initialization function
+local function initialize()
+    print("[LAJ HUB] Initializing Diddy style...")
+    
+    -- Set player style
+    setPlayerStyle()
+    
+    -- Load styles
+    loadStyles()
+    
+    -- Create hotkeys UI
+    createHotkeyUI()
+    
+    -- Create AWK button
+    createAWKButton()
+    
+    print("[LAJ HUB] Diddy style initialization complete!")
+    print("[LAJ HUB] Keys: Q = Oil Dribble, E = Oil Steal, R = Slick Shadow (Ultimate), T = Court Takeover (Ultimate), Y = Refinery Rush (Ultimate)")
+    print("[LAJ HUB] AWK button added to bottom-right of screen")
 end
 
--- Set a global success flag to indicate successful loading
+-- Run the initialization
+initialize()
+
+-- Global success flag
 _G.laj_hub_diddy_style_loaded = true
+_G.awk_button_created = true
+
+print("[LAJ HUB] ✅ Diddy style loaded successfully with direct AWK button implementation")
