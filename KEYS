@@ -13,23 +13,21 @@ local Mouse = Player:GetMouse()
 
 -- Configuration (edit these)
 local VALID_KEYS = {
-    -- Removed expired keys: LAJPRO, LAJVIP456, LAJHUB789
     "LAJSPECIAL",
     "LAJULTRA",
     "LAJEXCLUSIVE",
     "LAJPREMIUM", 
     "LAJELITE"
 }
-local getKeyURL = "https://lootdest.org/s?dhIvqyHl"
+
+-- Discord server link
+local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
 -- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1358258757351641159/TXOemtjIrD_nvZ6A1W9tZz9A5leL95ltKBYDcUFOTfOYuxb-KeitcQkquA3hXuZ3OK9J"
-
--- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1358258757351641159/TXOemtjIrD_nvZ6A1W9tZz9A5leL95ltKBYDcUFOTfOYuxb-KeitcQkquA3hXuZ3OK9J"
+local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
 
 -- GitHub script URL (where your main script is hosted)
-local mainScriptURL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
+local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
 
 -- Request function for different executors
 local request = syn and syn.request or http and http.request or http_request or request or httprequest
@@ -104,7 +102,6 @@ local function logKeyUsage(key, success)
 end
 
 -- Function to verify a key
--- Function to verify a key
 local function verifyKey(key)
     for _, validKey in ipairs(VALID_KEYS) do
         if key == validKey then
@@ -112,22 +109,13 @@ local function verifyKey(key)
         end
     end
     return false
-}
-    end
-    return false
 end
 
 -- Function to load the main script
--- Function to load the main script
 local function loadMainScript()
     local success, error_message = pcall(function()
-        loadstring(game:HttpGet(mainScriptURL))()
+        loadstring(game:HttpGet(SCRIPT_URL))()
     end)
-    
-    if not success then
-        warn("Failed to load main script: " .. tostring(error_message))
-    end
-}
     
     if not success then
         warn("Failed to load main script: " .. tostring(error_message))
@@ -135,7 +123,7 @@ local function loadMainScript()
 end
 
 -- Creating UI Elements
-local function checkSavedKeyAndStart()
+local function createKeySystemUI()
     -- Check if UI already exists and remove it
     if CoreGui:FindFirstChild("LAJHubKeySystem") then
         CoreGui:FindFirstChild("LAJHubKeySystem"):Destroy()
@@ -384,7 +372,7 @@ local function checkSavedKeyAndStart()
     DiscordLabel.Size = UDim2.new(1, 0, 0, 20)
     DiscordLabel.Position = UDim2.new(0, 0, 0, 155)
     DiscordLabel.BackgroundTransparency = 1
-    DiscordLabel.Text = "Get your key from the web:"
+    DiscordLabel.Text = "Need a key? Join our Discord:"
     DiscordLabel.TextColor3 = Theme.TextColor
     DiscordLabel.TextSize = 14
     DiscordLabel.Font = Enum.Font.SourceSans
@@ -397,7 +385,7 @@ local function checkSavedKeyAndStart()
     DiscordButton.Size = UDim2.new(1, 0, 0, 35)
     DiscordButton.Position = UDim2.new(0, 0, 0, 180)
     DiscordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord color
-    DiscordButton.Text = "Get Key from Web"
+    DiscordButton.Text = "Join Discord for Key"
     DiscordButton.TextColor3 = Theme.TextColor
     DiscordButton.TextSize = 16
     DiscordButton.Font = Enum.Font.SourceSansBold
@@ -409,14 +397,14 @@ local function checkSavedKeyAndStart()
     DiscordCorner.Parent = DiscordButton
     
     DiscordButton.MouseButton1Click:Connect(function()
-        setclipboard(getKeyURL)
-        StatusLabel.Text = "Key link copied to clipboard!"
+        setclipboard(DISCORD_LINK)
+        StatusLabel.Text = "Discord link copied to clipboard!"
         StatusLabel.TextColor3 = Theme.SuccessColor
         
         -- Create a notification
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Discord Link Copied",
-            Text = "Paste it in your browser to get a key!",
+            Text = "Paste it in your browser to join!",
             Duration = 5
         })
     end)
@@ -565,9 +553,6 @@ local function checkSavedKeyAndStart()
         logKeyUsage(keyText, isValid)
         
         if isValid then
-            -- Save valid key for 10 hours
-            saveKeyData(keyText)
-            
             StatusLabel.Text = "Key verified successfully! Loading script..."
             StatusLabel.TextColor3 = Theme.SuccessColor
             
@@ -578,7 +563,7 @@ local function checkSavedKeyAndStart()
             ScreenGui:Destroy()
             
             -- Load main script
-            loadMainScript
+            loadMainScript()
         else
             StatusLabel.Text = "Invalid key! Please try again."
             StatusLabel.TextColor3 = Theme.ErrorColor
@@ -615,56 +600,8 @@ local function checkSavedKeyAndStart()
 end
 
 -- Start key system
-checkSavedKeyAndStart()
+createKeySystemUI()
 
 -- Debug information
 print("LAJ HUB Key System Loaded")
 print("Waiting for key verification...")
-
--- Function to save key data with 10-hour expiration
-local function saveKeyData(key)
-    local keyData = {
-        key = key,
-        timestamp = os.time(),
-        expires = os.time() + (10 * 60 * 60) -- 10 hours expiration
-    }
-    
-    -- Save using getgenv()
-    if getgenv then
-        getgenv().LAJHubSavedKey = keyData
-        print("Key saved in getgenv(). Expires in 10 hours.")
-    else
-        print("getgenv() not available. Key will not persist.")
-    end
-end
-
--- Function to get saved key data
-local function getSavedKeyData()
-    if getgenv and getgenv().LAJHubSavedKey then
-        return getgenv().LAJHubSavedKey
-    end
-    return nil
-end
-
--- Function to check for saved keys before showing UI
-local function checkSavedKeyAndStart()
-    -- Check for saved key
-    local savedKey = getSavedKeyData()
-    if savedKey then
-        -- Check if key is still valid (not expired)
-        if savedKey.expires > os.time() then
-            print("Found valid saved key. Expires in " .. math.floor((savedKey.expires - os.time()) / 60) .. " minutes.")
-            loadMainScript()
-            return true
-        else
-            print("Saved key expired. Need to re-verify.")
-            if getgenv then
-                getgenv().LAJHubSavedKey = nil
-            end
-        end
-    end
-    
-    -- No valid saved key, show the UI
-    checkSavedKeyAndStart()
-    return false
-end
