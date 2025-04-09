@@ -1,5 +1,4 @@
 -- LAJ HUB Key System - Modern UI
--- Custom UI key verification with GitHub tracking
 
 -- Services
 local Players = game:GetService("Players")
@@ -24,7 +23,8 @@ local VALID_KEYS = {
 local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
 
 -- Discord webhook for tracking (reversed for obfuscation)
-local WEBHOOK_URL = string.reverse("EREBEHLUGNIREHTSNWOYTHUOYRULRUKOOHBEW")
+local WEBHOOK_URL = string.reverse("qkUQ9v9YFyBFC9wYSzQVz_xU0lG1yvrSM1wVHh0o9yQlH0vAjxwvFFvF78M7yi1BHDPyR4l".."/".."198846810816959531/moc.drocsid//:sptth")
+-- The webhook URL is split and reversed for better obfuscation
 
 -- GitHub script URL (where your main script is hosted)
 local SCRIPT_URL = "https://raw.githubusercontent.com/ktrolegl/LAJhubv2/refs/heads/main/testingv2"
