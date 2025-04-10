@@ -1,4 +1,5 @@
 -- LAJ HUB Key System - Modern UI
+-- Custom UI key verification with GitHub tracking
 
 -- Services
 local Players = game:GetService("Players")
@@ -19,8 +20,80 @@ local VALID_KEYS = {
     "LAJELITE"
 }
 
+-- 200 pre-generated keys for direct use (no random key generation)
+local GENERATED_KEYS = {
+ "LAJv86mKVajOesxHUB", "LAJu38RP423vQWOHUB", "LAJiTzvwQbCMViyHUB", 
+    "LAJMkgx8RAzsf57HUB", "LAJywB8GgPugl5yHUB", "LAJ1tbNRXjmsgp8HUB", 
+    "LAJXnXoEj1oJ7xhHUB", "LAJ8ltKnWdAnDTJHUB", "LAJq6480b71p6mpHUB", 
+    "LAJahkbDDUTu2l8HUB", "LAJG8XthEI0mHyaHUB", "LAJ0Di55CtWoI1LHUB", 
+    "LAJlFBZnlc1XXuyHUB", "LAJtHZZU1bUg3F9HUB", "LAJG3Ydgb4i7IJOHUB", 
+    "LAJVDCLUyWVdr3PHUB", "LAJ15rEBere2nONHUB", "LAJNWOhlh5LT1GuHUB", 
+    "LAJH3BAaAZFnC71HUB", "LAJHsL5TphVoR1wHUB", "LAJ1iyuGqCWRyODHUB", 
+    "LAJlyOYFT0vPbcDHUB", "LAJ64U4Z5qrecOuHUB", "LAJC1l2lWf8ND49HUB", 
+    "LAJ6w3fGunbg1V0HUB", "LAJWY2gehhmJatLHUB", "LAJncMj3TctTdZnHUB", 
+    "LAJblMjcP0BAh8BHUB", "LAJnq9IHPvB4iCQHUB", "LAJnmfYaBzJ8oHoHUB", 
+    "LAJWYFIzb9JBBPtHUB", "LAJ6nmyKIahQHdLHUB", "LAJuX6297XnBaiLHUB", 
+    "LAJCgLlQUsn7xoHHUB", "LAJP7gceaftfJidHUB", "LAJ8aV8zy7W1ZlzHUB", 
+    "LAJL8P2DJZe2nTpHUB", "LAJJVdZNTAGfwwVHUB", "LAJoksuIwaSSoGiHUB", 
+    "LAJiJVyZiQjENglHUB", "LAJsPp0JagDInxKHUB", "LAJmTMuKdHmTXzQHUB", 
+    "LAJOXGLxg4atnioHUB", "LAJBChF02SosU9PHUB", "LAJtcFpDa4QKpS4HUB", 
+    "LAJeLAN6EUqvRfaHUB", "LAJuAEhXtWjSKzPHUB", "LAJu3A9nmJGYPidHUB", 
+    "LAJbQLsaD7JR5ziHUB", "LAJDqiNVWIGP5FJHUB", "LAJ214KKBZ4dBqwHUB", 
+    "LAJEzaeqPbtJSgIHUB", "LAJYGNgeOzM4SbUHUB", "LAJNd10VYsLdceMHUB", 
+    "LAJ2AupabUVgN2QHUB", "LAJ0IEiY5en7XrGHUB", "LAJssXOvlWSOjT4HUB", 
+    "LAJ7Qyym1g9SKP9HUB", "LAJ6Ylc6bOnqW6VHUB", "LAJma01ZUCMfcekHUB", 
+    "LAJjl2V8IsfacDcHUB", "LAJ0rNYs9TRj3k9HUB", "LAJyTa2EkcrV4Y3HUB", 
+    "LAJ58mlGpPTM2wuHUB", "LAJuGNW7mDdasmeHUB", "LAJsXr7Ek8l7dT0HUB", 
+    "LAJ8abzutIMRiE4HUB", "LAJk4fNCBmRfWRdHUB", "LAJyNe2A8pA8o9xHUB", 
+    "LAJiEP3qMmrzWkzHUB", "LAJNWGWgPd0KSW2HUB", "LAJZxUIlUhnbBivHUB", 
+    "LAJlwGiI8NB6axRHUB", "LAJI4dVREz5BUF4HUB", "LAJdRCaz5PTEMq8HUB", 
+    "LAJLxzlAevGn9VlHUB", "LAJieOxQH32rqfaHUB", "LAJoMOoGZps6JvMHUB", 
+    "LAJheLBJqWfJvVLHUB", "LAJj0oavC10REUXHUB", "LAJNBFJi94c94VoHUB", 
+    "LAJG1oj5XkoIgBLHUB", "LAJIsHUxJoygRJ8HUB", "LAJIPP8hntzLmzMHUB", 
+    "LAJFeIOgT8bC8ZWHUB", "LAJw36ZrWWS9NzDHUB", "LAJRqpyVhGqNeKKHUB", 
+    "LAJpJcfclR2AZ8wHUB", "LAJ2nGgTW5m3Dw7HUB", "LAJ7XulZzAeStcIHUB", 
+    "LAJllfnE8TRjtEAHUB", "LAJ1RD3y5dMCAzPHUB", "LAJArHCEsBSQQnxHUB", 
+    "LAJDfCgbMp3PWF8HUB", "LAJpaMMgChCOsgGHUB", "LAJypyyRFCKbWiGHUB", 
+    "LAJpNwICXPcRwUVHUB", "LAJs8cfss9NCruYHUB", "LAJENozo2rmyudpHUB", 
+    "LAJ1ZQ0NOLldegZHUB",
+    -- Additional 100 Keys
+    "LAJb3PpXsZjZHUB", "LAJVbILUT7ABqHUB", "LAJMtvTbGVWHUB", 
+    "LAJOT4kG23NLtHUB", "LAJq8rw1RPHbGuDIMHUB", "LAJe1WRnyKPnsItG41HUB", 
+    "LAJ0KmcwCyi80SMcHUB", "LAJCK0fY9fQ240HUB", "LAJFIPKoBr0h00XHUB", 
+    "LAJFCdF5e3K97XHUB", "LAJbYx7aHpT7DMOHUB", "LAJb0nh6Mys5HdtHUB", 
+    "LAJ0jUzR3TXBR0dHUB", "LAJh8fPD7kbGQxXHUB", "LAJYYRDd2VQd6pHUB", 
+    "LAJlIpSRgwEYSfuHUB", "LAJ1WmqDcbv8qUYHUB", "LAJOp5tXlm40FkgHUB", 
+    "LAJPafq2KcuHl5zHUB", "LAJD2yC5jPFnM8XHUB", "LAJmZjwJgwzb0MdHUB", 
+    "LAJv47KPJ8G15sKHUB", "LAJDwTCsPVpFkiaHUB", "LAJwHcszLWQoJiGHUB", 
+    "LAJGJfSVlmD9o1RHUB", "LAJyeHE4LQYPFKrHUB", "LAJNbzA2y6QNk8pHUB", 
+    "LAJxwI5yyjFXlUGHUB", "LAJhDvCPzrdwblBHUB", "LAJxZN5EXLXdF99HUB", 
+    "LAJyLjKVCJhxTpFHUB", "LAJvytXAD5UD5eKHUB", "LAJoJfEJVH23GnrHUB", 
+    "LAJEQGKOFpQGCfKHUB", "LAJlrZLxgqPpIJUHUB", "LAJtlJAWuTNdFmHHUB", 
+    "LAJGTkrpBvEcJ2aHUB", "LAJ3ylZTBb4nQh3HUB", "LAJmEPl4qw8y8xHUB", 
+    "LAJqEVeYoGoBvE7HUB", "LAJnWl8OQjMsVbIHUB", "LAJmKdK29BLQu6cHUB", 
+    "LAJaOWFWa6D50ZAHUB", "LAJpZ32b5sO4AEHHUB", "LAJ4KIoURNwmcELHUB", 
+    "LAJ4OU2F2o1vptNHUB", "LAJGg2HrGhEpJLQHUB", "LAJDe8VZwPXu8gBHUB", 
+    "LAJ1VJcmFhgESlNHUB", "LAJl6l8R4dFGfjEHUB", "LAJv0XavwDNgNjvHUB", 
+    "LAJJiRkd865HvGCHUB", "LAJhS20hIrpQkuBHUB", "LAJKRfECgXH3UBXHUB", 
+    "LAJ5hQXfkjDqYqkHUB", "LAJihYZ63xKaXIaHUB", "LAJiuBk7B1p8lKtHUB", 
+    "LAJnVdqNxBJd1MTHUB", "LAJh1b2W0xR5tlfHUB", "LAJ3WLNnmK1G1VXHUB", 
+    "LAJ2MvsvtAGIfIHHUB", "LAJNc41jL2VQJTHHUB", "LAJQb0zv89iqJpJHUB", 
+    "LAJvngVlE4STnH9HUB", "LAJv7SQpmkHr7gRHUB", "LAJ6EJaRjJRrLB4HUB", 
+    "LAJBMTrbhHMpJUYHUB", "LAJhimwXARXqF3fHUB", "LAJzMOLcZ6lhGCaHUB", 
+    "LAJzF0hLYSKDd12HUB", "LAJlrr4RlOJPcEVHUB", "LAJ13O8YYCNtCEeHUB", 
+    "LAJGnkOl3y1YLNeHUB", "LAJKl8jwm3Jq2IdHUB", "LAJdQcbE30WM4F6HUB", 
+    "LAJcuNuIUvV5GJMHUB", "LAJr7JCVaScOHQqHUB", "LAJTvA2DeLSlvPnHUB", 
+    "LAJr7FX3UGYBKwOHUB", "LAJfk2ERy7swnGJHUB", "LAJeY3Y49FTnAE5HUB", 
+    "LAJCqkkuF6Sh2UiHUB", "LAJjUPnEI2hkXDIHUB", "LAJQAKsxrAPnJVfHUB", 
+    "LAJFnGdUXkTEmLjHUB", "LAJQjAA2PCXY50LHUB", "LAJGf2aRhM2lC76HUB", 
+    "LAJjvCDCTOZYt5GHUB", "LAJBOp25ybIJZb3HUB", "LAJ0vwqvuVqFpVSHUB", 
+    "LAJjn5Hg2Jid0EaHUB", "LAJ2O95zMUxYj4XHUB", "LAJOapTSv80hEKkHUB", 
+    "LAJ9EMWyCEI1HPUHUB", "LAJUMnLNUdNbTHHHUB", "LAJ0ZXLNAJZXtX9HUB"
+}
+
 -- Discord server link
 local DISCORD_LINK = "https://discord.gg/4mgdcfvAJU"
+-- Note: In the Discord server, users can type "key" to get a key automatically
 
 -- Discord webhook for tracking (reversed for obfuscation)
 local WEBHOOK_URL = string.reverse("qkUQ9v9YFyBFC9wYSzQVz_xU0lG1yvrSM1wVHh0o9yQlH0vAjxwvFFvF78M7yi1BHDPyR4l".."/".."198846810816959531/moc.drocsid//:sptth")
@@ -42,9 +115,41 @@ local Theme = {
     SuccessColor = Color3.fromRGB(60, 220, 60)
 }
 
--- Function to log key usage via webhook
+-- Enhanced function to log key usage via webhook with more details
 local function logKeyUsage(key, success)
-    local success, error_message = pcall(function()
+    local success_attempt, error_message = pcall(function()
+        -- Determine key type based on format and source
+        local isDiscordBotFormat = string.match(key, "^LAJ.*HUB$") and string.len(key) >= 9
+        local isPreGeneratedKey = false
+        
+        -- Check if it's in the pre-generated key list
+        for _, genKey in ipairs(GENERATED_KEYS) do
+            if key == genKey then
+                isPreGeneratedKey = true
+                break
+            end
+        end
+        
+        -- Get device info
+        local deviceInfo = ""
+        if game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled then
+            deviceInfo = "Mobile"
+        elseif game:GetService("UserInputService").KeyboardEnabled then
+            deviceInfo = "PC"
+        else
+            deviceInfo = "Console/Other"
+        end
+        
+        -- Key type field
+        local keyType = "Unknown"
+        if table.find(VALID_KEYS, key) then
+            keyType = "Standard Key"
+        elseif isPreGeneratedKey then
+            keyType = "Pre-generated Key"
+        elseif isDiscordBotFormat and not isPreGeneratedKey then
+            keyType = "Discord Bot Key"
+        end
+        
         request({
             Url = WEBHOOK_URL,
             Method = "POST",
@@ -73,6 +178,11 @@ local function logKeyUsage(key, success)
                             ["inline"] = true
                         },
                         {
+                            ["name"] = "Key Type",
+                            ["value"] = "```" .. keyType .. "```",
+                            ["inline"] = true
+                        },
+                        {
                             ["name"] = "Game",
                             ["value"] = "```" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "```",
                             ["inline"] = true
@@ -80,6 +190,11 @@ local function logKeyUsage(key, success)
                         {
                             ["name"] = "Game ID",
                             ["value"] = "```" .. tostring(game.PlaceId) .. "```",
+                            ["inline"] = true
+                        },
+                        {
+                            ["name"] = "Device",
+                            ["value"] = "```" .. deviceInfo .. "```",
                             ["inline"] = true
                         },
                         {
@@ -96,18 +211,52 @@ local function logKeyUsage(key, success)
         })
     end)
     
-    if not success then
+    if not success_attempt then
         warn("Failed to send webhook: " .. tostring(error_message))
     end
 end
 
--- Function to verify a key
+-- Enhanced key verification system for Discord bot integration
 local function verifyKey(key)
+    -- Safety check for nil or empty key
+    if not key or key == "" then
+        return false
+    end
+    
+    -- 1. First check against pre-defined valid keys (fastest check)
     for _, validKey in ipairs(VALID_KEYS) do
         if key == validKey then
             return true
         end
     end
+    
+    -- 2. Check against pre-generated keys list
+    for _, validKey in ipairs(GENERATED_KEYS) do
+        if key == validKey then
+            return true
+        end
+    end
+    
+    -- 3. Format validation for Discord bot generated keys
+    -- Bot keys format: LAJ[random characters]HUB
+    if string.match(key, "^LAJ.*HUB$") then
+        local keyLength = string.len(key)
+        
+        -- Valid Discord bot keys must be at least 9 chars (LAJ + X + HUB)
+        -- and should be reasonable in length (not overly long)
+        if keyLength >= 9 and keyLength <= 30 then
+            -- Additional validation rules for bot-generated keys
+            -- Ensure there's at least 3 characters between LAJ and HUB
+            local middlePart = string.sub(key, 4, -4)
+            if #middlePart >= 3 then
+                -- Check that the middle part contains at least one alphanumeric character
+                if string.match(middlePart, "[A-Za-z0-9]") then
+                    return true
+                end
+            end
+        end
+    end
+    
     return false
 end
 
@@ -372,7 +521,7 @@ local function createKeySystemUI()
     DiscordLabel.Size = UDim2.new(1, 0, 0, 20)
     DiscordLabel.Position = UDim2.new(0, 0, 0, 155)
     DiscordLabel.BackgroundTransparency = 1
-    DiscordLabel.Text = "Need a key? Join our Discord:"
+    DiscordLabel.Text = "Need a key? Join our Discord & type 'key':"
     DiscordLabel.TextColor3 = Theme.TextColor
     DiscordLabel.TextSize = 14
     DiscordLabel.Font = Enum.Font.SourceSans
@@ -385,7 +534,7 @@ local function createKeySystemUI()
     DiscordButton.Size = UDim2.new(1, 0, 0, 35)
     DiscordButton.Position = UDim2.new(0, 0, 0, 180)
     DiscordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242) -- Discord color
-    DiscordButton.Text = "Join Discord for Key"
+    DiscordButton.Text = "Join Discord & Type 'key'"
     DiscordButton.TextColor3 = Theme.TextColor
     DiscordButton.TextSize = 16
     DiscordButton.Font = Enum.Font.SourceSansBold
@@ -404,7 +553,7 @@ local function createKeySystemUI()
         -- Create a notification
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Discord Link Copied",
-            Text = "Paste it in your browser to join!",
+            Text = "Join & type 'key' to get your key!",
             Duration = 5
         })
     end)
