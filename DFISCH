@@ -1,1873 +1,493 @@
 --[[
-    LAJ HUB IMPROVED DISH SIMULATOR
+    LAJ HUB DISH SIMULATOR v3.0
     
-    Improvements:
-    - Enhanced error handling and connection reliability
-    - Character respawn detection
-    - Optimized performance
-    - Added stat tracking and progress indicators
-    - Combined auto-features for one-click complete automation
-    - Added teleport system to important locations
-    - Added extra farm methods and settings
-    - Enhanced anti-detection measures
-    - Better organization with tabbed categories
-    - Added settings persistence
-    - Fixed compatibility issues with different executors
-    - Improved infinite money feature with multiple methods
-    - Added support for lower-level executors (including Delta)
-    - Enhanced UI loading reliability
-    - Added executor detection system
-    - Added standalone money tools for Delta users
-    - Fixed UI visibility for all executors
+    Based on Agreed's Disch script with significant LAJ HUB enhancements
+    Completely rewritten for maximum loading reliability across all executors
 ]]
 
--- Apply UI visibility fix
-local function applyUIFix()
-    -- Detect Roblox platform
-    local function checkExecutor()
-        local executorInfo = {
-            name = "Unknown",
-            level = 0
-        }
-        
-        -- Check for various functions to determine executor
-        if syn and syn.protect_gui then
-            executorInfo.name = "Synapse X"
-            executorInfo.level = 8
-        elseif KRNL_LOADED then
-            executorInfo.name = "KRNL"
-            executorInfo.level = 7
-        elseif getexecutorname and type(getexecutorname) == "function" then
-            executorInfo.name = getexecutorname()
-            executorInfo.level = 6
-        elseif is_sirhurt_closure then
-            executorInfo.name = "SirHurt"
-            executorInfo.level = 5
-        elseif SENTINEL_V2 then
-            executorInfo.name = "Sentinel"
-            executorInfo.level = 6
-        elseif delta_load then
-            executorInfo.name = "Delta"
-            executorInfo.level = 5
-        elseif IS_VIVA_LOADED then
-            executorInfo.name = "Viva"
-            executorInfo.level = 5
-        elseif IS_COCO_LOADED then
-            executorInfo.name = "Coco"
-            executorInfo.level = 5
-        elseif SHADOW_LOADED then
-            executorInfo.name = "Shadow"
-            executorInfo.level = 4
-        elseif pebc_execute then
-            executorInfo.name = "ProtoSmasher"
-            executorInfo.level = 6
-        elseif jit then
-            executorInfo.name = "JJSploit/Other"
-            executorInfo.level = 3
-        elseif getgenv then 
-            executorInfo.name = "Unknown (Level 4)"
-            executorInfo.level = 4
-        end
-        
-        return executorInfo
-    end
-
-    -- Get current executor info
-    local executor = checkExecutor()
-    print("Detected executor: " .. executor.name .. " (Level " .. executor.level .. ")")
-
-    -- Setup GUI protection
-    local function setupRayfieldSupport()
-        -- Create a dummy function to replace later
-        if not getgenv then return end
-        
-        -- Create placeholder for Rayfield functions
-        getgenv().SecureRayfield = function(gui)
-            -- UI protection based on executor
-            if syn and syn.protect_gui then
-                syn.protect_gui(gui)
-                gui.Parent = game:GetService("CoreGui")
-            elseif gethui then
-                gui.Parent = gethui()
-            elseif executor.level >= 4 then
-                local succ, err = pcall(function()
-                    gui.Parent = game:GetService("CoreGui")
-                end)
-                if not succ then
-                    gui.Parent = game:GetService("Players").LocalPlayer.PlayerGui
-                end
-            else
-                gui.Parent = game:GetService("Players").LocalPlayer.PlayerGui
-            end
-            return true
-        end
-        
-        -- Prepare for Rayfield loading
-        local oldHttpGet = game.HttpGet
-        getgenv().RealHttpGet = oldHttpGet
-        
-        -- Override HttpGet if needed for specific executors
-        if executor.name == "Delta" or executor.name == "JJSploit/Other" or executor.level <= 4 then
-            game.HttpGet = function(self, url, ...)
-                local result = oldHttpGet(self, url, ...)
-                
-                -- If it's loading Rayfield, apply our fix
-                if url:find("rayfield") or url:find("sirius") then
-                    print("Rayfield detected, applying UI fix...")
-                    result = result:gsub("CoreGui", "Players.LocalPlayer.PlayerGui")
-                    
-                    -- Apply executor-specific fixes
-                    if executor.name == "Delta" then
-                        result = result:gsub("syn.protect_gui", "SecureRayfield")
-                        result = result:gsub("gethui%(%)","game:GetService('Players').LocalPlayer.PlayerGui")
-                    elseif executor.level <= 4 then
-                        result = result:gsub("syn.protect_gui", "SecureRayfield")
-                        result = result:gsub("gethui%(%)","game:GetService('Players').LocalPlayer.PlayerGui")
-                    end
-                end
-                
-                return result
-            end
-        end
-    end
-
-    -- Run the Rayfield support function
-    setupRayfieldSupport()
-    
-    -- Print completion message
-    print("UI visibility fix has been applied")
-end
-
--- Apply the UI fix first
-applyUIFix()
-
--- Core services
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
 local Players = game:GetService("Players")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local TweenService = game:GetService("TweenService")
-local HttpService = game:GetService("HttpService")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local CoreGui = game:GetService("CoreGui")
+local wrk = game:GetService("Workspace")
+local rs = game:GetService("ReplicatedStorage")
+local plr = Players.LocalPlayer
+local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
 
--- Local variables with error handling
-local Player = Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local Humanoid = Character:FindFirstChild("Humanoid") or Character:WaitForChild("Humanoid")
-local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart")
+local sinks = workspace.World.Areas["Starter Resaurant"].Sinks
+local selectedItem
 
--- Game-specific paths and references
-local World = Workspace:FindFirstChild("World")
-local Sinks = World and World.Areas["Starter Resaurant"].Sinks
-local Events = ReplicatedStorage:FindFirstChild("events")
+local circleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.circleHandler"
+local secondCircleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.secondCircleHandler"
 
--- Statistics tracking
-local Stats = {
-    dishesWashed = 0,
-    moneyEarned = 0,
-    startMoney = tonumber(Player.PlayerGui.gameui.coins.abmount.Text:gsub(",", "")) or 0,
-    sessionStart = os.time(),
-    playtimeRewardsClaimed = 0,
-    lastNotifyTime = 0
-}
-
--- Settings with default values
-local Settings = {
-    autoClick = false,
-    autoDish = false,
-    autoSell = false,
-    infiniteMoney = false,
-    autoClaimPlaytime = false,
-    autoFeedNPCs = false,
-    speedMultiplier = 1,
-    antiDetectionEnabled = true,
-    notificationsEnabled = true,
-    dishMethod = "Standard",
-    neverFail = false,
-    customWalkSpeed = 16,
-    customJumpPower = 50,
-    forceSwim = false
-}
-
--- Session timer
-local sessionDuration = 0
-local lastUpdate = os.time()
-
--- Create main UI window
 local Window = Rayfield:CreateWindow({
-    Name = "▶ LAJ HUB IMPROVED DISH SIMULATOR ◀",
-    LoadingTitle = "Loading LAJ HUB DISH...",
+    Name = "▶ LAJ HUB DISH SIMULATOR ◀",
+    Icon = 0,
+    LoadingTitle = "Loading...",
     LoadingSubtitle = "by LAJ HUB Technologies",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "LAJ_HUB",
-        FileName = "LAJ_HUB_DISH_Config"
-    },
-    KeySystem = false
+    Theme = "DarkBlue",
 })
 
--- Create tabs for organization
-local Main = Window:CreateTab("Main 🍽️")
-local Farm = Window:CreateTab("Farm 💰")
-local Teleport = Window:CreateTab("Teleport 🚀")
-local Player = Window:CreateTab("Player 👤")
-local Visual = Window:CreateTab("Visual 👁️")
-local Misc = Window:CreateTab("Misc 🔧")
-local Stats = Window:CreateTab("Stats 📊")
+local Main = Window:CreateTab("Main")
+local Misc = Window:CreateTab("Misc")
+local Player = Window:CreateTab("Player")
 
--- Get important references for the skill test
-local circleHandlerPath = "Players." .. Player.Name .. ".PlayerGui.gameui.skill test.skillTestScript.circleHandler"
-local secondCircleHandlerPath = "Players." .. Player.Name .. ".PlayerGui.gameui.skill test.skillTestScript.secondCircleHandler"
 
-local circleHandlerClick, secondCircleHandlerClick
+local circleHandlerClick = nil
+local secondCircleHandlerClick = nil
 
--- Extract the click functions from the game
+function troll(text, textColor, strokeColor)
+    local player = Players.LocalPlayer
+    if not player then return end
+    
+    local gui = player:FindFirstChild("PlayerGui")
+    if not gui then return end
+    
+    local passiveGui = gui:FindFirstChild("passivegui")
+    if not passiveGui then return end
+    
+    local infoPop = passiveGui:FindFirstChild("infopop")
+    if not infoPop then return end
+    
+    local textTemp = infoPop:FindFirstChild("textTemp")
+    if not textTemp then return end
+    
+    if not text then return end
+    
+    textColor = textColor or Color3.new(1, 1, 1)
+    strokeColor = strokeColor or Color3.new(0, 0, 0)
+    
+    local newText = textTemp:Clone()
+    newText.Text = text
+    newText.TextColor3 = textColor
+    newText.Size = UDim2.new(1, 0, 0, 0)
+    newText.Visible = true
+    newText.Parent = infoPop
+    
+    if newText:FindFirstChild("UIStroke") then
+        newText.UIStroke.Color = strokeColor
+    end
+    
+    TweenService:Create(newText, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(1, 0, 0.15, 0)
+    }):Play()
+    
+    task.delay(4, function()
+        TweenService:Create(newText, TweenInfo.new(1), { TextTransparency = 1 }):Play()
+        if newText:FindFirstChild("UIStroke") then
+            TweenService:Create(newText.UIStroke, TweenInfo.new(1), { Transparency = 1 }):Play()
+        end
+        game:GetService("Debris"):AddItem(newText, 1)
+    end)
+end
+
 for _, func in next, getgc(true) do
     if typeof(func) == "function" then
         local funcName = debug.info(func, "n")
         local funcParent = debug.info(func, "s")
 
-        if funcName == "inputBegan" and funcParent == circleHandlerPath then
+        if funcName == "inputBegan" and funcParent == circleHandler then
             circleHandlerClick = func
-        elseif funcName == "inputBegan" and funcParent == secondCircleHandlerPath then
+        elseif funcName == "inputBegan" and funcParent == secondCircleHandler then
             secondCircleHandlerClick = func
-            if circleHandlerClick then break end -- Exit early if we have both functions
+            break
         end
     end
 end
 
--- Utility functions
-local Utilities = {}
+local Asdaasdadsad = Main:CreateSection("Autofarm")
 
--- Enhanced notification system
-function Utilities.Notify(title, content, color, duration)
-    -- Prevent notification spam
-    local currentTime = os.time()
-    if currentTime - Stats.lastNotifyTime < 1 then return end
-    Stats.lastNotifyTime = currentTime
-    
-    if not Settings.notificationsEnabled then return end
-    
-    title = title or "Notification"
-    content = content or ""
-    color = color or Color3.new(0, 1, 0)
-    duration = duration or 3
-
-    -- Try using the game's built-in notification first
-    pcall(function()
-        local player = Players.LocalPlayer
-        local gui = player:FindFirstChild("PlayerGui")
-        local passiveGui = gui:FindFirstChild("passivegui")
-        local infoPop = passiveGui:FindFirstChild("infopop")
-        local textTemp = infoPop:FindFirstChild("textTemp")
-        
-        if textTemp then
-            local newText = textTemp:Clone()
-            newText.Text = content
-            newText.TextColor3 = color
-            newText.Size = UDim2.new(1, 0, 0, 0)
-            newText.Visible = true
-            newText.Parent = infoPop
-            
-            if newText:FindFirstChild("UIStroke") then
-                newText.UIStroke.Color = color == Color3.new(1, 0, 0) and Color3.new(0.5, 0, 0) or Color3.new(0, 0, 0)
-            end
-            
-            TweenService:Create(newText, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = UDim2.new(1, 0, 0.15, 0)
-            }):Play()
-            
-            task.delay(duration, function()
-                TweenService:Create(newText, TweenInfo.new(1), { TextTransparency = 1 }):Play()
-                if newText:FindFirstChild("UIStroke") then
-                    TweenService:Create(newText.UIStroke, TweenInfo.new(1), { Transparency = 1 }):Play()
-                end
-                game:GetService("Debris"):AddItem(newText, 1)
-            end)
-        end
-    end)
-    
-    -- Fallback to Rayfield notification
-    Rayfield:Notify({
-        Title = title,
-        Content = content,
-        Duration = duration,
-        Image = 4483362458
-    })
-end
-
--- Load settings from file
-function Utilities.LoadSettings()
-    local success, result = pcall(function()
-        if isfile and readfile and isfile("LAJ_HUB_DISH_Settings.json") then
-            return HttpService:JSONDecode(readfile("LAJ_HUB_DISH_Settings.json"))
-        end
-        return nil
-    end)
-    
-    if success and result then
-        -- Merge saved settings with defaults (preserves structure if new options were added)
-        for key, value in pairs(result) do
-            Settings[key] = value
-        end
-        Utilities.Notify("Settings", "Settings loaded successfully", Color3.new(0, 1, 0))
-    end
-end
-
--- Save settings to file
-function Utilities.SaveSettings()
-    local success, result = pcall(function()
-        if writefile then
-            writefile("LAJ_HUB_DISH_Settings.json", HttpService:JSONEncode(Settings))
-            return true
-        end
-        return false
-    end)
-    
-    if success and result then
-        Utilities.Notify("Settings", "Settings saved successfully", Color3.new(0, 1, 0))
-    end
-end
-
--- Format large numbers with commas
-function Utilities.FormatNumber(num)
-    return tostring(num):reverse():gsub("(%d%d%d)", "%1,"):gsub(",(%-?)$", "%1"):reverse()
-end
-
--- Format time in HH:MM:SS
-function Utilities.FormatTime(seconds)
-    local hours = math.floor(seconds / 3600)
-    local minutes = math.floor((seconds % 3600) / 60)
-    local secs = seconds % 60
-    return string.format("%02d:%02d:%02d", hours, minutes, secs)
-end
-
--- Calculate earnings per minute
-function Utilities.EarningsPerMinute()
-    local timeElapsed = os.time() - Stats.sessionStart
-    if timeElapsed <= 0 then return 0 end
-    
-    -- Calculate current money
-    local currentMoney = tonumber(Player.PlayerGui.gameui.coins.abmount.Text:gsub(",", "")) or 0
-    local earned = currentMoney - Stats.startMoney
-    
-    -- Return earnings per minute
-    return math.floor((earned / timeElapsed) * 60)
-end
-
--- Update stats display
-function Utilities.UpdateStats()
-    -- Calculate time played
-    sessionDuration = os.time() - Stats.sessionStart
-    
-    -- Calculate current money
-    local currentMoney = tonumber(Player.PlayerGui.gameui.coins.abmount.Text:gsub(",", "")) or 0
-    Stats.moneyEarned = currentMoney - Stats.startMoney
-    
-    -- Only update every second to avoid performance impact
-    if os.time() - lastUpdate >= 1 then
-        lastUpdate = os.time()
-        
-        -- Update the actual GUI here when we implement it
-        Utilities.UpdateStatsDisplay()
-    end
-end
-
--- Handle NPC feeding
-function Utilities.FeedNPCs()
-    -- Feed Filly
-    pcall(function()
-        ReplicatedStorage.events.npcEvents.eat:InvokeServer(true)
-    end)
-    
-    -- Feed Needy Steve
-    pcall(function()
-        ReplicatedStorage.events.npcEvents.giveGoldenSpork:InvokeServer(true)
-    end)
-    
-    -- Feed Joey
-    pcall(function()
-        ReplicatedStorage.events.npcEvents.largejoeycheck:InvokeServer(true)
-    end)
-end
-
--- Handle character respawn
-Player.CharacterAdded:Connect(function(newCharacter)
-    Character = newCharacter
-    Humanoid = Character:WaitForChild("Humanoid")
-    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-    
-    -- Reapply settings after respawn
-    Humanoid.WalkSpeed = Settings.customWalkSpeed
-    Humanoid.JumpPower = Settings.customJumpPower
-    
-    -- If force swim was enabled, reapply it
-    if Settings.forceSwim then
-        Utilities.ToggleForceSwim(true)
-    end
-    
-    Utilities.Notify("Character", "Character respawned - settings reapplied", Color3.new(0, 1, 0))
-end)
-
--- Function to toggle force swim
-function Utilities.ToggleForceSwim(enabled)
-    local swimFolder = Workspace:FindFirstChild("World"):FindFirstChild("Map"):FindFirstChild("Nature"):FindFirstChild("Water"):FindFirstChild("Swim")
-    local existingPart = swimFolder:FindFirstChild("LAJ_HUB_SwimPart")
-    
-    if enabled then
-        if existingPart then return end
-        
-        local part = Instance.new("Part")
-        part.Name = "LAJ_HUB_SwimPart"
-        part.Size = Vector3.new(1, 1, 1)
-        part.Transparency = 1
-        part.Anchored = false
-        part.CanCollide = false
-        part.Massless = true
-        
-        local weld = Instance.new("WeldConstraint")
-        weld.Part0 = part
-        weld.Part1 = HumanoidRootPart
-        weld.Parent = part
-        
-        part.CFrame = HumanoidRootPart.CFrame
-        part.Parent = swimFolder
-    else
-        if existingPart then
-            existingPart:Destroy()
-        end
-    end
-end
-
--- Main Automation Section
-local AutomationSection = Main:CreateSection("One-Click Automation")
-
--- Master toggle for all automation features
-local MasterToggle = Main:CreateToggle({
-    Name = "Master Automation",
+local AutoClick = Main:CreateToggle({
+    Name = "Auto Click",
     CurrentValue = false,
-    Flag = "MasterAutomation",
     Callback = function(Value)
-        -- Enable or disable all automation features
-        Settings.autoClick = Value
-        Settings.autoDish = Value
-        Settings.autoSell = Value
-        Settings.autoClaimPlaytime = Value
-        
-        -- Only enable money farming if it's safe
-        if Value and pcall(function() return Player.PlayerGui.passivegui.dailyRewards end) then
-            Settings.infiniteMoney = Value
-        end
-        
-        -- If activated, also enable NPC feeding
-        Settings.autoFeedNPCs = Value
-        
-        -- Update all toggles to reflect the new state
-        Rayfield.Flags.AutoClick:Set(Value)
-        Rayfield.Flags.AutoDish:Set(Value)
-        Rayfield.Flags.AutoSell:Set(Value)
-        Rayfield.Flags.AutoClaimPlaytime:Set(Value)
-        Rayfield.Flags.AutoFeedNPCs:Set(Value)
-        
-        -- Only update infinite money if it's safe
-        if pcall(function() return Player.PlayerGui.passivegui.dailyRewards end) then
-            Rayfield.Flags.InfiniteMoney:Set(Value)
-        end
-        
-        local state = Value and "Enabled" or "Disabled"
-        Utilities.Notify("Automation", state .. " full automation!", Value and Color3.new(0, 1, 0) or Color3.new(1, 0, 0))
-        
-        -- Apply Never Fail if master automation is enabled
-        if Value and not Settings.neverFail then
-            Utilities.EnableNeverFail()
-            Rayfield.Flags.NeverFail:Set(true)
-        end
-        
-        Utilities.SaveSettings()
-    end
-})
-
--- AutoFarm Section
-local FarmingSection = Main:CreateSection("Individual Automation")
-
--- Detect executor level
-local executorLevel = 0
-local function getExecutorLevel()
-    -- Try to determine executor level based on available functions
-    if getgc and debug.getinfo then
-        executorLevel = 8
-    elseif debug.getinfo then
-        executorLevel = 6
-    elseif getrawmetatable then
-        executorLevel = 4
-    else
-        executorLevel = 2
-    end
-    return executorLevel
-end
-
--- Get the executor level
-getExecutorLevel()
-
--- Auto Click Methods
-local clickMethods = {
-    "Standard (Level 8)",
-    "Alternative (Level 4+)",
-    "Universal (All Executors)",
-    "JJsploit Compatible"
-}
-
--- Click method dropdown
-local ClickMethodDropdown = Main:CreateDropdown({
-    Name = "Auto Click Method",
-    Options = clickMethods,
-    CurrentOption = executorLevel >= 8 and "Standard (Level 8)" or "Universal (All Executors)",
-    Flag = "ClickMethod",
-    Callback = function(Option)
-        Settings.clickMethod = Option
-        Utilities.SaveSettings()
-        
-        Utilities.Notify("Click Method", "Selected: " .. Option, Color3.new(0, 1, 0))
-        
-        -- Special instructions for each method
-        if Option == "Standard (Level 8)" and executorLevel < 8 then
-            Utilities.Notify("Warning", "Your executor may not support this method. Try Universal method instead.", Color3.new(1, 0.5, 0))
-        elseif Option == "JJsploit Compatible" then
-            Utilities.Notify("Info", "Optimized for JJsploit compatibility", Color3.new(0, 1, 1))
-        end
-    end
-})
-
--- Auto Click toggle with improved methods
-local AutoClickToggle = Main:CreateToggle({
-    Name = "Auto Perfect Click",
-    CurrentValue = Settings.autoClick,
-    Flag = "AutoClick",
-    Callback = function(Value)
-        Settings.autoClick = Value
-        Utilities.SaveSettings()
-        
-        -- Start the auto click loop
+        _G.autoclick = Value
         if Value then
-            Utilities.Notify("Auto Click", "Enabled Auto Perfect Click!", Color3.new(0, 1, 0))
-            
-            local method = Settings.clickMethod or "Universal (All Executors)"
-            
-            -- Standard method (high-level executors)
-            if method == "Standard (Level 8)" then
-                -- Make sure we have the functions needed
-                if not circleHandlerClick or not secondCircleHandlerClick then 
-                    Utilities.Notify("Error", "Could not find click handlers! Try a different method.", Color3.new(1, 0, 0))
-                    return
+            local fakeInput = {
+                UserInputType = Enum.UserInputType.MouseButton1,
+                KeyCode = Enum.KeyCode.Unknown,
+            }
+
+            if not circleHandlerClick or not secondCircleHandlerClick then troll("Something went wrong...", Color3.new(1,0,0)) return end
+            troll("Enabled Auto Clicker!", Color3.new(0,1,0))
+            while _G.autoclick do
+                if plr.PlayerGui.gameui["skill test"].Visible then
+                    circleHandlerClick(fakeInput, false)
+                    for i = 1, 3 do
+                        secondCircleHandlerClick(fakeInput, false)
+                    end
                 end
-                
-                -- Create a loop to handle auto clicking with function calls
-                task.spawn(function()
-                    local fakeInput = {
-                        UserInputType = Enum.UserInputType.MouseButton1,
-                        KeyCode = Enum.KeyCode.Unknown,
-                    }
-                    
-                    while Settings.autoClick and Settings.clickMethod == "Standard (Level 8)" do
-                        -- Only click when the skill test is visible
-                        if Player.PlayerGui.gameui["skill test"].Visible then
-                            -- Click the first circle
-                            circleHandlerClick(fakeInput, false)
-                            
-                            -- Click the second circle multiple times for reliability
-                            for i = 1, 3 do
-                                secondCircleHandlerClick(fakeInput, false)
-                            end
-                            
-                            -- Increment our stats
-                            Stats.dishesWashed = Stats.dishesWashed + 1
-                        end
-                        
-                        -- Prevent the loop from freezing the game
-                        task.wait()
-                    end
-                end)
-            
-            -- Alternative method (for mid-level executors)
-            elseif method == "Alternative (Level 4+)" then
-                task.spawn(function()
-                    while Settings.autoClick and Settings.clickMethod == "Alternative (Level 4+)" do
-                        -- Only proceed when the skill test is visible
-                        if Player.PlayerGui.gameui["skill test"].Visible then
-                            -- Find the click connections and fire them directly
-                            pcall(function()
-                                local circleFrame = Player.PlayerGui.gameui["skill test"].Frame.Circle
-                                for _, conn in pairs(getconnections(circleFrame.MouseButton1Click)) do
-                                    conn:Fire()
-                                end
-                                
-                                local secondFrame = Player.PlayerGui.gameui["skill test"].Frame.secondCircle
-                                for i = 1, 3 do
-                                    for _, conn in pairs(getconnections(secondFrame.MouseButton1Click)) do
-                                        conn:Fire()
-                                    end
-                                    task.wait(0.01)
-                                end
-                            end)
-                            
-                            -- Increment our stats
-                            Stats.dishesWashed = Stats.dishesWashed + 1
-                        end
-                        
-                        task.wait()
-                    end
-                end)
-            
-            -- Universal method (for all executors)
-            elseif method == "Universal (All Executors)" or method == "JJsploit Compatible" then
-                task.spawn(function()
-                    while Settings.autoClick and (Settings.clickMethod == "Universal (All Executors)" or Settings.clickMethod == "JJsploit Compatible") do
-                        -- Only proceed when the skill test is visible
-                        if Player.PlayerGui.gameui["skill test"].Visible then
-                            -- Simulate mouse clicks at the center of the circles
-                            pcall(function()
-                                local circle = Player.PlayerGui.gameui["skill test"].Frame.Circle
-                                local secondCircle = Player.PlayerGui.gameui["skill test"].Frame.secondCircle
-                                
-                                -- Get circle positions
-                                local circlePos = circle.AbsolutePosition + circle.AbsoluteSize/2
-                                local secondCirclePos = secondCircle.AbsolutePosition + secondCircle.AbsoluteSize/2
-                                
-                                -- Click first circle
-                                VirtualInputManager:SendMouseButtonEvent(circlePos.X, circlePos.Y, 0, true, game, 1)
-                                task.wait(0.05)
-                                VirtualInputManager:SendMouseButtonEvent(circlePos.X, circlePos.Y, 0, false, game, 1)
-                                
-                                -- Click second circle multiple times for reliability
-                                for i = 1, 3 do
-                                    task.wait(0.05)
-                                    VirtualInputManager:SendMouseButtonEvent(secondCirclePos.X, secondCirclePos.Y, 0, true, game, 1)
-                                    task.wait(0.05)
-                                    VirtualInputManager:SendMouseButtonEvent(secondCirclePos.X, secondCirclePos.Y, 0, false, game, 1)
-                                end
-                            end)
-                            
-                            -- If using JJsploit compatible mode, add additional compatibility code
-                            if Settings.clickMethod == "JJsploit Compatible" then
-                                -- Try to access the Never Fail feature as backup
-                                pcall(function()
-                                    for _, func in next, getgc() do
-                                        if type(func) == "function" then
-                                            local info = debug.getinfo and debug.getinfo(func) or {name = "", source = ""}
-                                            if info.name == "checkValidClick" then
-                                                hookfunction(func, function() return true end)
-                                            end
-                                        end
-                                    end
-                                end)
-                            end
-                            
-                            -- Increment our stats
-                            Stats.dishesWashed = Stats.dishesWashed + 1
-                        end
-                        
-                        task.wait(0.1)
-                    end
-                end)
+                task.wait()
             end
-        else
-            Utilities.Notify("Auto Click", "Disabled Auto Perfect Click", Color3.new(1, 0, 0))
+            troll("Disabled Auto Clicker", Color3.new(1,0,0))
         end
-    end
+    end,
 })
 
--- Auto Dish toggle
-local AutoDishToggle = Main:CreateToggle({
-    Name = "Auto Dish/Swish",
-    CurrentValue = Settings.autoDish,
-    Flag = "AutoDish",
+local AutoSink = Main:CreateToggle({
+    Name = "Auto Dish/Fish/Swish",
+    CurrentValue = false,
     Callback = function(Value)
-        Settings.autoDish = Value
-        Utilities.SaveSettings()
-        
-        -- Start the auto dish loop
+        _G.autosink = Value
         if Value then
-            Utilities.Notify("Auto Dish", "Enabled Auto Dish!", Color3.new(0, 1, 0))
-            
-            -- Create a loop to handle auto dishwashing
-            task.spawn(function()
-                while Settings.autoDish do
-                    -- Simulate pressing E to interact with dishes
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-                    
-                    -- Add a delay to prevent issues
-                    task.wait(0.1 * (1 / Settings.speedMultiplier))
-                end
-            end)
-        else
-            Utilities.Notify("Auto Dish", "Disabled Auto Dish", Color3.new(1, 0, 0))
+            troll("Enabled Auto Dish!", Color3.new(0,1,0))
+            while _G.autosink do
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                task.wait(0.05)
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                task.wait(0.1)
+            end
+            troll("Disabled Auto Dish", Color3.new(1,0,0))
         end
-    end
+    end,
 })
 
--- Auto Sell toggle
-local AutoSellToggle = Main:CreateToggle({
+local AutoSell = Main:CreateToggle({
     Name = "Auto Sell",
-    CurrentValue = Settings.autoSell,
-    Flag = "AutoSell",
+    CurrentValue = false,
     Callback = function(Value)
-        Settings.autoSell = Value
-        Utilities.SaveSettings()
+        _G.autosell = Value
         
-        -- Start the auto sell loop
         if Value then
-            Utilities.Notify("Auto Sell", "Enabled Auto Sell!", Color3.new(0, 1, 0))
-            
-            -- Create a loop to handle auto selling
-            task.spawn(function()
-                while Settings.autoSell do
-                    -- Invoke the sell remote
-                    pcall(function()
-                        ReplicatedStorage.events.sell:InvokeServer(true)
-                    end)
-                    
-                    -- Add a delay to prevent issues
-                    task.wait(0.5 * (1 / Settings.speedMultiplier))
-                end
-            end)
-        else
-            Utilities.Notify("Auto Sell", "Disabled Auto Sell", Color3.new(1, 0, 0))
+            troll("Enabled Auto Sell!", Color3.new(0,1,0))
+            while _G.autosell do
+                rs.events.sell:InvokeServer(true)
+                task.wait()
+            end
+            troll("Disabled Auto Sell", Color3.new(1,0,0))
         end
-    end
+    end,
 })
 
--- Never Fail button
-local NeverFailToggle = Main:CreateToggle({
+local AntiFail = Main:CreateButton({
     Name = "Never Fail",
-    CurrentValue = Settings.neverFail,
-    Flag = "NeverFail",
-    Callback = function(Value)
-        Settings.neverFail = Value
-        Utilities.SaveSettings()
-        
-        if Value then
-            Utilities.EnableNeverFail()
-        else
-            Utilities.Notify("Never Fail", "You must restart the game to disable Never Fail", Color3.new(1, 0.5, 0))
-        end
-    end
-})
-
--- Function to enable Never Fail
-function Utilities.EnableNeverFail()
-    -- Look through all functions to find the check function
-    for _, func in next, getgc(true) do
-        if typeof(func) == "function" then
-            local funcName = debug.info(func, "n")
-            if funcName == "checkValidClick" then
-                -- Hook the function to always return true
-                hookfunction(func, function()
-                    return true
-                end)
-                Utilities.Notify("Never Fail", "Successfully enabled Never Fail", Color3.new(0, 1, 0))
-                return true
+    Callback = function()
+        for _, func in next, getgc(true) do
+            if typeof(func) == "function" then
+                local funcName = debug.info(func, "n")
+                if funcName == "checkValidClick" then
+                    troll("Never Fail has been Enabled", Color3.new(0,1,0))
+                    hookfunction(func, function()
+                        return true
+                    end)
+                end
             end
         end
-    end
-    
-    Utilities.Notify("Never Fail", "Could not find checkValidClick function", Color3.new(1, 0, 0))
-    return false
-end
+    end,
+})
 
--- Money Section
-local MoneySection = Farm:CreateSection("Money Farming")
+local Asdaasdadsad = Main:CreateSection("Other Features")
 
--- Check if using Delta executor
-local isDeltaExecutor = false
-pcall(function()
-    if delta_load or getexecutorname and getexecutorname():lower():find("delta") then
-        isDeltaExecutor = true
+local InfMoney = Main:CreateToggle({
+    Name = "Infinite Money",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.infmoney = Value
+        
+        if Value then
+            local rewardGUI = plr:WaitForChild("PlayerGui"):WaitForChild("passivegui"):WaitForChild("dailyRewards"):WaitForChild("page")
+
+            local bahaska = 1
+
+            for _, reward in ipairs(rewardGUI:GetChildren()) do
+                if reward:IsA("ImageButton") then
+                    local claimed = reward:FindFirstChild("claim")
+                    if claimed and claimed.Text == "CLAIMED" then
+                        bahaska = bahaska + 1
+                    elseif claimed and claimed.Text == "CLAIM" then
+                        bahaska = bahaska - 1
+                        break
+                    end
+                end
+            end
+
+            local rewards = {
+                [1] = "$100",
+                [2] = "$5,000",
+                [3] = "$10,000",
+                [4] = "$20,000",
+                [5] = "$30,000",
+                [6] = "$50,000",
+                [7] = "$75,000"
+            }
+
+            local reward = rewards[bahaska]
+
+            if reward == nil then troll("Try opening the daily rewards menu!", Color3.new(1,0,0)) return end
+
+            troll("Enabled Infinite Money!", Color3.new(0,1,0))
+            troll("Your daily reward is: " .. reward, Color3.new(0,1,0))
+            while _G.infmoney do
+                rs.events.dailyReward:InvokeServer(reward)
+                task.wait()
+            end
+            troll("Disabled Infinite Money", Color3.new(1,0,0))
+        end
+    end,
+})
+
+local infoPopup = plr:WaitForChild("PlayerGui"):WaitForChild("passivegui"):WaitForChild("infopop")
+
+infoPopup.ChildAdded:Connect(function(child)
+    if child:IsA("TextLabel") or child:IsA("TextButton") then
+        if child.Text:lower():sub(1, 6) == "reward" and _G.infmoney then
+            child.Visible = false
+        end
     end
 end)
 
--- Show Delta-specific instructions if using Delta
-if isDeltaExecutor then
-    local DeltaInfoParagraph = Farm:CreateParagraph({
-        Title = "Delta Executor Detected",
-        Content = "For best compatibility with Delta, please use the 'Delta Compatible' method or try the standalone Delta Money Fix with the button below."
-    })
-    
-    -- Add a button to open the Delta Money Fix GUI
-    local DeltaFixButton = Farm:CreateButton({
-        Name = "Open Delta Money Fix UI",
-        Callback = function()
-            -- Create the Delta Money Fix UI
-            local function createDeltaMoneyFix()
-                local Player = game:GetService("Players").LocalPlayer
-                local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                
-                -- Function to notify in-game
-                local function notify(title, text, duration)
-                    duration = duration or 5
-                    game:GetService("StarterGui"):SetCore("SendNotification", {
-                        Title = title,
-                        Text = text,
-                        Duration = duration
-                    })
-                end
-                
-                notify("Delta Money Fix", "Initializing Delta-compatible money hack...", 3)
-                
-                -- Get Daily Reward values
-                local rewardValues = {"$100", "$5,000", "$10,000", "$20,000", "$30,000", "$50,000", "$75,000"}
-                
-                -- Initialize reward UI
-                local function initializeRewardUI()
-                    -- Try to open the daily rewards menu to make sure it's loaded
-                    pcall(function()
-                        for _, v in pairs(getconnections(Player.PlayerGui.gameui.menu.buttons.dailyRewards.MouseButton1Click)) do
-                            v:Fire()
-                        end
-                        
-                        task.wait(1)
-                        
-                        for _, v in pairs(getconnections(Player.PlayerGui.passivegui.dailyRewards.page.closeButton.MouseButton1Click)) do
-                            v:Fire()
-                        end
-                    end)
-                end
-                
-                -- Initialize the UI
-                initializeRewardUI()
-                
-                -- Create a simple UI for Delta users
-                local DeltaFix = Instance.new("ScreenGui")
-                DeltaFix.Name = "DeltaMoneyFix"
-                DeltaFix.ResetOnSpawn = false
-                DeltaFix.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-                
-                -- Try to put the UI in the right place based on executor
-                local success, result = pcall(function()
-                    if syn and syn.protect_gui then
-                        syn.protect_gui(DeltaFix)
-                        DeltaFix.Parent = game.CoreGui
-                    elseif gethui then
-                        DeltaFix.Parent = gethui()
-                    else
-                        DeltaFix.Parent = game.CoreGui
-                    end
-                end)
-                
-                if not success then
-                    DeltaFix.Parent = Player.PlayerGui
-                end
-                
-                -- Create main frame
-                local MainFrame = Instance.new("Frame")
-                MainFrame.Name = "MainFrame"
-                MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                MainFrame.BorderSizePixel = 0
-                MainFrame.Position = UDim2.new(0.75, 0, 0.4, 0)
-                MainFrame.Size = UDim2.new(0, 200, 0, 250)
-                MainFrame.Active = true
-                MainFrame.Draggable = true
-                MainFrame.Parent = DeltaFix
-                
-                -- Add rounded corners
-                local UICorner = Instance.new("UICorner")
-                UICorner.CornerRadius = UDim.new(0, 6)
-                UICorner.Parent = MainFrame
-                
-                -- Add title
-                local Title = Instance.new("TextLabel")
-                Title.Name = "Title"
-                Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-                Title.BorderSizePixel = 0
-                Title.Size = UDim2.new(1, 0, 0, 30)
-                Title.Font = Enum.Font.GothamBold
-                Title.Text = "Delta Money Fix"
-                Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-                Title.TextSize = 16
-                Title.Parent = MainFrame
-                
-                -- Add title corner
-                local TitleCorner = Instance.new("UICorner")
-                TitleCorner.CornerRadius = UDim.new(0, 6)
-                TitleCorner.Parent = Title
-                
-                -- Add status label
-                local StatusLabel = Instance.new("TextLabel")
-                StatusLabel.Name = "Status"
-                StatusLabel.BackgroundTransparency = 1
-                StatusLabel.Position = UDim2.new(0, 0, 0, 35)
-                StatusLabel.Size = UDim2.new(1, 0, 0, 20)
-                StatusLabel.Font = Enum.Font.Gotham
-                StatusLabel.Text = "Status: Ready"
-                StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-                StatusLabel.TextSize = 14
-                StatusLabel.Parent = MainFrame
-                
-                -- Add buttons for each reward value
-                local buttonPositionY = 60
-                for i, reward in ipairs(rewardValues) do
-                    local Button = Instance.new("TextButton")
-                    Button.Name = "Reward_" .. reward
-                    Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-                    Button.BorderSizePixel = 0
-                    Button.Position = UDim2.new(0.1, 0, 0, buttonPositionY)
-                    Button.Size = UDim2.new(0.8, 0, 0, 25)
-                    Button.Font = Enum.Font.Gotham
-                    Button.Text = "Get " .. reward
-                    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    Button.TextSize = 14
-                    Button.Parent = MainFrame
-                    
-                    -- Add button corner
-                    local ButtonCorner = Instance.new("UICorner")
-                    ButtonCorner.CornerRadius = UDim.new(0, 4)
-                    ButtonCorner.Parent = Button
-                    
-                    -- Add click event
-                    Button.MouseButton1Click:Connect(function()
-                        StatusLabel.Text = "Status: Giving " .. reward
-                        
-                        -- Try to give money using this reward value
-                        local success, result = pcall(function()
-                            return ReplicatedStorage.events.dailyReward:InvokeServer(reward)
-                        end)
-                        
-                        if success then
-                            StatusLabel.Text = "Status: Success! Got " .. reward
-                        else
-                            StatusLabel.Text = "Status: Failed to give " .. reward
-                        end
-                    end)
-                    
-                    buttonPositionY = buttonPositionY + 30
-                end
-                
-                -- Add "Try All" button
-                local TryAllButton = Instance.new("TextButton")
-                TryAllButton.Name = "TryAll"
-                TryAllButton.BackgroundColor3 = Color3.fromRGB(30, 120, 30)
-                TryAllButton.BorderSizePixel = 0
-                TryAllButton.Position = UDim2.new(0.1, 0, 0, buttonPositionY)
-                TryAllButton.Size = UDim2.new(0.8, 0, 0, 30)
-                TryAllButton.Font = Enum.Font.GothamBold
-                TryAllButton.Text = "TRY ALL REWARDS"
-                TryAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-                TryAllButton.TextSize = 14
-                TryAllButton.Parent = MainFrame
-                
-                -- Add button corner
-                local TryAllCorner = Instance.new("UICorner")
-                TryAllCorner.CornerRadius = UDim.new(0, 4)
-                TryAllCorner.Parent = TryAllButton
-                
-                -- Add click event for try all button
-                TryAllButton.MouseButton1Click:Connect(function()
-                    StatusLabel.Text = "Status: Trying all rewards..."
-                    
-                    -- Try all reward values
-                    for _, reward in ipairs(rewardValues) do
-                        pcall(function()
-                            ReplicatedStorage.events.dailyReward:InvokeServer(reward)
-                        end)
-                        task.wait(0.1)
-                    end
-                    
-                    StatusLabel.Text = "Status: Tried all rewards!"
-                end)
-                
-                -- Add auto mode toggle
-                local AutoToggle = Instance.new("TextButton")
-                AutoToggle.Name = "AutoToggle"
-                AutoToggle.BackgroundColor3 = Color3.fromRGB(120, 30, 30)
-                AutoToggle.BorderSizePixel = 0
-                AutoToggle.Position = UDim2.new(0.1, 0, 0, buttonPositionY + 35)
-                AutoToggle.Size = UDim2.new(0.8, 0, 0, 30)
-                AutoToggle.Font = Enum.Font.GothamBold
-                AutoToggle.Text = "AUTO MODE: OFF"
-                AutoToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-                AutoToggle.TextSize = 14
-                AutoToggle.Parent = MainFrame
-                
-                -- Add button corner
-                local AutoToggleCorner = Instance.new("UICorner")
-                AutoToggleCorner.CornerRadius = UDim.new(0, 4)
-                AutoToggleCorner.Parent = AutoToggle
-                
-                -- Auto mode variables
-                local autoModeEnabled = false
-                local autoModeConnection = nil
-                
-                -- Add click event for auto toggle
-                AutoToggle.MouseButton1Click:Connect(function()
-                    autoModeEnabled = not autoModeEnabled
-                    
-                    if autoModeEnabled then
-                        AutoToggle.Text = "AUTO MODE: ON"
-                        AutoToggle.BackgroundColor3 = Color3.fromRGB(30, 120, 30)
-                        StatusLabel.Text = "Status: Auto mode enabled"
-                        
-                        -- Start auto mode loop
-                        autoModeConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                            for _, reward in ipairs(rewardValues) do
-                                if not autoModeEnabled then break end
-                                pcall(function()
-                                    ReplicatedStorage.events.dailyReward:InvokeServer(reward)
-                                end)
-                                task.wait(0.05)
-                            end
-                            task.wait(0.2)
-                        end)
-                    else
-                        AutoToggle.Text = "AUTO MODE: OFF"
-                        AutoToggle.BackgroundColor3 = Color3.fromRGB(120, 30, 30)
-                        StatusLabel.Text = "Status: Auto mode disabled"
-                        
-                        -- Stop auto mode loop
-                        if autoModeConnection then
-                            autoModeConnection:Disconnect()
-                            autoModeConnection = nil
-                        end
-                    end
-                end)
-                
-                -- Hide popups
-                local function setupPopupHider()
-                    local infoPopup = Player:WaitForChild("PlayerGui"):WaitForChild("passivegui"):WaitForChild("infopop")
-                    
-                    -- Connect to child added event
-                    infoPopup.ChildAdded:Connect(function(child)
-                        if child:IsA("TextLabel") or child:IsA("TextButton") then
-                            if child.Text:lower():find("reward") or child.Text:lower():find("coins") then
-                                child.Visible = false
-                            end
-                        end
-                    end)
-                end
-                
-                pcall(setupPopupHider)
-                
-                -- Show final instructions
-                notify("Delta Money Fix", "Money fix loaded successfully! Use the buttons to get money.", 5)
-            end
-            
-            -- Run the Delta fix
-            createDeltaMoneyFix()
-        end
-    })
-end
-
--- Infinite Money Methods
-local moneyMethods = {
-    "Daily Reward", 
-    "Direct Money", 
-    "Alternative Method", 
-    "Delta Compatible"
-}
-
--- Dropdown for selecting money method
-local MoneyMethodDropdown = Farm:CreateDropdown({
-    Name = "Infinite Money Method",
-    Options = moneyMethods,
-    CurrentOption = isDeltaExecutor and "Delta Compatible" or "Daily Reward",
-    Flag = "MoneyMethod",
-    Callback = function(Option)
-        Settings.moneyMethod = Option
-        Utilities.SaveSettings()
-        
-        Utilities.Notify("Money Method", "Selected: " .. Option, Color3.new(0, 1, 0))
-        
-        -- Special instructions for each method
-        if Option == "Daily Reward" then
-            Utilities.Notify("Info", "This method requires opening the daily rewards menu first", Color3.new(0, 1, 1))
-        elseif Option == "Delta Compatible" then
-            Utilities.Notify("Info", "Optimized for Delta executor compatibility", Color3.new(0, 1, 1))
-        elseif Option == "Alternative Method" then
-            Utilities.Notify("Info", "Use this if other methods don't work", Color3.new(0, 1, 1))
-        end
-    end
-})
-
--- Pre-Activate Button
-local PreActivateButton = Farm:CreateButton({
-    Name = "Prepare Infinite Money",
-    Callback = function()
-        -- Force open daily rewards screen to initialize
-        pcall(function()
-            for _, v in pairs(getconnections(Player.PlayerGui.gameui.menu.buttons.dailyRewards.MouseButton1Click)) do
-                v:Fire()
-            end
-            
-            -- Wait a moment then close it
-            task.wait(1)
-            
-            for _, v in pairs(getconnections(Player.PlayerGui.passivegui.dailyRewards.page.closeButton.MouseButton1Click)) do
-                v:Fire()
-            end
-        end)
-        
-        Utilities.Notify("Preparation", "Daily rewards screen initialized", Color3.new(0, 1, 0))
-    end
-})
-
--- Infinite Money toggle with improved methods
-local InfiniteMoneyToggle = Farm:CreateToggle({
-    Name = "Infinite Money",
-    CurrentValue = Settings.infiniteMoney,
-    Flag = "InfiniteMoney",
-    Callback = function(Value)
-        Settings.infiniteMoney = Value
-        Utilities.SaveSettings()
-        
-        -- Start the infinite money loop
-        if Value then
-            local method = Settings.moneyMethod or "Daily Reward"
-            
-            -- If using daily reward method
-            if method == "Daily Reward" then
-                -- Get the current reward
-                local rewardAmount = "$5,000"  -- Default fallback reward
-                
-                -- Find which reward the player is on
-                pcall(function()
-                    local rewardGUI = Player.PlayerGui.passivegui.dailyRewards.page
-                    
-                    local rewardDay = 1
-                    
-                    for _, reward in ipairs(rewardGUI:GetChildren()) do
-                        if reward:IsA("ImageButton") then
-                            local claimed = reward:FindFirstChild("claim")
-                            if claimed and claimed.Text == "CLAIMED" then
-                                rewardDay = rewardDay + 1
-                            elseif claimed and claimed.Text == "CLAIM" then
-                                rewardDay = rewardDay
-                                break
-                            end
-                        end
-                    end
-                    
-                    -- Map reward day to amount
-                    local rewards = {
-                        [1] = "$100",
-                        [2] = "$5,000",
-                        [3] = "$10,000",
-                        [4] = "$20,000",
-                        [5] = "$30,000",
-                        [6] = "$50,000",
-                        [7] = "$75,000"
-                    }
-                    
-                    rewardAmount = rewards[rewardDay] or "$5,000"
-                end)
-                
-                Utilities.Notify("Infinite Money", "Enabled - Daily Reward: " .. rewardAmount, Color3.new(0, 1, 0))
-                
-                -- Create a loop to claim the reward repeatedly
-                task.spawn(function()
-                    while Settings.infiniteMoney and Settings.moneyMethod == "Daily Reward" do
-                        pcall(function()
-                            ReplicatedStorage.events.dailyReward:InvokeServer(rewardAmount)
-                        end)
-                        
-                        -- Add a small delay to prevent server overload
-                        task.wait(0.2 * (1 / Settings.speedMultiplier))
-                    end
-                end)
-            
-            -- If using Direct Money method
-            elseif method == "Direct Money" then
-                Utilities.Notify("Infinite Money", "Enabled - Direct Money Method", Color3.new(0, 1, 0))
-                
-                -- Create a loop for direct money
-                task.spawn(function()
-                    while Settings.infiniteMoney and Settings.moneyMethod == "Direct Money" do
-                        -- Try all common money values to find what works
-                        local moneyValues = {"$5,000", "$10,000", "$20,000", "$30,000", "$50,000", "$75,000"}
-                        
-                        for _, value in ipairs(moneyValues) do
-                            pcall(function()
-                                ReplicatedStorage.events.dailyReward:InvokeServer(value)
-                            end)
-                            task.wait(0.1)
-                        end
-                        
-                        -- Small delay between cycles
-                        task.wait(0.3)
-                    end
-                end)
-            
-            -- If using Alternative Method
-            elseif method == "Alternative Method" then
-                Utilities.Notify("Infinite Money", "Enabled - Alternative Method", Color3.new(0, 1, 0))
-                
-                -- Create a loop for alternative method
-                task.spawn(function()
-                    while Settings.infiniteMoney and Settings.moneyMethod == "Alternative Method" do
-                        pcall(function()
-                            -- First approach - directly fire UI button connections
-                            for _, connection in pairs(getconnections(Player.PlayerGui.passivegui.dailyRewards.page.ImageButton.claim.MouseButton1Click)) do
-                                connection:Fire()
-                            end
-                            
-                            -- Second approach - try different rewards
-                            for _, reward in ipairs({"$10,000", "$20,000", "$50,000"}) do
-                                ReplicatedStorage.events.dailyReward:InvokeServer(reward)
-                                task.wait(0.1)
-                            end
-                        end)
-                        
-                        task.wait(0.5)
-                    end
-                end)
-            
-            -- Delta Compatible Method
-            elseif method == "Delta Compatible" then
-                Utilities.Notify("Infinite Money", "Enabled - Delta Compatible Method", Color3.new(0, 1, 0))
-                
-                -- Create a loop for Delta compatible method
-                task.spawn(function()
-                    -- First make sure daily rewards is initialized
-                    pcall(function()
-                        for _, v in pairs(getconnections(Player.PlayerGui.gameui.menu.buttons.dailyRewards.MouseButton1Click)) do
-                            v:Fire()
-                        end
-                        
-                        task.wait(1)
-                        
-                        for _, v in pairs(getconnections(Player.PlayerGui.passivegui.dailyRewards.page.closeButton.MouseButton1Click)) do
-                            v:Fire()
-                        end
-                    end)
-                    
-                    -- Delta-specific approach
-                    while Settings.infiniteMoney and Settings.moneyMethod == "Delta Compatible" do
-                        -- Try multiple approaches at once
-                        pcall(function()
-                            -- Approach 1: Try direct button call
-                            local rewardGUI = Player.PlayerGui.passivegui.dailyRewards.page
-                            for _, button in ipairs(rewardGUI:GetChildren()) do
-                                if button:IsA("ImageButton") then
-                                    local claim = button:FindFirstChild("claim")
-                                    if claim and claim.Text == "CLAIM" then
-                                        for _, conn in pairs(getconnections(claim.MouseButton1Click)) do
-                                            conn:Fire()
-                                        end
-                                    end
-                                end
-                            end
-                            
-                            -- Approach 2: Brute force the remote
-                            local rewards = {"$5,000", "$10,000", "$20,000", "$30,000", "$50,000", "$75,000"}
-                            for _, reward in ipairs(rewards) do
-                                ReplicatedStorage.events.dailyReward:InvokeServer(reward)
-                                task.wait(0.05)
-                            end
-                            
-                            -- Approach 3: Try to parse the UI for the exact reward
-                            for _, button in ipairs(rewardGUI:GetChildren()) do
-                                if button:IsA("ImageButton") then
-                                    local reward = button:FindFirstChild("reward")
-                                    if reward and reward.Text then
-                                        ReplicatedStorage.events.dailyReward:InvokeServer(reward.Text)
-                                    end
-                                end
-                            end
-                        end)
-                        
-                        task.wait(0.5)
-                    end
-                end)
-            end
-            
-            -- Hide reward popups for any method
-            pcall(function()
-                local infoPopup = Player.PlayerGui.passivegui.infopop
-                
-                -- Connect a handler to hide reward popups
-                local connection
-                connection = infoPopup.ChildAdded:Connect(function(child)
-                    if not Settings.infiniteMoney then
-                        connection:Disconnect()
-                        return
-                    end
-                    
-                    if child:IsA("TextLabel") or child:IsA("TextButton") then
-                        if child.Text:lower():find("reward") or 
-                           child.Text:lower():find("coins") or
-                           child.Text:lower():find("money") then
-                            child.Visible = false
-                        end
-                    end
-                end)
-            end)
-            
-        else
-            Utilities.Notify("Infinite Money", "Disabled", Color3.new(1, 0, 0))
-        end
-    end
-})
-
--- Auto Claim Playtime toggle
-local AutoClaimPlaytimeToggle = Farm:CreateToggle({
+local AutoClaim = Main:CreateToggle({
     Name = "Auto Claim Playtime",
-    CurrentValue = Settings.autoClaimPlaytime,
-    Flag = "AutoClaimPlaytime",
+    CurrentValue = false,
     Callback = function(Value)
-        Settings.autoClaimPlaytime = Value
-        Utilities.SaveSettings()
-        
-        -- Start the auto claim playtime loop
+        _G.autoclaim = Value
+
         if Value then
-            Utilities.Notify("Auto Claim", "Enabled Auto Claim Playtime!", Color3.new(0, 1, 0))
-            
-            -- Create a loop to claim playtime rewards
-            task.spawn(function()
-                while Settings.autoClaimPlaytime do
-                    pcall(function()
-                        local rewardsGui = Player.PlayerGui:FindFirstChild("passivegui")
-                        if rewardsGui then
-                            local playtimeRewards = rewardsGui:FindFirstChild("playtimeRewards")
-                            if playtimeRewards then
-                                for _, button in ipairs(playtimeRewards.page:GetChildren()) do
-                                    if button:IsA("GuiButton") and button.time.Text == "CLAIM" then
-                                        local success = ReplicatedStorage.events.playtimeReward:InvokeServer(string.lower(button.reward.Text))
-                                        if success then
-                                            Stats.playtimeRewardsClaimed = Stats.playtimeRewardsClaimed + 1
-                                        end
-                                    end
-                                end
+            troll("Enabled Auto Claim Playtime!", Color3.new(0,1,0))
+            while _G.autoclaim do
+                local rewardsGui = plr.PlayerGui:FindFirstChild("passivegui")
+                if rewardsGui then
+                    local playtimeRewards = rewardsGui:FindFirstChild("playtimeRewards")
+                    if playtimeRewards then
+                        for _, button in ipairs(playtimeRewards.page:GetChildren()) do
+                            if button:IsA("GuiButton") and button.time.Text == "CLAIM" then
+                                rs.events.playtimeReward:InvokeServer(string.lower(button.reward.Text))
                             end
                         end
-                    end)
-                    
-                    -- Check less frequently to avoid unnecessary server calls
-                    task.wait(5)
+                    end
                 end
-            end)
-        else
-            Utilities.Notify("Auto Claim", "Disabled Auto Claim Playtime", Color3.new(1, 0, 0))
+                task.wait(1)
+            end
+            troll("Disabled Auto Claim Playtime", Color3.new(1,0,0))
         end
-    end
+    end,
 })
 
--- NPC Section
-local NPCSection = Farm:CreateSection("NPC Interactions")
-
--- Auto Feed NPCs toggle
-local AutoFeedNPCsToggle = Farm:CreateToggle({
-    Name = "Auto Feed All NPCs",
-    CurrentValue = Settings.autoFeedNPCs,
-    Flag = "AutoFeedNPCs",
-    Callback = function(Value)
-        Settings.autoFeedNPCs = Value
-        Utilities.SaveSettings()
-        
-        -- Start the auto feed NPCs loop
-        if Value then
-            Utilities.Notify("Auto Feed", "Enabled Auto Feed All NPCs!", Color3.new(0, 1, 0))
-            
-            -- Create a loop to feed all NPCs
-            task.spawn(function()
-                while Settings.autoFeedNPCs do
-                    Utilities.FeedNPCs()
-                    
-                    -- Wait a bit to prevent server overload
-                    task.wait(1)
-                end
-            end)
-        else
-            Utilities.Notify("Auto Feed", "Disabled Auto Feed NPCs", Color3.new(1, 0, 0))
-        end
-    end
-})
-
--- Auto Feed Filly toggle (individual NPC option)
-local AutoFeedFillyToggle = Farm:CreateToggle({
-    Name = "Auto Feed Filly Only",
-    CurrentValue = false,
-    Flag = "AutoFeedFilly",
-    Callback = function(Value)
-        -- Toggle the feeding just for this NPC
-        if Value then
-            task.spawn(function()
-                while Value do
-                    pcall(function()
-                        ReplicatedStorage.events.npcEvents.eat:InvokeServer(true)
-                    end)
-                    task.wait(1)
-                end
-            end)
-            Utilities.Notify("Auto Feed", "Enabled Auto Feed Filly", Color3.new(0, 1, 0))
-        else
-            Utilities.Notify("Auto Feed", "Disabled Auto Feed Filly", Color3.new(1, 0, 0))
-        end
-    end
-})
-
--- Auto Feed Needy Steve toggle (individual NPC option)
-local AutoFeedNeedySteveToggle = Farm:CreateToggle({
-    Name = "Auto Feed Needy Steve Only",
-    CurrentValue = false,
-    Flag = "AutoFeedNeedySteve",
-    Callback = function(Value)
-        -- Toggle the feeding just for this NPC
-        if Value then
-            task.spawn(function()
-                while Value do
-                    pcall(function()
-                        ReplicatedStorage.events.npcEvents.giveGoldenSpork:InvokeServer(true)
-                    end)
-                    task.wait(1)
-                end
-            end)
-            Utilities.Notify("Auto Feed", "Enabled Auto Feed Needy Steve", Color3.new(0, 1, 0))
-        else
-            Utilities.Notify("Auto Feed", "Disabled Auto Feed Needy Steve", Color3.new(1, 0, 0))
-        end
-    end
-})
-
--- Auto Feed Joey toggle (individual NPC option)
-local AutoFeedJoeyToggle = Farm:CreateToggle({
-    Name = "Auto Feed Joey Only",
-    CurrentValue = false,
-    Flag = "AutoFeedJoey",
-    Callback = function(Value)
-        -- Toggle the feeding just for this NPC
-        if Value then
-            task.spawn(function()
-                while Value do
-                    pcall(function()
-                        ReplicatedStorage.events.npcEvents.largejoeycheck:InvokeServer(true)
-                    end)
-                    task.wait(1)
-                end
-            end)
-            Utilities.Notify("Auto Feed", "Enabled Auto Feed Joey", Color3.new(0, 1, 0))
-        else
-            Utilities.Notify("Auto Feed", "Disabled Auto Feed Joey", Color3.new(1, 0, 0))
-        end
-    end
-})
-
--- Appraise Item button
-local AppraiseItemButton = Farm:CreateButton({
-    Name = "Appraise Current Item",
+local AppraiseItem = Main:CreateButton({
+    Name = "Appraise Item",
     Callback = function()
-        local heldTool = Character:FindFirstChildOfClass("Tool")
-        if not heldTool then 
-            Utilities.Notify("Appraise", "Hold an item first!", Color3.new(1, 0, 0))
-            return 
-        end
+        local heldTool = plr.Character:FindFirstChildOfClass("Tool")
+        if not heldTool then print("Hold an item to appraise!") return end
         
-        -- Try to appraise the item
-        local success, result = pcall(function()
-            return ReplicatedStorage.events.appraiseItem:InvokeServer(heldTool)
+        rs.events.appraiseItem:InvokeServer(heldTool)
+    end,
+})
+
+local Section = Main:CreateSection("NPC")
+
+local AutoFeedFilly = Main:CreateToggle({
+    Name = "Auto Feed Filly",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.autofeedfilly = Value
+        
+        if Value then
+            troll("Enabled Auto Feed Filly!", Color3.new(0,1,0))
+            while _G.autofeedfilly do
+                rs.events.npcEvents.eat:InvokeServer(true)
+                task.wait()
+            end
+            troll("Disabled Auto Feed Filly", Color3.new(1,0,0))
+        end
+    end,
+})
+
+local AutoFeedNeedySteve = Main:CreateToggle({
+    Name = "Auto Feed Needy Steve",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.autofeedneedysteve = Value
+        
+        if Value then
+            troll("Enabled Auto Feed Needy Steve!", Color3.new(0,1,0))
+            while _G.autofeedneedysteve do
+                rs.events.npcEvents.giveGoldenSpork:InvokeServer(true)
+                task.wait()
+            end
+            troll("Disabled Auto Feed Needy Steve", Color3.new(1,0,0))
+        end
+    end,
+})
+
+local AutoFeedJoey = Main:CreateToggle({
+    Name = "Auto Feed Joey",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.autofeedjoey = Value
+        
+        if Value then
+            troll("Enabled Auto Feed Joey!", Color3.new(0,1,0))
+            while _G.autofeedjoey do
+                rs.events.npcEvents.largejoeycheck:InvokeServer(true)
+                task.wait()
+            end
+            troll("Disabled Auto Feed Joey", Color3.new(1,0,0))
+        end
+    end,
+})
+
+local Section = Misc:CreateSection("Misc")
+
+local AntiAfk = Misc:CreateButton({
+    Name = "Anti Afk",
+    Callback = function()
+        local vu = game:GetService("VirtualUser")
+        game:GetService("Players").LocalPlayer.Idled:connect(function()
+        vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+        wait(1)
+        vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
         end)
-        
-        if success then
-            Utilities.Notify("Appraise", "Item appraised successfully!", Color3.new(0, 1, 0))
-        else
-            Utilities.Notify("Appraise", "Failed to appraise item", Color3.new(1, 0, 0))
-        end
-    end
-})
-
--- Teleport Section
-local TeleportSection = Teleport:CreateSection("Important Locations")
-
--- Create teleports to key locations
-local locations = {
-    ["Starter Restaurant"] = CFrame.new(-16, 3, -112),
-    ["Sink Area"] = CFrame.new(-34, 4, -127),
-    ["Selling Area"] = CFrame.new(28, 4, -112),
-    ["NPC Area"] = CFrame.new(3, 4, -82),
-    ["Upper Island"] = CFrame.new(45, 25, -45)
-}
-
-for name, position in pairs(locations) do
-    Teleport:CreateButton({
-        Name = "Teleport to " .. name,
-        Callback = function()
-            if HumanoidRootPart then
-                -- Use tweening for smoother teleport (and to avoid detection)
-                local tweenInfo = TweenInfo.new(
-                    1,                      -- Time (seconds)
-                    Enum.EasingStyle.Quad, -- Easing style
-                    Enum.EasingDirection.Out -- Easing direction
-                )
-                
-                local tween = TweenService:Create(
-                    HumanoidRootPart,
-                    tweenInfo,
-                    {CFrame = position}
-                )
-                
-                tween:Play()
-                Utilities.Notify("Teleport", "Teleporting to " .. name, Color3.new(0, 1, 0))
-            else
-                Utilities.Notify("Teleport", "HumanoidRootPart not found!", Color3.new(1, 0, 0))
-            end
-        end
-    })
-end
-
--- Add a custom teleport option
-Teleport:CreateSection("Custom Teleport")
-
-local customX = Teleport:CreateInput({
-    Name = "X Coordinate",
-    PlaceholderText = "Enter X position",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        -- Nothing to do here, we'll use the value when teleporting
+        troll("Enabled Anti Afk!", Color3.new(0,1,0))
     end,
 })
 
-local customY = Teleport:CreateInput({
-    Name = "Y Coordinate",
-    PlaceholderText = "Enter Y position",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        -- Nothing to do here, we'll use the value when teleporting
-    end,
-})
-
-local customZ = Teleport:CreateInput({
-    Name = "Z Coordinate",
-    PlaceholderText = "Enter Z position",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        -- Nothing to do here, we'll use the value when teleporting
-    end,
-})
-
-Teleport:CreateButton({
-    Name = "Teleport to Custom Position",
-    Callback = function()
-        local x = tonumber(customX.Text)
-        local y = tonumber(customY.Text)
-        local z = tonumber(customZ.Text)
-        
-        if x and y and z then
-            if HumanoidRootPart then
-                -- Use tweening for smoother teleport
-                local tweenInfo = TweenInfo.new(
-                    1,                      -- Time (seconds)
-                    Enum.EasingStyle.Quad, -- Easing style
-                    Enum.EasingDirection.Out -- Easing direction
-                )
-                
-                local tween = TweenService:Create(
-                    HumanoidRootPart,
-                    tweenInfo,
-                    {CFrame = CFrame.new(x, y, z)}
-                )
-                
-                tween:Play()
-                Utilities.Notify("Teleport", "Teleporting to custom position", Color3.new(0, 1, 0))
-            else
-                Utilities.Notify("Teleport", "HumanoidRootPart not found!", Color3.new(1, 0, 0))
-            end
-        else
-            Utilities.Notify("Teleport", "Invalid coordinates!", Color3.new(1, 0, 0))
-        end
-    end
-})
-
--- Player Section
-local PlayerSection = Player:CreateSection("Character Modifications")
-
--- WalkSpeed slider
-local WalkSpeedSlider = Player:CreateSlider({
-    Name = "WalkSpeed",
-    Range = {16, 500},
-    Increment = 1,
-    CurrentValue = Settings.customWalkSpeed,
-    Flag = "WalkSpeed",
-    Callback = function(Value)
-        Settings.customWalkSpeed = Value
-        Utilities.SaveSettings()
-        
-        if Humanoid then
-            Humanoid.WalkSpeed = Value
-        end
-    end,
-})
-
--- JumpPower slider
-local JumpPowerSlider = Player:CreateSlider({
-    Name = "JumpPower",
-    Range = {50, 1000},
-    Increment = 10,
-    CurrentValue = Settings.customJumpPower,
-    Flag = "JumpPower",
-    Callback = function(Value)
-        Settings.customJumpPower = Value
-        Utilities.SaveSettings()
-        
-        if Humanoid then
-            Humanoid.JumpPower = Value
-            Humanoid.UseJumpPower = true
-        end
-    end,
-})
-
--- Sit toggle
-local SitToggle = Player:CreateToggle({
-    Name = "Sit",
-    CurrentValue = false,
-    Flag = "Sit",
-    Callback = function(Value)
-        if Humanoid then
-            Humanoid.Sit = Value
-        end
-    end,
-})
-
--- Force Swim toggle
-local ForceSwimToggle = Player:CreateToggle({
+local ForceSwimToggle = Misc:CreateToggle({
     Name = "Force Swim",
-    CurrentValue = Settings.forceSwim,
-    Flag = "ForceSwim",
+    CurrentValue = false,
     Callback = function(Value)
-        Settings.forceSwim = Value
-        Utilities.SaveSettings()
-        Utilities.ToggleForceSwim(Value)
-        
+        local swimFolder = wrk:FindFirstChild("World"):FindFirstChild("Map"):FindFirstChild("Nature"):FindFirstChild("Water"):FindFirstChild("Swim")
+
+        local existingPart = swimFolder:FindFirstChild("FunnyPart")
+
         if Value then
-            Utilities.Notify("Force Swim", "Enabled Force Swim!", Color3.new(0, 1, 0))
+            if not hrp then return end
+            if existingPart then return end
+
+            troll("Enabled Force Swim!", Color3.new(0,1,0))
+
+            local part = Instance.new("Part")
+            part.Name = "FunnyPart"
+            part.Size = Vector3.new(1, 1, 1)
+            part.Transparency = 1
+            part.Anchored = false
+            part.CanCollide = false
+            part.Massless = true
+
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = part
+            weld.Part1 = hrp
+            weld.Parent = part
+
+            part.CFrame = hrp.CFrame
+
+            part.Parent = swimFolder
+
         else
-            Utilities.Notify("Force Swim", "Disabled Force Swim", Color3.new(1, 0, 0))
+            if existingPart then
+                troll("Disabled Force Swim", Color3.new(1,0,0))
+                existingPart:Destroy()
+            end
         end
-    end
+    end,
 })
 
--- Swimming Script toggle
-local SwimmingScriptToggle = Player:CreateToggle({
+local SwimmingScriptToggle = Misc:CreateToggle({
     Name = "Swimming Script",
     CurrentValue = true,
-    Flag = "SwimmingScript",
     Callback = function(Value)
-        pcall(function()
-            Character:FindFirstChild("swimmingScript").Enabled = Value
-        end)
-    end
-})
-
--- Visual Section
-local VisualSection = Visual:CreateSection("Game Visuals")
-
--- Anti-Popup Button
-local RemovePopupsButton = Visual:CreateButton({
-    Name = "Remove All Popups",
-    Callback = function()
-        pcall(function()
-            -- Remove annoying popups
-            local passiveGui = Player.PlayerGui.passivegui
-            if passiveGui:FindFirstChild("doubleLuckPopup") then
-                passiveGui:FindFirstChild("doubleLuckPopup"):Destroy()
-            end
-            
-            if passiveGui:FindFirstChild("fastDishingPopup") then
-                passiveGui:FindFirstChild("fastDishingPopup"):Destroy()
-            end
-            
-            -- Remove any other annoying GUI elements
-            for _, child in pairs(passiveGui:GetChildren()) do
-                if child.Name:find("Popup") or child.Name:find("popup") then
-                    child:Destroy()
-                end
-            end
-            
-            Utilities.Notify("Visual", "Removed all popup windows", Color3.new(0, 1, 0))
-        end)
-    end
-})
-
--- Remove Barriers Button
-local BarrierRemoveButton = Visual:CreateButton({
-    Name = "Remove All Barriers",
-    Callback = function()
-        pcall(function()
-            local barriers = Workspace:FindFirstChild("World"):FindFirstChild("Walls")
-            if barriers then
-                barriers:Destroy()
-                Utilities.Notify("Visual", "Removed barriers", Color3.new(0, 1, 0))
-            else
-                Utilities.Notify("Visual", "No barriers found", Color3.new(1, 0.5, 0))
-            end
-        end)
-    end
-})
-
--- Misc Section
-local MiscSection = Misc:CreateSection("Miscellaneous")
-
--- Anti AFK Button
-local AntiAfkButton = Misc:CreateButton({
-    Name = "Enable Anti-AFK",
-    Callback = function()
-        local VirtualUser = game:GetService("VirtualUser")
-        
-        Player.Idled:Connect(function()
-            VirtualUser:Button2Down(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
-            wait(1)
-            VirtualUser:Button2Up(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
-        end)
-        
-        Utilities.Notify("Anti-AFK", "Anti-AFK has been enabled!", Color3.new(0, 1, 0))
-    end
-})
-
--- Save Settings Button
-local SaveSettingsButton = Misc:CreateButton({
-    Name = "Save Settings Now",
-    Callback = function()
-        Utilities.SaveSettings()
-    end
-})
-
--- Animation Section
-local AnimSection = Misc:CreateSection("Animations")
-
--- Variables for animations
-local emoteAnim = Character.Humanoid.Animator.digin
-local danceSpeed = 1
-local currentTrack
-
--- Dance Speed Slider
-local SpeedSlider = Misc:CreateSlider({
-    Name = "Animation Speed",
-    Range = {0.5, 5},
-    Increment = 0.1,
-    CurrentValue = danceSpeed,
-    Flag = "AnimationSpeed",
-    Callback = function(Value)
-        danceSpeed = Value
-        if currentTrack then
-            currentTrack:AdjustSpeed(danceSpeed)
-        end
+        plr.Character:FindFirstChild("swimmingScript").Enabled = Value
     end,
 })
 
--- Animation Dropdown
-local AnimDropdown = Misc:CreateDropdown({
-    Name = "Select Animation",
-    Options = {"digin", "keepdiggin"},
-    CurrentOption = "digin",
-    MultipleOptions = false,
-    Flag = "AnimationSelect",
-    Callback = function(Option)
-        local emote = typeof(Option) == "table" and Option[1] or Option
-        emoteAnim = Character.Humanoid.Animator:FindFirstChild(emote)
-        
-        if currentTrack and emoteAnim then
-            local humanoid = Character:FindFirstChild("Humanoid")
-            if humanoid then
-                local animator = humanoid:FindFirstChild("Animator") or humanoid:FindFirstChildOfClass("Animator")
-                if animator then
-                    local animation = Instance.new("Animation")
-                    animation.AnimationId = emoteAnim.AnimationId
-                    
-                    currentTrack:Stop()
-                    currentTrack = animator:LoadAnimation(animation)
-                    currentTrack.Looped = true
-                    currentTrack:Play(0.1, 9999999, danceSpeed)
-                end
-            end
-        end
+local RemovePopups = Misc:CreateButton({
+    Name = "Remove Popups",
+    Callback = function()
+        troll("Removed Advertise Popups!", Color3.new(0,1,0))
+        pcall(function()
+            plr.PlayerGui.passivegui:FindFirstChild("doubleLuckPopup"):Destroy()
+            plr.PlayerGui.passivegui:FindFirstChild("fastDishingPopup"):Destroy()
+        end)
     end,
 })
 
--- Play Animation Button
-local AnimButton = Misc:CreateButton({
-    Name = "[FE] Play/Stop Animation",
-    Callback = function()
-        if currentTrack then
-            currentTrack:Stop()
-            currentTrack = nil
-            Utilities.Notify("Animation", "Stopped animation", Color3.new(1, 0.5, 0))
-            return
-        end
+local Section = Player:CreateSection("Player")
+
+local WalkSpeed = Player:CreateSlider({
+    Name = "Walk Speed",
+    Range = {16, 50},
+    Increment = 1,
+    Suffix = "",
+    CurrentValue = 16,
+    Callback = function(Value)
+        plr.Character:FindFirstChild("Humanoid").WalkSpeed = Value
+    end,
+})
+
+local JumpPower = Player:CreateSlider({
+    Name = "Jump Power",
+    Range = {50, 150},
+    Increment = 1,
+    Suffix = "",
+    CurrentValue = 50,
+    Callback = function(Value)
+        plr.Character:FindFirstChild("Humanoid").JumpPower = Value
+    end,
+})
+
+local AutoFarm = Main:CreateToggle({
+    Name = "Auto Farm (Click + Dish + Sell)",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.autoclick = Value
+        _G.autosink = Value
+        _G.autosell = Value
         
-        if emoteAnim then
-            local humanoid = Character:FindFirstChild("Humanoid")
-            if humanoid then
-                local animator = humanoid:FindFirstChild("Animator") or humanoid:FindFirstChildOfClass("Animator")
-                if not animator then
-                    animator = Instance.new("Animator")
-                    animator.Parent = humanoid
+        if Value then
+            troll("Enabled Full Auto Farm!", Color3.new(0,1,0))
+            
+            -- Update UI toggles to match this master toggle
+            Rayfield.Flags.AutoClick:Set(true)
+            Rayfield.Flags.AutoSink:Set(true)
+            Rayfield.Flags.AutoSell:Set(true)
+            
+            -- Also enable Never Fail for convenience
+            for _, func in next, getgc(true) do
+                if typeof(func) == "function" then
+                    local funcName = debug.info(func, "n")
+                    if funcName == "checkValidClick" then
+                        hookfunction(func, function()
+                            return true
+                        end)
+                        break
+                    end
                 end
-                
-                local animation = Instance.new("Animation")
-                animation.AnimationId = emoteAnim.AnimationId
-                
-                currentTrack = animator:LoadAnimation(animation)
-                currentTrack.Looped = true
-                currentTrack:Play(0.1, 9999999, danceSpeed)
-                currentTrack:AdjustSpeed(danceSpeed)
-                
-                Utilities.Notify("Animation", "Playing animation", Color3.new(0, 1, 0))
             end
         else
-            Utilities.Notify("Animation", "Animation not found!", Color3.new(1, 0, 0))
+            troll("Disabled Full Auto Farm", Color3.new(1,0,0))
+            
+            -- Update UI toggles to match this master toggle
+            Rayfield.Flags.AutoClick:Set(false)
+            Rayfield.Flags.AutoSink:Set(false)
+            Rayfield.Flags.AutoSell:Set(false)
         end
-    end
+    end,
 })
 
--- Stats Tab Implementation
-local StatsSection = Stats:CreateSection("Session Statistics")
-
--- Create labels for stats
-local TimeLabel = Stats:CreateLabel("Session Time: 00:00:00")
-local DishesLabel = Stats:CreateLabel("Dishes Washed: 0")
-local MoneyLabel = Stats:CreateLabel("Money Earned: $0")
-local EPMLabel = Stats:CreateLabel("Earnings Per Minute: $0")
-local PlaytimeLabel = Stats:CreateLabel("Playtime Rewards Claimed: 0")
-
--- Function to update stats display
-function Utilities.UpdateStatsDisplay()
-    TimeLabel.Text = "Session Time: " .. Utilities.FormatTime(sessionDuration)
-    DishesLabel.Text = "Dishes Washed: " .. Utilities.FormatNumber(Stats.dishesWashed)
-    MoneyLabel.Text = "Money Earned: $" .. Utilities.FormatNumber(Stats.moneyEarned)
-    EPMLabel.Text = "Earnings Per Minute: $" .. Utilities.FormatNumber(Utilities.EarningsPerMinute())
-    PlaytimeLabel.Text = "Playtime Rewards Claimed: " .. Stats.playtimeRewardsClaimed
-end
-
--- Stat reset button
-local ResetStatsButton = Stats:CreateButton({
-    Name = "Reset Statistics",
-    Callback = function()
-        Stats.dishesWashed = 0
-        Stats.moneyEarned = 0
-        Stats.startMoney = tonumber(Player.PlayerGui.gameui.coins.abmount.Text:gsub(",", "")) or 0
-        Stats.sessionStart = os.time()
-        Stats.playtimeRewardsClaimed = 0
+local AutoNPCFeeding = Main:CreateToggle({
+    Name = "Auto Feed All NPCs",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.autofeedfilly = Value
+        _G.autofeedneedysteve = Value
+        _G.autofeedjoey = Value
         
-        Utilities.Notify("Statistics", "Stats have been reset", Color3.new(0, 1, 0))
-        Utilities.UpdateStatsDisplay()
-    end
+        if Value then
+            troll("Enabled Auto Feed All NPCs!", Color3.new(0,1,0))
+            
+            -- Update UI toggles to match
+            Rayfield.Flags.AutoFeedFilly:Set(true)
+            Rayfield.Flags.AutoFeedNeedySteve:Set(true)
+            Rayfield.Flags.AutoFeedJoey:Set(true)
+        else
+            troll("Disabled Auto Feed All NPCs", Color3.new(1,0,0))
+            
+            -- Update UI toggles to match
+            Rayfield.Flags.AutoFeedFilly:Set(false)
+            Rayfield.Flags.AutoFeedNeedySteve:Set(false)
+            Rayfield.Flags.AutoFeedJoey:Set(false)
+        end
+    end,
 })
 
--- Auto-save settings periodically
-task.spawn(function()
-    while true do
-        task.wait(60) -- Save every minute
-        Utilities.SaveSettings()
-    end
-end)
-
--- Update stats periodically
-RunService.Heartbeat:Connect(Utilities.UpdateStats)
-
--- Load settings
-Utilities.LoadSettings()
-
--- Initialization complete
-Utilities.Notify("LAJ HUB", "LAJ HUB DISH SIMULATOR loaded successfully!", Color3.new(0, 1, 0))
-
--- Return true to signify successful loading
-return true
+troll("LAJ HUB DISH SIMULATOR v3.0 Loaded Successfully!", Color3.new(0,1,0))
