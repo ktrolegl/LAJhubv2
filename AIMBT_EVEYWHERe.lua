@@ -59,6 +59,22 @@ local Settings = {
         Keybind = Enum.UserInputType.MouseButton2, -- Default right mouse button
     },
     
+    -- Silent Aim Settings (New Feature)
+    SilentAim = {
+        Enabled = false,
+        AimParts = {"Head", "HumanoidRootPart"}, -- Body parts to target
+        FOV = 120, -- Silent aim is often used with larger FOV
+        HitChance = 100, -- Percentage chance of hitting target (0-100)
+        FOVVisible = true,
+        WallCheck = true,
+        TeamCheck = true,
+        IgnoreFriends = true,
+        HealthCheck = false,
+        MinHealth = 0,
+        IgnoreLocalTeam = true,
+        TargetMode = "Closest to Cursor" -- "Closest to Cursor", "Closest to Character", "Weakest"
+    },
+    
     -- FOV Circle Settings
     FOVCircle = {
         Color = Color3.fromRGB(255, 0, 0),
@@ -67,6 +83,17 @@ local Settings = {
         RainbowSpeed = 0.005,
         Transparency = 0.7, -- Added feature
         Filled = false, -- Added feature
+        Thickness = 2,
+    },
+    
+    -- Silent Aim FOV Circle
+    SilentFOVCircle = {
+        Color = Color3.fromRGB(0, 100, 255),
+        TargetedColor = Color3.fromRGB(0, 255, 155),
+        Rainbow = false,
+        RainbowSpeed = 0.005,
+        Transparency = 0.7,
+        Filled = false,
         Thickness = 2,
     },
     
@@ -184,16 +211,31 @@ FOVCircle.Transparency = Settings.FOVCircle.Transparency
 FOVCircle.Color = Settings.FOVCircle.Color
 FOVCircle.Visible = false
 
+-- Silent Aim FOV Circle
+local SilentFOVCircle = Drawing.new("Circle")
+SilentFOVCircle.Thickness = Settings.SilentFOVCircle.Thickness
+SilentFOVCircle.Radius = Settings.SilentAim.FOV
+SilentFOVCircle.Filled = Settings.SilentFOVCircle.Filled
+SilentFOVCircle.Transparency = Settings.SilentFOVCircle.Transparency
+SilentFOVCircle.Color = Settings.SilentFOVCircle.Color
+SilentFOVCircle.Visible = false
+
 -- Aimbot variables
 local CurrentTarget = nil
 local CurrentTargetPart = nil
+local SilentTarget = nil
+local SilentTargetPart = nil
 local IsAiming = false
 local HueValue = 0
+
+-- Silent Aim variables
+local OldIndex = nil -- For namecall method
+local OldNameCall = nil -- For namecall method
 
 -- Utility Functions
 local Utilities = {}
 
--- Improved wall check function with different raycast methods
+-- Improved wall check function with multiple fallback methods
 function Utilities.CheckWall(TargetCharacter)
     if not TargetCharacter then return true end
 
@@ -203,28 +245,52 @@ function Utilities.CheckWall(TargetCharacter)
     -- Method 1: Standard raycast
     local Origin = Camera.CFrame.Position
     local Direction = (TargetHead.Position - Origin).Unit * (TargetHead.Position - Origin).Magnitude
+    
+    -- Setup ray parameters
     local RaycastParams = RaycastParams.new()
     RaycastParams.FilterDescendantsInstances = {Character, TargetCharacter}
     RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
     
-    local RaycastResult = Workspace:Raycast(Origin, Direction, RaycastParams)
+    -- Try to execute primary raycast with error handling
+    local Success, RaycastResult = pcall(function()
+        return Workspace:Raycast(Origin, Direction, RaycastParams)
+    end)
     
-    -- If standard raycast finds a wall, try a second method with partial penetration
-    if RaycastResult and RaycastResult.Instance then
+    -- If the primary raycast failed or found a wall, try alternative methods
+    if not Success or (RaycastResult and RaycastResult.Instance) then
         -- Method 2: Check with multiple short rays (helps with thin walls)
         local DistanceToTarget = (TargetHead.Position - Origin).Magnitude
         local NumberOfChecks = math.max(2, math.floor(DistanceToTarget / 10))
         
         for i = 1, NumberOfChecks do
             local CheckPoint = Origin + Direction * (DistanceToTarget * (i / NumberOfChecks))
-            local VisibilityRay = RaycastParams.new()
-            VisibilityRay.FilterDescendantsInstances = {Character, TargetCharacter}
-            VisibilityRay.FilterType = Enum.RaycastFilterType.Blacklist
             
-            local CheckResult = Workspace:Raycast(Origin, (CheckPoint - Origin), VisibilityRay)
-            if CheckResult and CheckResult.Instance and not CheckResult.Instance:IsDescendantOf(TargetCharacter) then
+            -- Create new params for this check
+            local VisibilityParams = RaycastParams.new()
+            VisibilityParams.FilterDescendantsInstances = {Character, TargetCharacter}
+            VisibilityParams.FilterType = Enum.RaycastFilterType.Blacklist
+            
+            local CheckSuccess, CheckResult = pcall(function()
+                return Workspace:Raycast(Origin, (CheckPoint - Origin), VisibilityParams)
+            end)
+            
+            if CheckSuccess and CheckResult and CheckResult.Instance and 
+               not CheckResult.Instance:IsDescendantOf(TargetCharacter) then
                 return true -- Wall found
             end
+        end
+        
+        -- Method 3: Fallback for executors with limited ray support
+        -- Use a simplified line-of-sight check using FindPartOnRayWithIgnoreList
+        local IgnoreList = {Character, TargetCharacter}
+        
+        local Part, Position = workspace:FindPartOnRayWithIgnoreList(
+            Ray.new(Origin, Direction),
+            IgnoreList
+        )
+        
+        if Part then
+            return true -- Wall found
         end
     end
     
@@ -265,19 +331,33 @@ function Utilities.CheckTeam(TargetPlayer)
 end
 
 -- Get the closest valid aim part from a character
-function Utilities.GetClosestPart(TargetCharacter)
+function Utilities.GetClosestPart(TargetCharacter, AimMode)
     if not TargetCharacter then return nil end
     
     local ClosestPart = nil
-    local ShortestDistance = Settings.Aimbot.FOV
+    local ShortestDistance
     local CameraPos = Camera.CFrame.Position
+    local AimParts
     
-    for _, PartName in ipairs(Settings.Aimbot.AimParts) do
+    -- Determine which mode we're using (aimbot or silent aim)
+    if AimMode == "Silent" then
+        ShortestDistance = Settings.SilentAim.FOV
+        AimParts = Settings.SilentAim.AimParts
+    else
+        ShortestDistance = Settings.Aimbot.FOV
+        AimParts = Settings.Aimbot.AimParts
+    end
+    
+    for _, PartName in ipairs(AimParts) do
         local Part = TargetCharacter:FindFirstChild(PartName)
         if Part then
-            local PartPos = Camera:WorldToViewportPoint(Part.Position)
+            -- Try to get part position with error handling
+            local Success, PartPos = pcall(function() 
+                return Camera:WorldToViewportPoint(Part.Position)
+            end)
+            
             -- Check if part is on screen
-            if PartPos.Z > 0 then
+            if Success and PartPos and PartPos.Z > 0 then
                 local ScreenPos = Vector2.new(PartPos.X, PartPos.Y)
                 local CursorDistance = (ScreenPos - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
                 
@@ -297,29 +377,49 @@ function Utilities.GetTarget()
     local NearestPlayer = nil
     local ClosestPart = nil
     local ShortestDistance = Settings.Aimbot.FOV
+    local LocalPlayer = game:GetService("Players").LocalPlayer
     
-    for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= Player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-            -- Skip teammates if team check is enabled
-            if Utilities.CheckTeam(Player) then
-                continue
-            end
-            
-            -- Check health
-            local TargetHumanoid = Player.Character:FindFirstChild("Humanoid")
-            if TargetHumanoid and (not Settings.Aimbot.HealthCheck or TargetHumanoid.Health >= Settings.Aimbot.MinHealth) then
-                local TargetPart = Utilities.GetClosestPart(Player.Character)
+    -- Loop through all players
+    for _, OtherPlayer in ipairs(Players:GetPlayers()) do
+        -- Skip self
+        if OtherPlayer ~= LocalPlayer then
+            -- Verify player has a character with essential parts
+            if OtherPlayer.Character and OtherPlayer.Character:FindFirstChild("HumanoidRootPart") and 
+               OtherPlayer.Character:FindFirstChild("Humanoid") then
+               
+                -- Skip teammates if team check is enabled
+                if Utilities.CheckTeam(OtherPlayer) then
+                    continue
+                end
                 
-                if TargetPart then
-                    local ScreenPos = Camera:WorldToViewportPoint(TargetPart.Position)
-                    local CursorDistance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
+                -- Check health
+                local TargetHumanoid = OtherPlayer.Character:FindFirstChild("Humanoid")
+                if TargetHumanoid and (not Settings.Aimbot.HealthCheck or TargetHumanoid.Health >= Settings.Aimbot.MinHealth) then
+                    local TargetPart = Utilities.GetClosestPart(OtherPlayer.Character)
                     
-                    if CursorDistance < ShortestDistance then
-                        -- Wall check
-                        if not Settings.Aimbot.WallCheck or not Utilities.CheckWall(Player.Character) then
-                            ShortestDistance = CursorDistance
-                            NearestPlayer = Player
-                            ClosestPart = TargetPart
+                    -- Verify we found a valid target part
+                    if TargetPart then
+                        -- Try to get screen position with error handling
+                        local Success, ScreenData = pcall(function()
+                            return Camera:WorldToViewportPoint(TargetPart.Position)
+                        end)
+                        
+                        -- Only proceed if part is on screen
+                        if Success and ScreenData and ScreenData.Z > 0 then
+                            local ScreenPos = Vector2.new(ScreenData.X, ScreenData.Y)
+                            local CursorDistance = (ScreenPos - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
+                            
+                            -- Check if within FOV
+                            if CursorDistance < ShortestDistance then
+                                -- Wall check - only if needed and make sure to use pcall
+                                local WallBlocking = Settings.Aimbot.WallCheck and Utilities.CheckWall(OtherPlayer.Character)
+                                
+                                if not WallBlocking then
+                                    ShortestDistance = CursorDistance
+                                    NearestPlayer = OtherPlayer
+                                    ClosestPart = TargetPart
+                                end
+                            end
                         end
                     end
                 end
@@ -327,6 +427,80 @@ function Utilities.GetTarget()
         end
     end
     
+    -- Return closest player and part
+    return NearestPlayer, ClosestPart
+end
+
+-- Get silent aim target based on FOV and other settings
+function Utilities.GetSilentTarget()
+    local NearestPlayer = nil
+    local ClosestPart = nil
+    local ShortestDistance = Settings.SilentAim.FOV
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+    
+    -- Bail early if silent aim is disabled
+    if not Settings.SilentAim.Enabled then
+        return nil, nil
+    end
+    
+    -- Check for hit chance (for realistic missed shots)
+    if Settings.SilentAim.HitChance < 100 then
+        local RandomValue = math.random(1, 100)
+        if RandomValue > Settings.SilentAim.HitChance then
+            return nil, nil -- Miss the shot based on hit chance
+        end
+    end
+    
+    -- Loop through all players
+    for _, OtherPlayer in ipairs(Players:GetPlayers()) do
+        -- Skip self
+        if OtherPlayer ~= LocalPlayer then
+            -- Verify player has a character with essential parts
+            if OtherPlayer.Character and OtherPlayer.Character:FindFirstChild("HumanoidRootPart") and 
+               OtherPlayer.Character:FindFirstChild("Humanoid") then
+                
+                -- Team check
+                if Settings.SilentAim.TeamCheck and Utilities.CheckTeam(OtherPlayer) then
+                    continue
+                end
+                
+                -- Health check
+                local TargetHumanoid = OtherPlayer.Character:FindFirstChild("Humanoid")
+                if TargetHumanoid and (not Settings.SilentAim.HealthCheck or TargetHumanoid.Health >= Settings.SilentAim.MinHealth) then
+                    local TargetPart = Utilities.GetClosestPart(OtherPlayer.Character, "Silent")
+                    
+                    -- Verify we found a valid target part
+                    if TargetPart then
+                        -- Try to get screen position with error handling
+                        local Success, ScreenData = pcall(function()
+                            return Camera:WorldToViewportPoint(TargetPart.Position)
+                        end)
+                        
+                        -- Only proceed if part is on screen
+                        if Success and ScreenData and ScreenData.Z > 0 then
+                            local ScreenPos = Vector2.new(ScreenData.X, ScreenData.Y)
+                            local CursorDistance = (ScreenPos - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
+                            
+                            -- Check if within FOV
+                            if CursorDistance < ShortestDistance then
+                                -- Wall check
+                                local WallBlocking = Settings.SilentAim.WallCheck and Utilities.CheckWall(OtherPlayer.Character)
+                                
+                                if not WallBlocking then
+                                    -- Update the closest target
+                                    ShortestDistance = CursorDistance
+                                    NearestPlayer = OtherPlayer
+                                    ClosestPart = TargetPart
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Return results
     return NearestPlayer, ClosestPart
 end
 
@@ -511,6 +685,7 @@ local Window = Rayfield:CreateWindow({
 
 -- Create Tabs
 local AimbotTab = Window:CreateTab("Aimbot 🎯")
+local SilentAimTab = Window:CreateTab("Silent Aim 🔫") -- New tab for Silent Aim
 local AntiAimTab = Window:CreateTab("Anti-Aim 😡")
 local ESPTab = Window:CreateTab("ESP 👁️") -- New tab
 local MiscTab = Window:CreateTab("Misc 🤷‍♂️")
