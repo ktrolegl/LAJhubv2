@@ -1,493 +1,330 @@
---[[
-    LAJ HUB DISH SIMULATOR v3.0
-    
-    Based on Agreed's Disch script with significant LAJ HUB enhancements
-    Completely rewritten for maximum loading reliability across all executors
-]]
+-- Farewell Infortality.
+-- Version: 2.82
+-- Instances:
+local Danceguinotvirusandattack = Instance.new("ScreenGui")
+local TextButton = Instance.new("TextButton")
+local Frame = Instance.new("Frame")
+local TextLabel = Instance.new("TextLabel")
+local TextLabel_2 = Instance.new("TextLabel")
+local TextButton_2 = Instance.new("TextButton")
+local TextButton_3 = Instance.new("TextButton")
+local TextButton_4 = Instance.new("TextButton")
+local TextButton_5 = Instance.new("TextButton") -- Chicken Dance
+local TextButton_6 = Instance.new("TextButton") -- Robot Dance
+local TextButton_7 = Instance.new("TextButton") -- Monkey Dance
+local TextButton_8 = Instance.new("TextButton") -- Breakdance
+local TextButton_9 = Instance.new("TextButton") -- Laugh Emote
+local TextLabel_3 = Instance.new("TextLabel")
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Create animation objects (these were missing in the original)
+local Emote1 = Instance.new("Animation")
+Emote1.AnimationId = "rbxassetid://507771019" -- Dance 1 animation
+Emote1.Name = "Emote"
+Emote1.Parent = TextButton_2
 
-local Players = game:GetService("Players")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local TweenService = game:GetService("TweenService")
-local wrk = game:GetService("Workspace")
-local rs = game:GetService("ReplicatedStorage")
-local plr = Players.LocalPlayer
-local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+local Emote2 = Instance.new("Animation")
+Emote2.AnimationId = "rbxassetid://3189773368" -- Wave animation
+Emote2.Name = "Emote"
+Emote2.Parent = TextButton_3
 
-local sinks = workspace.World.Areas["Starter Resaurant"].Sinks
-local selectedItem
+local Emote3 = Instance.new("Animation")
+Emote3.AnimationId = "rbxassetid://4841405708" -- Floss dance animation
+Emote3.Name = "Emote"
+Emote3.Parent = TextButton_4
 
-local circleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.circleHandler"
-local secondCircleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.secondCircleHandler"
+-- New funny emotes
+local Emote4 = Instance.new("Animation")
+Emote4.AnimationId = "rbxassetid://3259841834" -- Chicken Dance
+Emote4.Name = "Emote"
+Emote4.Parent = TextButton_5
 
-local Window = Rayfield:CreateWindow({
-    Name = "▶ LAJ HUB DISH SIMULATOR ◀",
-    Icon = 0,
-    LoadingTitle = "Loading...",
-    LoadingSubtitle = "by LAJ HUB Technologies",
-    Theme = "DarkBlue",
-})
+local Emote5 = Instance.new("Animation")
+Emote5.AnimationId = "rbxassetid://3716636630" -- Robot Dance
+Emote5.Name = "Emote"
+Emote5.Parent = TextButton_6
 
-local Main = Window:CreateTab("Main")
-local Misc = Window:CreateTab("Misc")
-local Player = Window:CreateTab("Player")
+local Emote6 = Instance.new("Animation")
+Emote6.AnimationId = "rbxassetid://3716633831" -- Monkey Dance
+Emote6.Name = "Emote"
+Emote6.Parent = TextButton_7
 
+local Emote7 = Instance.new("Animation")
+Emote7.AnimationId = "rbxassetid://4686999609" -- Breakdance animation
+Emote7.Name = "Emote"
+Emote7.Parent = TextButton_8
 
-local circleHandlerClick = nil
-local secondCircleHandlerClick = nil
+local Emote8 = Instance.new("Animation")
+Emote8.AnimationId = "rbxassetid://3337966527" -- Laugh emote
+Emote8.Name = "Emote"
+Emote8.Parent = TextButton_9
 
-function troll(text, textColor, strokeColor)
-    local player = Players.LocalPlayer
-    if not player then return end
-    
-    local gui = player:FindFirstChild("PlayerGui")
-    if not gui then return end
-    
-    local passiveGui = gui:FindFirstChild("passivegui")
-    if not passiveGui then return end
-    
-    local infoPop = passiveGui:FindFirstChild("infopop")
-    if not infoPop then return end
-    
-    local textTemp = infoPop:FindFirstChild("textTemp")
-    if not textTemp then return end
-    
-    if not text then return end
-    
-    textColor = textColor or Color3.new(1, 1, 1)
-    strokeColor = strokeColor or Color3.new(0, 0, 0)
-    
-    local newText = textTemp:Clone()
-    newText.Text = text
-    newText.TextColor3 = textColor
-    newText.Size = UDim2.new(1, 0, 0, 0)
-    newText.Visible = true
-    newText.Parent = infoPop
-    
-    if newText:FindFirstChild("UIStroke") then
-        newText.UIStroke.Color = strokeColor
-    end
-    
-    TweenService:Create(newText, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(1, 0, 0.15, 0)
-    }):Play()
-    
-    task.delay(4, function()
-        TweenService:Create(newText, TweenInfo.new(1), { TextTransparency = 1 }):Play()
-        if newText:FindFirstChild("UIStroke") then
-            TweenService:Create(newText.UIStroke, TweenInfo.new(1), { Transparency = 1 }):Play()
+-- Create sound objects
+local Sound1 = Instance.new("Sound")
+Sound1.SoundId = "rbxassetid://142376088" -- Dance music
+Sound1.Volume = 0.5
+Sound1.Looped = true
+Sound1.Name = "Sound"
+Sound1.Parent = TextButton_2
+
+local Sound2 = Instance.new("Sound")
+Sound2.SoundId = "rbxassetid://5533818600" -- Fortnite dance music
+Sound2.Volume = 0.5
+Sound2.Looped = true
+Sound2.Name = "Sound"
+Sound2.Parent = TextButton_4
+
+-- Add sounds for new emotes
+local Sound3 = Instance.new("Sound")
+Sound3.SoundId = "rbxassetid://6532844113" -- Chicken dance music
+Sound3.Volume = 0.5
+Sound3.Looped = true
+Sound3.Name = "Sound"
+Sound3.Parent = TextButton_5
+
+local Sound4 = Instance.new("Sound")
+Sound4.SoundId = "rbxassetid://1845554017" -- Robot dance music
+Sound4.Volume = 0.5
+Sound4.Looped = true
+Sound4.Name = "Sound"
+Sound4.Parent = TextButton_6
+
+local Sound5 = Instance.new("Sound")
+Sound5.SoundId = "rbxassetid://133978646" -- Monkey dance music
+Sound5.Volume = 0.5
+Sound5.Looped = true
+Sound5.Name = "Sound"
+Sound5.Parent = TextButton_7
+
+local Sound6 = Instance.new("Sound")
+Sound6.SoundId = "rbxassetid://9047954412" -- Breakdance music
+Sound6.Volume = 0.5
+Sound6.Looped = true
+Sound6.Name = "Sound"
+Sound6.Parent = TextButton_8
+
+local Sound7 = Instance.new("Sound")
+Sound7.SoundId = "rbxassetid://4829173712" -- Laugh sound
+Sound7.Volume = 0.5
+Sound7.Looped = false
+Sound7.Name = "Sound"
+Sound7.Parent = TextButton_9
+
+--Properties:
+Danceguinotvirusandattack.Name = "Dance gui (not virus and attack)"
+Danceguinotvirusandattack.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ 
+TextButton.Parent = Danceguinotvirusandattack
+TextButton.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton.BackgroundColor3 = Color3.new(0, 0, 0)
+TextButton.BorderColor3 = Color3.new(0.239216, 0.72549, 0)
+TextButton.Position = UDim2.new(0.0826330632, 0, 0.965139449, 0)
+TextButton.Size = UDim2.new(0, 106, 0, 23)
+TextButton.Style = Enum.ButtonStyle.RobloxRoundDefaultButton
+TextButton.Font = Enum.Font.SourceSans
+TextButton.Text = "Open dance gui"
+TextButton.TextColor3 = Color3.new(0, 0, 0)
+TextButton.TextSize = 14
+ 
+Frame.Parent = Danceguinotvirusandattack
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.BackgroundColor3 = Color3.new(0.596078, 0.596078, 0.596078)
+Frame.BorderSizePixel = 3
+Frame.Position = UDim2.new(0.0826330557, 0, 0.731075704, 0)
+Frame.Size = UDim2.new(0, 106, 0, 175)
+Frame.Visible = false
+ 
+TextLabel.Parent = Frame
+TextLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel.BackgroundTransparency = 1
+TextLabel.Position = UDim2.new(0.495507658, 0, 0.936209559, 0)
+TextLabel.Size = UDim2.new(0, 83, 0, 22)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.Text = "By HeandersBees"
+TextLabel.TextColor3 = Color3.new(0, 0, 0)
+TextLabel.TextScaled = true
+TextLabel.TextSize = 14
+TextLabel.TextWrapped = true
+ 
+TextLabel_2.Parent = Frame
+TextLabel_2.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel_2.BackgroundTransparency = 1
+TextLabel_2.Position = UDim2.new(0.495507658, 0, 0.0619238615, 0)
+TextLabel_2.Size = UDim2.new(0, 83, 0, 22)
+TextLabel_2.Font = Enum.Font.SourceSans
+TextLabel_2.Text = "Dance gui"
+TextLabel_2.TextColor3 = Color3.new(0, 0, 0)
+TextLabel_2.TextScaled = true
+TextLabel_2.TextSize = 14
+TextLabel_2.TextWrapped = true
+ 
+TextButton_2.Parent = Frame
+TextButton_2.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_2.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_2.BorderSizePixel = 0
+TextButton_2.Position = UDim2.new(0.495507628, 0, 0.252077371, 0)
+TextButton_2.Size = UDim2.new(0, 83, 0, 21)
+TextButton_2.Font = Enum.Font.SourceSans
+TextButton_2.Text = "Dance roblox"
+TextButton_2.TextColor3 = Color3.new(0, 0, 0)
+TextButton_2.TextSize = 14
+ 
+TextButton_3.Parent = Frame
+TextButton_3.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_3.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_3.BorderSizePixel = 0
+TextButton_3.Position = UDim2.new(0.495507628, 0, 0.417791665, 0)
+TextButton_3.Size = UDim2.new(0, 83, 0, 21)
+TextButton_3.Font = Enum.Font.SourceSans
+TextButton_3.Text = "Hello!"
+TextButton_3.TextColor3 = Color3.new(0, 0, 0)
+TextButton_3.TextSize = 14
+ 
+TextButton_4.Parent = Frame
+TextButton_4.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_4.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_4.BorderSizePixel = 0
+TextButton_4.Position = UDim2.new(0.495507628, 0, 0.583505929, 0)
+TextButton_4.Size = UDim2.new(0, 83, 0, 21)
+TextButton_4.Font = Enum.Font.SourceSans
+TextButton_4.Text = "Fortnite dance"
+TextButton_4.TextColor3 = Color3.new(0, 0, 0)
+TextButton_4.TextSize = 14
+ 
+TextLabel_3.Parent = Frame
+TextLabel_3.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel_3.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel_3.BackgroundTransparency = 1
+TextLabel_3.BorderColor3 = Color3.new(0.368627, 0.572549, 0.721569)
+TextLabel_3.BorderSizePixel = 0
+TextLabel_3.Position = UDim2.new(1.58051896, 0, 0.492071688, 0)
+TextLabel_3.Size = UDim2.new(0, 105, 0, 174)
+TextLabel_3.Font = Enum.Font.GothamBold
+TextLabel_3.Text = "Description: This is my first emote gui and the creator of HeandersBees, to turn off the animation you need, click on the button that you clicked to turn on the animation, and the animation will turn off! And in this emote gui you can combine animations, just click on them!"
+TextLabel_3.TextColor3 = Color3.new(0, 0, 0)
+TextLabel_3.TextScaled = true
+TextLabel_3.TextSize = 14
+TextLabel_3.TextStrokeColor3 = Color3.new(0.388235, 0.388235, 0.580392)
+TextLabel_3.TextStrokeTransparency = 0
+TextLabel_3.TextWrapped = true
+
+-- Scripts:
+-- Toggle main GUI visibility
+local function toggleMainGUI()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton
+    script.Parent.MouseButton1Down:Connect(function()
+        if script.Parent.Parent.Frame.Visible == false then
+            script.Parent.Parent.Frame.Visible = true 
+        else
+            script.Parent.Parent.Frame.Visible = false
         end
-        game:GetService("Debris"):AddItem(newText, 1)
     end)
 end
+coroutine.resume(coroutine.create(toggleMainGUI))
 
-for _, func in next, getgc(true) do
-    if typeof(func) == "function" then
-        local funcName = debug.info(func, "n")
-        local funcParent = debug.info(func, "s")
-
-        if funcName == "inputBegan" and funcParent == circleHandler then
-            circleHandlerClick = func
-        elseif funcName == "inputBegan" and funcParent == secondCircleHandler then
-            secondCircleHandlerClick = func
-            break
+-- Dance Roblox button script (fixed with local playing variable)
+local function danceRobloxButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_2
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
         end
-    end
+    end)
 end
+coroutine.resume(coroutine.create(danceRobloxButton))
 
-local Asdaasdadsad = Main:CreateSection("Autofarm")
-
-local AutoClick = Main:CreateToggle({
-    Name = "Auto Click",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autoclick = Value
-        if Value then
-            local fakeInput = {
-                UserInputType = Enum.UserInputType.MouseButton1,
-                KeyCode = Enum.KeyCode.Unknown,
-            }
-
-            if not circleHandlerClick or not secondCircleHandlerClick then troll("Something went wrong...", Color3.new(1,0,0)) return end
-            troll("Enabled Auto Clicker!", Color3.new(0,1,0))
-            while _G.autoclick do
-                if plr.PlayerGui.gameui["skill test"].Visible then
-                    circleHandlerClick(fakeInput, false)
-                    for i = 1, 3 do
-                        secondCircleHandlerClick(fakeInput, false)
-                    end
-                end
-                task.wait()
-            end
-            troll("Disabled Auto Clicker", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local AutoSink = Main:CreateToggle({
-    Name = "Auto Dish/Fish/Swish",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autosink = Value
-        if Value then
-            troll("Enabled Auto Dish!", Color3.new(0,1,0))
-            while _G.autosink do
-                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-                task.wait(0.05)
-                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-                task.wait(0.1)
-            end
-            troll("Disabled Auto Dish", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local AutoSell = Main:CreateToggle({
-    Name = "Auto Sell",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autosell = Value
-        
-        if Value then
-            troll("Enabled Auto Sell!", Color3.new(0,1,0))
-            while _G.autosell do
-                rs.events.sell:InvokeServer(true)
-                task.wait()
-            end
-            troll("Disabled Auto Sell", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local AntiFail = Main:CreateButton({
-    Name = "Never Fail",
-    Callback = function()
-        for _, func in next, getgc(true) do
-            if typeof(func) == "function" then
-                local funcName = debug.info(func, "n")
-                if funcName == "checkValidClick" then
-                    troll("Never Fail has been Enabled", Color3.new(0,1,0))
-                    hookfunction(func, function()
-                        return true
-                    end)
-                end
-            end
-        end
-    end,
-})
-
-local Asdaasdadsad = Main:CreateSection("Other Features")
-
-local InfMoney = Main:CreateToggle({
-    Name = "Infinite Money",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.infmoney = Value
-        
-        if Value then
-            local rewardGUI = plr:WaitForChild("PlayerGui"):WaitForChild("passivegui"):WaitForChild("dailyRewards"):WaitForChild("page")
-
-            local bahaska = 1
-
-            for _, reward in ipairs(rewardGUI:GetChildren()) do
-                if reward:IsA("ImageButton") then
-                    local claimed = reward:FindFirstChild("claim")
-                    if claimed and claimed.Text == "CLAIMED" then
-                        bahaska = bahaska + 1
-                    elseif claimed and claimed.Text == "CLAIM" then
-                        bahaska = bahaska - 1
-                        break
-                    end
-                end
-            end
-
-            local rewards = {
-                [1] = "$100",
-                [2] = "$5,000",
-                [3] = "$10,000",
-                [4] = "$20,000",
-                [5] = "$30,000",
-                [6] = "$50,000",
-                [7] = "$75,000"
-            }
-
-            local reward = rewards[bahaska]
-
-            if reward == nil then troll("Try opening the daily rewards menu!", Color3.new(1,0,0)) return end
-
-            troll("Enabled Infinite Money!", Color3.new(0,1,0))
-            troll("Your daily reward is: " .. reward, Color3.new(0,1,0))
-            while _G.infmoney do
-                rs.events.dailyReward:InvokeServer(reward)
-                task.wait()
-            end
-            troll("Disabled Infinite Money", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local infoPopup = plr:WaitForChild("PlayerGui"):WaitForChild("passivegui"):WaitForChild("infopop")
-
-infoPopup.ChildAdded:Connect(function(child)
-    if child:IsA("TextLabel") or child:IsA("TextButton") then
-        if child.Text:lower():sub(1, 6) == "reward" and _G.infmoney then
-            child.Visible = false
-        end
-    end
-end)
-
-local AutoClaim = Main:CreateToggle({
-    Name = "Auto Claim Playtime",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autoclaim = Value
-
-        if Value then
-            troll("Enabled Auto Claim Playtime!", Color3.new(0,1,0))
-            while _G.autoclaim do
-                local rewardsGui = plr.PlayerGui:FindFirstChild("passivegui")
-                if rewardsGui then
-                    local playtimeRewards = rewardsGui:FindFirstChild("playtimeRewards")
-                    if playtimeRewards then
-                        for _, button in ipairs(playtimeRewards.page:GetChildren()) do
-                            if button:IsA("GuiButton") and button.time.Text == "CLAIM" then
-                                rs.events.playtimeReward:InvokeServer(string.lower(button.reward.Text))
-                            end
-                        end
-                    end
-                end
-                task.wait(1)
-            end
-            troll("Disabled Auto Claim Playtime", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local AppraiseItem = Main:CreateButton({
-    Name = "Appraise Item",
-    Callback = function()
-        local heldTool = plr.Character:FindFirstChildOfClass("Tool")
-        if not heldTool then print("Hold an item to appraise!") return end
-        
-        rs.events.appraiseItem:InvokeServer(heldTool)
-    end,
-})
-
-local Section = Main:CreateSection("NPC")
-
-local AutoFeedFilly = Main:CreateToggle({
-    Name = "Auto Feed Filly",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autofeedfilly = Value
-        
-        if Value then
-            troll("Enabled Auto Feed Filly!", Color3.new(0,1,0))
-            while _G.autofeedfilly do
-                rs.events.npcEvents.eat:InvokeServer(true)
-                task.wait()
-            end
-            troll("Disabled Auto Feed Filly", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local AutoFeedNeedySteve = Main:CreateToggle({
-    Name = "Auto Feed Needy Steve",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autofeedneedysteve = Value
-        
-        if Value then
-            troll("Enabled Auto Feed Needy Steve!", Color3.new(0,1,0))
-            while _G.autofeedneedysteve do
-                rs.events.npcEvents.giveGoldenSpork:InvokeServer(true)
-                task.wait()
-            end
-            troll("Disabled Auto Feed Needy Steve", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local AutoFeedJoey = Main:CreateToggle({
-    Name = "Auto Feed Joey",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autofeedjoey = Value
-        
-        if Value then
-            troll("Enabled Auto Feed Joey!", Color3.new(0,1,0))
-            while _G.autofeedjoey do
-                rs.events.npcEvents.largejoeycheck:InvokeServer(true)
-                task.wait()
-            end
-            troll("Disabled Auto Feed Joey", Color3.new(1,0,0))
-        end
-    end,
-})
-
-local Section = Misc:CreateSection("Misc")
-
-local AntiAfk = Misc:CreateButton({
-    Name = "Anti Afk",
-    Callback = function()
-        local vu = game:GetService("VirtualUser")
-        game:GetService("Players").LocalPlayer.Idled:connect(function()
-        vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-        wait(1)
-        vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-        end)
-        troll("Enabled Anti Afk!", Color3.new(0,1,0))
-    end,
-})
-
-local ForceSwimToggle = Misc:CreateToggle({
-    Name = "Force Swim",
-    CurrentValue = false,
-    Callback = function(Value)
-        local swimFolder = wrk:FindFirstChild("World"):FindFirstChild("Map"):FindFirstChild("Nature"):FindFirstChild("Water"):FindFirstChild("Swim")
-
-        local existingPart = swimFolder:FindFirstChild("FunnyPart")
-
-        if Value then
-            if not hrp then return end
-            if existingPart then return end
-
-            troll("Enabled Force Swim!", Color3.new(0,1,0))
-
-            local part = Instance.new("Part")
-            part.Name = "FunnyPart"
-            part.Size = Vector3.new(1, 1, 1)
-            part.Transparency = 1
-            part.Anchored = false
-            part.CanCollide = false
-            part.Massless = true
-
-            local weld = Instance.new("WeldConstraint")
-            weld.Part0 = part
-            weld.Part1 = hrp
-            weld.Parent = part
-
-            part.CFrame = hrp.CFrame
-
-            part.Parent = swimFolder
-
+-- Hello button script (fixed with local playing variable)
+local function helloButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_3
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
         else
-            if existingPart then
-                troll("Disabled Force Swim", Color3.new(1,0,0))
-                existingPart:Destroy()
-            end
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
         end
-    end,
-})
+    end)
+end
+coroutine.resume(coroutine.create(helloButton))
 
-local SwimmingScriptToggle = Misc:CreateToggle({
-    Name = "Swimming Script",
-    CurrentValue = true,
-    Callback = function(Value)
-        plr.Character:FindFirstChild("swimmingScript").Enabled = Value
-    end,
-})
-
-local RemovePopups = Misc:CreateButton({
-    Name = "Remove Popups",
-    Callback = function()
-        troll("Removed Advertise Popups!", Color3.new(0,1,0))
-        pcall(function()
-            plr.PlayerGui.passivegui:FindFirstChild("doubleLuckPopup"):Destroy()
-            plr.PlayerGui.passivegui:FindFirstChild("fastDishingPopup"):Destroy()
-        end)
-    end,
-})
-
-local Section = Player:CreateSection("Player")
-
-local WalkSpeed = Player:CreateSlider({
-    Name = "Walk Speed",
-    Range = {16, 50},
-    Increment = 1,
-    Suffix = "",
-    CurrentValue = 16,
-    Callback = function(Value)
-        plr.Character:FindFirstChild("Humanoid").WalkSpeed = Value
-    end,
-})
-
-local JumpPower = Player:CreateSlider({
-    Name = "Jump Power",
-    Range = {50, 150},
-    Increment = 1,
-    Suffix = "",
-    CurrentValue = 50,
-    Callback = function(Value)
-        plr.Character:FindFirstChild("Humanoid").JumpPower = Value
-    end,
-})
-
-local AutoFarm = Main:CreateToggle({
-    Name = "Auto Farm (Click + Dish + Sell)",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autoclick = Value
-        _G.autosink = Value
-        _G.autosell = Value
-        
-        if Value then
-            troll("Enabled Full Auto Farm!", Color3.new(0,1,0))
-            
-            -- Update UI toggles to match this master toggle
-            Rayfield.Flags.AutoClick:Set(true)
-            Rayfield.Flags.AutoSink:Set(true)
-            Rayfield.Flags.AutoSell:Set(true)
-            
-            -- Also enable Never Fail for convenience
-            for _, func in next, getgc(true) do
-                if typeof(func) == "function" then
-                    local funcName = debug.info(func, "n")
-                    if funcName == "checkValidClick" then
-                        hookfunction(func, function()
-                            return true
-                        end)
-                        break
-                    end
-                end
-            end
+-- Fortnite dance button script (fixed with local playing variable)
+local function fortniteDanceButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_4
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
         else
-            troll("Disabled Full Auto Farm", Color3.new(1,0,0))
-            
-            -- Update UI toggles to match this master toggle
-            Rayfield.Flags.AutoClick:Set(false)
-            Rayfield.Flags.AutoSink:Set(false)
-            Rayfield.Flags.AutoSell:Set(false)
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
         end
-    end,
-})
+    end)
+end
+coroutine.resume(coroutine.create(fortniteDanceButton))
 
-local AutoNPCFeeding = Main:CreateToggle({
-    Name = "Auto Feed All NPCs",
-    CurrentValue = false,
-    Callback = function(Value)
-        _G.autofeedfilly = Value
-        _G.autofeedneedysteve = Value
-        _G.autofeedjoey = Value
-        
-        if Value then
-            troll("Enabled Auto Feed All NPCs!", Color3.new(0,1,0))
-            
-            -- Update UI toggles to match
-            Rayfield.Flags.AutoFeedFilly:Set(true)
-            Rayfield.Flags.AutoFeedNeedySteve:Set(true)
-            Rayfield.Flags.AutoFeedJoey:Set(true)
-        else
-            troll("Disabled Auto Feed All NPCs", Color3.new(1,0,0))
-            
-            -- Update UI toggles to match
-            Rayfield.Flags.AutoFeedFilly:Set(false)
-            Rayfield.Flags.AutoFeedNeedySteve:Set(false)
-            Rayfield.Flags.AutoFeedJoey:Set(false)
+-- Handle character respawning
+local function setupRespawnHandler()
+    local player = game.Players.LocalPlayer
+    
+    player.CharacterAdded:Connect(function(newCharacter)
+        -- Reset all animations when character respawns
+        if Frame and Frame.Visible then
+            -- Re-initialize all buttons when character respawns
+            toggleMainGUI()
+            danceRobloxButton()
+            helloButton()
+            fortniteDanceButton()
         end
-    end,
-})
+    end)
+end
+coroutine.resume(coroutine.create(setupRespawnHandler))
 
-troll("LAJ HUB DISH SIMULATOR v3.0 Loaded Successfully!", Color3.new(0,1,0))
+-- Return the ScreenGui so it can be used
+return Danceguinotvirusandattack
