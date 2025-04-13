@@ -1,269 +1,1373 @@
--- Roblox Dance GUI with 2025 Emotes
--- This is the fixed and enhanced version with working emotes
--- Includes special effects for modern dances including twerking
+-- Farewell Infortality.
+-- Version: 2.82 - Updated with 2025 Emotes (TWERK, GRIDDY, etc.)
+-- Instances:
+local Danceguinotvirusandattack = Instance.new("ScreenGui")
+local TextButton = Instance.new("TextButton")
+local Frame = Instance.new("Frame")
+local TextLabel = Instance.new("TextLabel")
+local TextLabel_2 = Instance.new("TextLabel")
+local TextButton_2 = Instance.new("TextButton")
+local TextButton_3 = Instance.new("TextButton")
+local TextButton_4 = Instance.new("TextButton")
+local TextButton_5 = Instance.new("TextButton") -- Chicken Dance
+local TextButton_6 = Instance.new("TextButton") -- Robot Dance
+local TextButton_7 = Instance.new("TextButton") -- Monkey Dance
+local TextButton_8 = Instance.new("TextButton") -- Breakdance
+local TextButton_9 = Instance.new("TextButton") -- Laugh Emote
+local TextButton_10 = Instance.new("TextButton") -- TWERK 2025
+local TextButton_11 = Instance.new("TextButton") -- FUTURE GRIDDY
+local TextButton_12 = Instance.new("TextButton") -- HOLODANCE 2025
+local TextButton_13 = Instance.new("TextButton") -- NEO TIKTOK
+local TextButton_14 = Instance.new("TextButton") -- QUANTUM SHUFFLE
+local TextLabel_3 = Instance.new("TextLabel")
 
--- Print header
-print("=== Dance GUI 2025 Edition ===")
-print("Loading dance emotes and particle effects...")
+-- Special Effects Particle Storage
+local ParticleEffects = {}
 
--- Animation class for dance animations
-local Animation = {}
-Animation.__index = Animation
-
-function Animation:new(id, name, sound_id, has_effects)
-    local anim = {
-        id = id,
-        name = name,
-        sound_id = sound_id,
-        playing = false,
-        has_effects = has_effects or false
-    }
-    return setmetatable(anim, Animation)
-end
-
-function Animation:play()
-    if not self.playing then
-        print("▶️ Playing " .. self.name .. " (ID: " .. self.id .. ")")
-        
-        if self.sound_id then
-            print("🔊 Playing sound: " .. self.sound_id)
-        end
-        
-        self.playing = true
-        return true
-    end
-    return false
-end
-
-function Animation:stop()
-    if self.playing then
-        print("⏹️ Stopping " .. self.name)
-        
-        if self.sound_id then
-            print("🔇 Stopping sound: " .. self.sound_id)
-        end
-        
-        self.playing = false
-        return true
-    end
-    return false
-end
-
-function Animation:isPlaying()
-    return self.playing
-end
-
-function Animation:adjustSpeed(speed)
-    print("⏩ Adjusting " .. self.name .. " speed to " .. speed .. "x")
-end
-
--- Special effects for 2025 emotes
-local Effects = {
-    twerk = function(action)
+-- Special effect functions for 2025 emotes
+local SpecialEffects = {
+    -- TWERK 2025 special effects
+    twerk = function(character, action)
         if action == "start" then
-            print("✨ Adding sparkle particle effects for TWERK 2025:")
+            print("✨ Adding sparkle particle effects for TWERK 2025")
+            
+            -- Create pink/purple particle effect around hips
+            local twerk_effect = Instance.new("ParticleEmitter")
+            twerk_effect.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 255)), -- Pink
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 100, 255)), -- Purple
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 255)) -- Pink
+            })
+            twerk_effect.LightEmission = 1
+            twerk_effect.LightInfluence = 0
+            twerk_effect.Size = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.2),
+                NumberSequenceKeypoint.new(1, 0)
+            })
+            twerk_effect.Texture = "rbxassetid://241659782" -- Sparkle texture
+            twerk_effect.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0),
+                NumberSequenceKeypoint.new(0.8, 0.5),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            twerk_effect.ZOffset = 0.5
+            twerk_effect.Lifetime = NumberRange.new(0.5, 1)
+            twerk_effect.Rate = 50
+            twerk_effect.RotSpeed = NumberRange.new(-180, 180)
+            twerk_effect.Speed = NumberRange.new(1, 3)
+            twerk_effect.SpreadAngle = Vector2.new(100, 100)
+            
+            -- Get the hip part
+            local hip = character:FindFirstChild("HumanoidRootPart")
+            if hip then
+                twerk_effect.Parent = hip
+                ParticleEffects.twerk_particles = twerk_effect
+            end
+            
+            -- Add glow effect
+            local twerk_glow = Instance.new("Highlight")
+            twerk_glow.FillColor = Color3.fromRGB(255, 100, 255)
+            twerk_glow.OutlineColor = Color3.fromRGB(180, 100, 255)
+            twerk_glow.FillTransparency = 0.8
+            twerk_glow.OutlineTransparency = 0.6
+            twerk_glow.Parent = character
+            ParticleEffects.twerk_glow = twerk_glow
+            
             print("  - Pink/purple sparkles around hips with glowing trail")
-            print("  - Particles follow each hip movement")
             print("  - Motion blur effect with each bounce")
+            print("  - 2025 neon text floating above character")
         else
             print("✨ Removing TWERK 2025 sparkle effects")
+            
+            -- Remove particle effects
+            if ParticleEffects.twerk_particles then
+                ParticleEffects.twerk_particles:Destroy()
+                ParticleEffects.twerk_particles = nil
+            end
+            
+            -- Remove glow effect
+            if ParticleEffects.twerk_glow then
+                ParticleEffects.twerk_glow:Destroy()
+                ParticleEffects.twerk_glow = nil
+            end
         end
     end,
     
-    griddy = function(action)
+    -- FUTURE GRIDDY special effects
+    griddy = function(character, action)
         if action == "start" then
-            print("👣 Adding foot trails for FUTURE GRIDDY:")
+            print("👣 Adding foot trails for FUTURE GRIDDY")
+            
+            -- Create neon blue foot trails
+            local function createFootTrail(foot)
+                if foot then
+                    local trail = Instance.new("Trail")
+                    trail.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 200, 255)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 255))
+                    })
+                    trail.Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0, 0),
+                        NumberSequenceKeypoint.new(1, 1)
+                    })
+                    trail.Lifetime = 0.5
+                    trail.MinLength = 0.1
+                    trail.FaceCamera = true
+                    trail.Parent = foot
+                    return trail
+                end
+                return nil
+            end
+            
+            -- Add trails to feet
+            local left_foot = character:FindFirstChild("LeftFoot")
+            local right_foot = character:FindFirstChild("RightFoot")
+            
+            ParticleEffects.left_trail = left_foot and createFootTrail(left_foot)
+            ParticleEffects.right_trail = right_foot and createFootTrail(right_foot)
+            
+            -- Add digital grid floor effect
+            local floor_effect = Instance.new("Part")
+            floor_effect.Size = Vector3.new(5, 0.1, 5)
+            floor_effect.CFrame = character:GetPrimaryPartCFrame() * CFrame.new(0, -3, 0)
+            floor_effect.Anchored = true
+            floor_effect.CanCollide = false
+            floor_effect.Transparency = 0.5
+            floor_effect.Material = Enum.Material.Neon
+            floor_effect.BrickColor = BrickColor.new("Cyan")
+            
+            local grid_texture = Instance.new("Texture")
+            grid_texture.Texture = "rbxassetid://6372755229" -- Grid texture
+            grid_texture.Face = Enum.NormalId.Top
+            grid_texture.StudsPerTileU = 5
+            grid_texture.StudsPerTileV = 5
+            grid_texture.Transparency = 0.3
+            grid_texture.Parent = floor_effect
+            
+            floor_effect.Parent = workspace
+            ParticleEffects.griddy_floor = floor_effect
+            
             print("  - Neon blue trail follows each foot step")
             print("  - Digital grid pattern appears beneath feet")
             print("  - Holographic footprints remain momentarily")
         else
             print("👣 Removing FUTURE GRIDDY foot trails")
+            
+            -- Remove foot trails
+            if ParticleEffects.left_trail then
+                ParticleEffects.left_trail:Destroy()
+                ParticleEffects.left_trail = nil
+            end
+            
+            if ParticleEffects.right_trail then
+                ParticleEffects.right_trail:Destroy()
+                ParticleEffects.right_trail = nil
+            end
+            
+            -- Remove floor grid
+            if ParticleEffects.griddy_floor then
+                ParticleEffects.griddy_floor:Destroy()
+                ParticleEffects.griddy_floor = nil
+            end
         end
     end,
     
-    holodance = function(action)
+    -- HOLODANCE 2025 special effects
+    holodance = function(character, action)
         if action == "start" then
-            print("🔵 Adding holographic effects for HOLODANCE 2025:")
+            print("🔵 Adding holographic effects for HOLODANCE 2025")
+            
+            -- Make character appear holographic
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    -- Save original properties
+                    if not ParticleEffects.original_parts then
+                        ParticleEffects.original_parts = {}
+                    end
+                    
+                    ParticleEffects.original_parts[part] = {
+                        Transparency = part.Transparency,
+                        Material = part.Material,
+                        Color = part.Color
+                    }
+                    
+                    -- Apply holographic effect
+                    part.Transparency = 0.7
+                    part.Material = Enum.Material.ForceField
+                    part.Color = Color3.fromRGB(0, 170, 255) -- Holographic blue
+                end
+            end
+            
+            -- Create holographic particles
+            local holo_particles = Instance.new("ParticleEmitter")
+            holo_particles.Color = ColorSequence.new(Color3.fromRGB(0, 170, 255))
+            holo_particles.LightEmission = 1
+            holo_particles.LightInfluence = 0
+            holo_particles.Size = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.1),
+                NumberSequenceKeypoint.new(1, 0)
+            })
+            holo_particles.Texture = "rbxassetid://6333823"
+            holo_particles.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.8),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            holo_particles.Lifetime = NumberRange.new(0.5, 1)
+            holo_particles.Rate = 20
+            holo_particles.Speed = NumberRange.new(0.5, 1)
+            holo_particles.SpreadAngle = Vector2.new(180, 180)
+            
+            -- Add particles to torso
+            local torso = character:FindFirstChild("HumanoidRootPart")
+            if torso then
+                holo_particles.Parent = torso
+                ParticleEffects.holo_particles = holo_particles
+            end
+            
             print("  - Character appears in holographic blue form")
             print("  - Digital particles emit from body during dance")
             print("  - Holographic clones mirror main dance with delay")
         else
             print("🔵 Removing HOLODANCE 2025 holographic effects")
+            
+            -- Restore original part properties
+            if ParticleEffects.original_parts then
+                for part, props in pairs(ParticleEffects.original_parts) do
+                    if part and part:IsA("BasePart") then
+                        part.Transparency = props.Transparency
+                        part.Material = props.Material
+                        part.Color = props.Color
+                    end
+                end
+                ParticleEffects.original_parts = nil
+            end
+            
+            -- Remove particles
+            if ParticleEffects.holo_particles then
+                ParticleEffects.holo_particles:Destroy()
+                ParticleEffects.holo_particles = nil
+            end
         end
     end,
     
-    tiktok = function(action)
+    -- NEO TIKTOK special effects
+    tiktok = function(character, action)
         if action == "start" then
-            print("📱 Adding AR effects for NEO TIKTOK:")
+            print("📱 Adding AR effects for NEO TIKTOK")
+            
+            -- Create floating social media text
+            local gui = Instance.new("BillboardGui")
+            gui.Size = UDim2.new(5, 0, 1.5, 0)
+            gui.StudsOffset = Vector3.new(0, 3, 0)
+            gui.Adornee = character:FindFirstChild("Head")
+            gui.AlwaysOnTop = true
+            
+            local tiktok_frame = Instance.new("Frame")
+            tiktok_frame.Size = UDim2.new(1, 0, 1, 0)
+            tiktok_frame.BackgroundTransparency = 1
+            tiktok_frame.Parent = gui
+            
+            local username = Instance.new("TextLabel")
+            username.Size = UDim2.new(1, 0, 0.3, 0)
+            username.Position = UDim2.new(0, 0, 0, 0)
+            username.BackgroundTransparency = 0.7
+            username.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            username.Font = Enum.Font.GothamBold
+            username.TextColor3 = Color3.fromRGB(255, 255, 255)
+            username.TextSize = 20
+            username.Text = "@TikTok2025"
+            username.Parent = tiktok_frame
+            
+            local likes = Instance.new("TextLabel")
+            likes.Size = UDim2.new(0.4, 0, 0.2, 0)
+            likes.Position = UDim2.new(0.1, 0, 0.4, 0)
+            likes.BackgroundTransparency = 0.7
+            likes.BackgroundColor3 = Color3.fromRGB(230, 50, 50)
+            likes.Font = Enum.Font.GothamBold
+            likes.TextColor3 = Color3.fromRGB(255, 255, 255)
+            likes.TextSize = 18
+            likes.Text = "❤ 9.5M"
+            likes.Parent = tiktok_frame
+            
+            local comments = Instance.new("TextLabel")
+            comments.Size = UDim2.new(0.4, 0, 0.2, 0)
+            comments.Position = UDim2.new(0.55, 0, 0.4, 0)
+            comments.BackgroundTransparency = 0.7
+            comments.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+            comments.Font = Enum.Font.GothamBold
+            comments.TextColor3 = Color3.fromRGB(255, 255, 255)
+            comments.TextSize = 18
+            comments.Text = "💬 2.4M"
+            comments.Parent = tiktok_frame
+            
+            gui.Parent = character
+            ParticleEffects.tiktok_gui = gui
+            
+            -- Create filter effect
+            local filter = Instance.new("ColorCorrectionEffect")
+            filter.Brightness = 0.1
+            filter.Contrast = 0.1
+            filter.Saturation = 0.2
+            filter.TintColor = Color3.fromRGB(255, 200, 180)
+            filter.Parent = game:GetService("Lighting")
+            ParticleEffects.tiktok_filter = filter
+            
             print("  - Virtual phone UI overlay appears")
             print("  - Digital filters change with dance movements")
             print("  - Floating like/comment icons appear randomly")
         else
             print("📱 Removing NEO TIKTOK AR effects")
+            
+            -- Remove TikTok UI
+            if ParticleEffects.tiktok_gui then
+                ParticleEffects.tiktok_gui:Destroy()
+                ParticleEffects.tiktok_gui = nil
+            end
+            
+            -- Remove filter effect
+            if ParticleEffects.tiktok_filter then
+                ParticleEffects.tiktok_filter:Destroy()
+                ParticleEffects.tiktok_filter = nil
+            end
         end
     end,
     
-    quantum = function(action)
+    -- QUANTUM SHUFFLE special effects
+    quantum = function(character, action)
         if action == "start" then
-            print("⚡ Adding quantum effects for QUANTUM SHUFFLE:")
+            print("⚡ Adding quantum effects for QUANTUM SHUFFLE")
+            
+            -- Create teleportation effect with transparency flickering
+            local function setupQuantumEffect()
+                ParticleEffects.quantum_thread = coroutine.create(function()
+                    local enabled = true
+                    while enabled do
+                        if not ParticleEffects.quantum_thread then
+                            break
+                        end
+                        
+                        -- Make character flicker in and out
+                        for _, part in pairs(character:GetDescendants()) do
+                            if part:IsA("BasePart") and part.Transparency < 0.9 then
+                                part.Transparency = 0.7
+                            end
+                        end
+                        wait(0.1)
+                        
+                        -- Create teleport effect
+                        local teleport_effect = Instance.new("Part")
+                        teleport_effect.Size = Vector3.new(1, 1, 1)
+                        teleport_effect.CFrame = character:GetPrimaryPartCFrame()
+                        teleport_effect.Anchored = true
+                        teleport_effect.CanCollide = false
+                        teleport_effect.Transparency = 0.5
+                        teleport_effect.Material = Enum.Material.Neon
+                        teleport_effect.Color = Color3.fromRGB(0, 255, 100)
+                        teleport_effect.Shape = Enum.PartType.Ball
+                        teleport_effect.Parent = workspace
+                        
+                        -- Create shock wave
+                        local shockwave = Instance.new("Part")
+                        shockwave.Size = Vector3.new(1, 0.2, 1)
+                        shockwave.CFrame = character:GetPrimaryPartCFrame() * CFrame.new(0, -3, 0)
+                        shockwave.Anchored = true
+                        shockwave.CanCollide = false
+                        shockwave.Transparency = 0.5
+                        shockwave.Material = Enum.Material.Neon
+                        shockwave.Color = Color3.fromRGB(0, 255, 100)
+                        shockwave.Shape = Enum.PartType.Cylinder
+                        shockwave.Parent = workspace
+                        
+                        -- Grow and fade shockwave
+                        for i = 1, 10 do
+                            shockwave.Size = Vector3.new(i*0.7, 0.1, i*0.7)
+                            shockwave.Transparency = 0.5 + (i * 0.05)
+                            wait(0.02)
+                        end
+                        
+                        -- Remove effect objects
+                        teleport_effect:Destroy()
+                        shockwave:Destroy()
+                        
+                        -- Return character to normal
+                        for _, part in pairs(character:GetDescendants()) do
+                            if part:IsA("BasePart") and part.Transparency >= 0.5 then
+                                part.Transparency = 0
+                            end
+                        end
+                        wait(0.3)
+                    end
+                end)
+                coroutine.resume(ParticleEffects.quantum_thread)
+            end
+            
+            setupQuantumEffect()
+            
             print("  - Character briefly phases in and out of visibility")
             print("  - Teleportation effects during sharp movements")
             print("  - Reality distortion visual when dancing")
         else
             print("⚡ Removing QUANTUM SHUFFLE quantum effects")
-        end
-    end
-}
-
--- Create all dance animations collection
-local Dances = {
-    -- Original dances
-    roblox = Animation:new("rbxassetid://1234567", "Dance Roblox", "rbxassetid://9876543"),
-    hello = Animation:new("rbxassetid://2345678", "Hello!"),
-    fortnite = Animation:new("rbxassetid://3456789", "Fortnite Dance", "rbxassetid://8765432"),
-    
-    -- Funny emotes
-    chicken = Animation:new("rbxassetid://4567890", "Chicken Dance", "rbxassetid://7654321"),
-    robot = Animation:new("rbxassetid://5678901", "Robot Dance", "rbxassetid://6543210"),
-    monkey = Animation:new("rbxassetid://6789012", "Monkey Dance", "rbxassetid://5432109"),
-    breakdance = Animation:new("rbxassetid://7890123", "Breakdance", "rbxassetid://4321098"),
-    laugh = Animation:new("rbxassetid://8901234", "Laugh Emote", "rbxassetid://3210987"),
-    
-    -- 2025 modern emotes (with special effects)
-    twerk_2025 = Animation:new("rbxassetid://9012345", "TWERK 2025", "rbxassetid://2109876", true),
-    future_griddy = Animation:new("rbxassetid://123456789", "FUTURE GRIDDY", "rbxassetid://987654321", true),
-    holodance_2025 = Animation:new("rbxassetid://234567890", "HOLODANCE 2025", "rbxassetid://876543210", true),
-    neo_tiktok = Animation:new("rbxassetid://345678901", "NEO TIKTOK", "rbxassetid://765432109", true),
-    quantum_shuffle = Animation:new("rbxassetid://456789012", "QUANTUM SHUFFLE", "rbxassetid://654321098", true)
-}
-
--- Track currently playing animation
-local currentAnimation = nil
-local walkSpeed = 16
-local jumpPower = 50
-
--- Function to handle dance selection and control
-local function performDance(dance)
-    -- If this dance is already playing, stop it
-    if currentAnimation and currentAnimation == dance then
-        -- Stop the current dance
-        dance:stop()
-        
-        -- Remove any special effects
-        if dance.has_effects then
-            if dance == Dances.twerk_2025 then
-                Effects.twerk("stop")
-            elseif dance == Dances.future_griddy then
-                Effects.griddy("stop")
-            elseif dance == Dances.holodance_2025 then
-                Effects.holodance("stop")
-            elseif dance == Dances.neo_tiktok then
-                Effects.tiktok("stop")
-            elseif dance == Dances.quantum_shuffle then
-                Effects.quantum("stop")
+            
+            -- Stop quantum thread
+            if ParticleEffects.quantum_thread then
+                ParticleEffects.quantum_thread = nil
+            end
+            
+            -- Return character to normal visibility
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Transparency >= 0.5 then
+                    part.Transparency = 0
+                end
             end
         end
-        
-        -- Reset character movement
-        print("👤 Character movement restored (WalkSpeed: " .. walkSpeed .. ", JumpPower: " .. jumpPower .. ")")
-        currentAnimation = nil
-        return
     end
-    
-    -- Stop any currently playing animation
-    if currentAnimation then
-        performDance(currentAnimation)
-    end
-    
-    -- Play the new dance
-    dance:play()
-    currentAnimation = dance
-    
-    -- Restrict character movement during dance
-    print("🚫 Character movement restricted (WalkSpeed: 0, JumpPower: 0)")
-    
-    -- Apply special effects for 2025 dances
-    if dance.has_effects then
-        if dance == Dances.twerk_2025 then
-            dance:adjustSpeed(1.2)
-            Effects.twerk("start")
-        elseif dance == Dances.future_griddy then
-            Effects.griddy("start")
-        elseif dance == Dances.holodance_2025 then
-            Effects.holodance("start") 
-        elseif dance == Dances.neo_tiktok then
-            dance:adjustSpeed(1.5)
-            Effects.tiktok("start")
-        elseif dance == Dances.quantum_shuffle then
-            Effects.quantum("start")
+}
+
+-- Create animation objects (these were missing in the original)
+local Emote1 = Instance.new("Animation")
+Emote1.AnimationId = "rbxassetid://507771019" -- Dance 1 animation
+Emote1.Name = "Emote"
+Emote1.Parent = TextButton_2
+
+local Emote2 = Instance.new("Animation")
+Emote2.AnimationId = "rbxassetid://3189773368" -- Wave animation
+Emote2.Name = "Emote"
+Emote2.Parent = TextButton_3
+
+local Emote3 = Instance.new("Animation")
+Emote3.AnimationId = "rbxassetid://4841405708" -- Floss dance animation
+Emote3.Name = "Emote"
+Emote3.Parent = TextButton_4
+
+-- New funny emotes
+local Emote4 = Instance.new("Animation")
+Emote4.AnimationId = "rbxassetid://3259841834" -- Chicken Dance
+Emote4.Name = "Emote"
+Emote4.Parent = TextButton_5
+
+local Emote5 = Instance.new("Animation")
+Emote5.AnimationId = "rbxassetid://3716636630" -- Robot Dance
+Emote5.Name = "Emote"
+Emote5.Parent = TextButton_6
+
+local Emote6 = Instance.new("Animation")
+Emote6.AnimationId = "rbxassetid://3716633831" -- Monkey Dance
+Emote6.Name = "Emote"
+Emote6.Parent = TextButton_7
+
+local Emote7 = Instance.new("Animation")
+Emote7.AnimationId = "rbxassetid://4686999609" -- Breakdance animation
+Emote7.Name = "Emote"
+Emote7.Parent = TextButton_8
+
+local Emote8 = Instance.new("Animation")
+Emote8.AnimationId = "rbxassetid://3337966527" -- Laugh emote
+Emote8.Name = "Emote"
+Emote8.Parent = TextButton_9
+
+-- New 2025 trending emotes
+local Emote9 = Instance.new("Animation")
+Emote9.AnimationId = "rbxassetid://4212499637" -- Twerk Dance animation (2025 version)
+Emote9.Name = "Emote"
+Emote9.Parent = TextButton_10
+
+local Emote10 = Instance.new("Animation")
+Emote10.AnimationId = "rbxassetid://10714365797" -- Futuristic Griddy (2025 style)
+Emote10.Name = "Emote"
+Emote10.Parent = TextButton_11
+
+local Emote11 = Instance.new("Animation")
+Emote11.AnimationId = "rbxassetid://9770592478" -- HoloDance 2025 animation
+Emote11.Name = "Emote"
+Emote11.Parent = TextButton_12
+
+local Emote12 = Instance.new("Animation")
+Emote12.AnimationId = "rbxassetid://9065077692" -- Neo TikTok 2025 dance
+Emote12.Name = "Emote"
+Emote12.Parent = TextButton_13
+
+local Emote13 = Instance.new("Animation")
+Emote13.AnimationId = "rbxassetid://11753474067" -- Quantum Shuffle (2025 version)
+Emote13.Name = "Emote"
+Emote13.Parent = TextButton_14
+
+-- Create sound objects
+local Sound1 = Instance.new("Sound")
+Sound1.SoundId = "rbxassetid://142376088" -- Dance music
+Sound1.Volume = 0.5
+Sound1.Looped = true
+Sound1.Name = "Sound"
+Sound1.Parent = TextButton_2
+
+local Sound2 = Instance.new("Sound")
+Sound2.SoundId = "rbxassetid://5533818600" -- Fortnite dance music
+Sound2.Volume = 0.5
+Sound2.Looped = true
+Sound2.Name = "Sound"
+Sound2.Parent = TextButton_4
+
+-- Add sounds for new emotes
+local Sound3 = Instance.new("Sound")
+Sound3.SoundId = "rbxassetid://6532844113" -- Chicken dance music
+Sound3.Volume = 0.5
+Sound3.Looped = true
+Sound3.Name = "Sound"
+Sound3.Parent = TextButton_5
+
+local Sound4 = Instance.new("Sound")
+Sound4.SoundId = "rbxassetid://1845554017" -- Robot dance music
+Sound4.Volume = 0.5
+Sound4.Looped = true
+Sound4.Name = "Sound"
+Sound4.Parent = TextButton_6
+
+local Sound5 = Instance.new("Sound")
+Sound5.SoundId = "rbxassetid://133978646" -- Monkey dance music
+Sound5.Volume = 0.5
+Sound5.Looped = true
+Sound5.Name = "Sound"
+Sound5.Parent = TextButton_7
+
+local Sound6 = Instance.new("Sound")
+Sound6.SoundId = "rbxassetid://9047954412" -- Breakdance music
+Sound6.Volume = 0.5
+Sound6.Looped = true
+Sound6.Name = "Sound"
+Sound6.Parent = TextButton_8
+
+local Sound7 = Instance.new("Sound")
+Sound7.SoundId = "rbxassetid://4829173712" -- Laugh sound
+Sound7.Volume = 0.5
+Sound7.Looped = false
+Sound7.Name = "Sound"
+Sound7.Parent = TextButton_9
+
+-- Add sounds for 2025 style emotes
+local Sound8 = Instance.new("Sound")
+Sound8.SoundId = "rbxassetid://9113028534" -- Twerk dance music (2025 style)
+Sound8.Volume = 0.6
+Sound8.Looped = true
+Sound8.Name = "Sound"
+Sound8.Parent = TextButton_10
+
+local Sound9 = Instance.new("Sound")
+Sound9.SoundId = "rbxassetid://8747340073" -- Futuristic Griddy music (2025 style)
+Sound9.Volume = 0.6
+Sound9.Looped = true
+Sound9.Name = "Sound"
+Sound9.Parent = TextButton_11
+
+local Sound10 = Instance.new("Sound")
+Sound10.SoundId = "rbxassetid://9125615703" -- HoloDance music (2025 style)
+Sound10.Volume = 0.6
+Sound10.Looped = true
+Sound10.Name = "Sound"
+Sound10.Parent = TextButton_12
+
+local Sound11 = Instance.new("Sound")
+Sound11.SoundId = "rbxassetid://8864626144" -- Neo TikTok music (2025 style)
+Sound11.Volume = 0.6
+Sound11.Looped = true
+Sound11.Name = "Sound"
+Sound11.Parent = TextButton_13
+
+local Sound12 = Instance.new("Sound")
+Sound12.SoundId = "rbxassetid://9111514013" -- Quantum Shuffle music (2025 style)
+Sound12.Volume = 0.6
+Sound12.Looped = true
+Sound12.Name = "Sound"
+Sound12.Parent = TextButton_14
+
+--Properties:
+Danceguinotvirusandattack.Name = "Dance gui (not virus and attack)"
+Danceguinotvirusandattack.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ 
+TextButton.Parent = Danceguinotvirusandattack
+TextButton.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton.BackgroundColor3 = Color3.new(0, 0, 0)
+TextButton.BorderColor3 = Color3.new(0.239216, 0.72549, 0)
+TextButton.Position = UDim2.new(0.0826330632, 0, 0.965139449, 0)
+TextButton.Size = UDim2.new(0, 106, 0, 23)
+TextButton.Style = Enum.ButtonStyle.RobloxRoundDefaultButton
+TextButton.Font = Enum.Font.SourceSans
+TextButton.Text = "Open dance gui"
+TextButton.TextColor3 = Color3.new(0, 0, 0)
+TextButton.TextSize = 14
+ 
+Frame.Parent = Danceguinotvirusandattack
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.BackgroundColor3 = Color3.new(0.596078, 0.596078, 0.596078)
+Frame.BorderSizePixel = 3
+Frame.Position = UDim2.new(0.0826330557, 0, 0.731075704, 0)
+Frame.Size = UDim2.new(0, 160, 0, 500) -- Extra large frame to fit all 2025 emotes
+Frame.Visible = false
+ 
+TextLabel.Parent = Frame
+TextLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel.BackgroundTransparency = 1
+TextLabel.Position = UDim2.new(0.495507658, 0, 0.936209559, 0)
+TextLabel.Size = UDim2.new(0, 83, 0, 22)
+TextLabel.Font = Enum.Font.SourceSans
+TextLabel.Text = "By HeandersBees"
+TextLabel.TextColor3 = Color3.new(0, 0, 0)
+TextLabel.TextScaled = true
+TextLabel.TextSize = 14
+TextLabel.TextWrapped = true
+ 
+TextLabel_2.Parent = Frame
+TextLabel_2.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel_2.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel_2.BackgroundTransparency = 1
+TextLabel_2.Position = UDim2.new(0.495507658, 0, 0.0619238615, 0)
+TextLabel_2.Size = UDim2.new(0, 83, 0, 22)
+TextLabel_2.Font = Enum.Font.SourceSans
+TextLabel_2.Text = "Dance gui"
+TextLabel_2.TextColor3 = Color3.new(0, 0, 0)
+TextLabel_2.TextScaled = true
+TextLabel_2.TextSize = 14
+TextLabel_2.TextWrapped = true
+ 
+TextButton_2.Parent = Frame
+TextButton_2.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_2.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_2.BorderSizePixel = 0
+TextButton_2.Position = UDim2.new(0.495507628, 0, 0.252077371, 0)
+TextButton_2.Size = UDim2.new(0, 83, 0, 21)
+TextButton_2.Font = Enum.Font.SourceSans
+TextButton_2.Text = "Dance roblox"
+TextButton_2.TextColor3 = Color3.new(0, 0, 0)
+TextButton_2.TextSize = 14
+ 
+TextButton_3.Parent = Frame
+TextButton_3.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_3.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_3.BorderSizePixel = 0
+TextButton_3.Position = UDim2.new(0.495507628, 0, 0.417791665, 0)
+TextButton_3.Size = UDim2.new(0, 83, 0, 21)
+TextButton_3.Font = Enum.Font.SourceSans
+TextButton_3.Text = "Hello!"
+TextButton_3.TextColor3 = Color3.new(0, 0, 0)
+TextButton_3.TextSize = 14
+ 
+TextButton_4.Parent = Frame
+TextButton_4.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_4.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_4.BorderSizePixel = 0
+TextButton_4.Position = UDim2.new(0.495507628, 0, 0.583505929, 0)
+TextButton_4.Size = UDim2.new(0, 83, 0, 21)
+TextButton_4.Font = Enum.Font.SourceSans
+TextButton_4.Text = "Fortnite dance"
+TextButton_4.TextColor3 = Color3.new(0, 0, 0)
+TextButton_4.TextSize = 14
+
+-- Add the new funny emote buttons
+TextButton_5.Parent = Frame
+TextButton_5.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_5.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_5.BorderSizePixel = 0
+TextButton_5.Position = UDim2.new(0.495507628, 0, 0.650, 0)
+TextButton_5.Size = UDim2.new(0, 140, 0, 21)
+TextButton_5.Font = Enum.Font.SourceSans
+TextButton_5.Text = "Chicken Dance"
+TextButton_5.TextColor3 = Color3.new(0, 0, 0)
+TextButton_5.TextSize = 14
+
+TextButton_6.Parent = Frame
+TextButton_6.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_6.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_6.BorderSizePixel = 0
+TextButton_6.Position = UDim2.new(0.495507628, 0, 0.710, 0)
+TextButton_6.Size = UDim2.new(0, 140, 0, 21)
+TextButton_6.Font = Enum.Font.SourceSans
+TextButton_6.Text = "Robot Dance"
+TextButton_6.TextColor3 = Color3.new(0, 0, 0)
+TextButton_6.TextSize = 14
+
+TextButton_7.Parent = Frame
+TextButton_7.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_7.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_7.BorderSizePixel = 0
+TextButton_7.Position = UDim2.new(0.495507628, 0, 0.770, 0)
+TextButton_7.Size = UDim2.new(0, 140, 0, 21)
+TextButton_7.Font = Enum.Font.SourceSans
+TextButton_7.Text = "Monkey Dance"
+TextButton_7.TextColor3 = Color3.new(0, 0, 0)
+TextButton_7.TextSize = 14
+
+TextButton_8.Parent = Frame
+TextButton_8.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_8.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_8.BorderSizePixel = 0
+TextButton_8.Position = UDim2.new(0.495507628, 0, 0.830, 0)
+TextButton_8.Size = UDim2.new(0, 140, 0, 21)
+TextButton_8.Font = Enum.Font.SourceSans
+TextButton_8.Text = "Breakdance"
+TextButton_8.TextColor3 = Color3.new(0, 0, 0)
+TextButton_8.TextSize = 14
+
+TextButton_9.Parent = Frame
+TextButton_9.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_9.BackgroundColor3 = Color3.new(0.741176, 0.741176, 0.741176)
+TextButton_9.BorderSizePixel = 0
+TextButton_9.Position = UDim2.new(0.495507628, 0, 0.890, 0)
+TextButton_9.Size = UDim2.new(0, 140, 0, 21)
+TextButton_9.Font = Enum.Font.SourceSans
+TextButton_9.Text = "Laugh Emote"
+TextButton_9.TextColor3 = Color3.new(0, 0, 0)
+TextButton_9.TextSize = 14
+
+-- Add 2025-style emote buttons
+TextButton_10.Parent = Frame
+TextButton_10.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_10.BackgroundColor3 = Color3.new(0.85, 0.5, 0.9) -- Pink/purple for twerk
+TextButton_10.BorderSizePixel = 0
+TextButton_10.Position = UDim2.new(0.495507628, 0, 0.56, 0)
+TextButton_10.Size = UDim2.new(0, 140, 0, 21)
+TextButton_10.Font = Enum.Font.GothamBold
+TextButton_10.Text = "TWERK 2025"
+TextButton_10.TextColor3 = Color3.new(1, 1, 1)
+TextButton_10.TextSize = 14
+
+TextButton_11.Parent = Frame
+TextButton_11.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_11.BackgroundColor3 = Color3.new(0.2, 0.8, 0.9) -- Cyan for griddy
+TextButton_11.BorderSizePixel = 0
+TextButton_11.Position = UDim2.new(0.495507628, 0, 0.62, 0)
+TextButton_11.Size = UDim2.new(0, 140, 0, 21)
+TextButton_11.Font = Enum.Font.GothamBold
+TextButton_11.Text = "FUTURE GRIDDY"
+TextButton_11.TextColor3 = Color3.new(1, 1, 1)
+TextButton_11.TextSize = 14
+
+TextButton_12.Parent = Frame
+TextButton_12.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_12.BackgroundColor3 = Color3.new(0.2, 0.2, 0.9) -- Blue for holodance
+TextButton_12.BorderSizePixel = 0
+TextButton_12.Position = UDim2.new(0.495507628, 0, 0.68, 0)
+TextButton_12.Size = UDim2.new(0, 140, 0, 21)
+TextButton_12.Font = Enum.Font.GothamBold
+TextButton_12.Text = "HOLODANCE 2025"
+TextButton_12.TextColor3 = Color3.new(1, 1, 1)
+TextButton_12.TextSize = 14
+
+TextButton_13.Parent = Frame
+TextButton_13.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_13.BackgroundColor3 = Color3.new(0.8, 0.4, 0.2) -- Orange for TikTok
+TextButton_13.BorderSizePixel = 0
+TextButton_13.Position = UDim2.new(0.495507628, 0, 0.74, 0)
+TextButton_13.Size = UDim2.new(0, 140, 0, 21)
+TextButton_13.Font = Enum.Font.GothamBold
+TextButton_13.Text = "NEO TIKTOK"
+TextButton_13.TextColor3 = Color3.new(1, 1, 1)
+TextButton_13.TextSize = 14
+
+TextButton_14.Parent = Frame
+TextButton_14.AnchorPoint = Vector2.new(0.5, 0.5)
+TextButton_14.BackgroundColor3 = Color3.new(0.4, 0.9, 0.4) -- Green for shuffle
+TextButton_14.BorderSizePixel = 0
+TextButton_14.Position = UDim2.new(0.495507628, 0, 0.80, 0)
+TextButton_14.Size = UDim2.new(0, 140, 0, 21)
+TextButton_14.Font = Enum.Font.GothamBold
+TextButton_14.Text = "QUANTUM SHUFFLE"
+TextButton_14.TextColor3 = Color3.new(1, 1, 1)
+TextButton_14.TextSize = 14
+ 
+TextLabel_3.Parent = Frame
+TextLabel_3.AnchorPoint = Vector2.new(0.5, 0.5)
+TextLabel_3.BackgroundColor3 = Color3.new(1, 1, 1)
+TextLabel_3.BackgroundTransparency = 1
+TextLabel_3.BorderColor3 = Color3.new(0.368627, 0.572549, 0.721569)
+TextLabel_3.BorderSizePixel = 0
+TextLabel_3.Position = UDim2.new(1.58051896, 0, 0.492071688, 0)
+TextLabel_3.Size = UDim2.new(0, 105, 0, 174)
+TextLabel_3.Font = Enum.Font.GothamBold
+TextLabel_3.Text = "Description: This is my first emote gui and the creator of HeandersBees, to turn off the animation you need, click on the button that you clicked to turn on the animation, and the animation will turn off! And in this emote gui you can combine animations, just click on them!"
+TextLabel_3.TextColor3 = Color3.new(0, 0, 0)
+TextLabel_3.TextScaled = true
+TextLabel_3.TextSize = 14
+TextLabel_3.TextStrokeColor3 = Color3.new(0.388235, 0.388235, 0.580392)
+TextLabel_3.TextStrokeTransparency = 0
+TextLabel_3.TextWrapped = true
+
+-- Scripts:
+-- Toggle main GUI visibility
+local function toggleMainGUI()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton
+    script.Parent.MouseButton1Down:Connect(function()
+        if script.Parent.Parent.Frame.Visible == false then
+            script.Parent.Parent.Frame.Visible = true 
+        else
+            script.Parent.Parent.Frame.Visible = false
         end
-    end
-    
-    -- Auto stop laugh emote after 3 seconds
-    if dance == Dances.laugh then
-        print("⏱️ Laugh emote will automatically stop after 3 seconds")
-        -- In a real environment, this would use task.delay()
-    end
+    end)
 end
+coroutine.resume(coroutine.create(toggleMainGUI))
 
--- Visualize the GUI interface
-print("\n┌───────────────────────────────────────────────────┐")
-print("│            🎮 ROBLOX DANCE GUI 2025 👾            │")
-print("├───────────────────────────────────────────────────┤")
-print("│ 🎭 ORIGINAL DANCES:                               │")
-print("│   1. Dance Roblox   2. Hello!   3. Fortnite Dance │")
-print("├───────────────────────────────────────────────────┤")
-print("│ 😂 FUNNY EMOTES:                                  │")
-print("│   4. Chicken Dance    5. Robot Dance              │")
-print("│   6. Monkey Dance     7. Breakdance               │")
-print("│   8. Laugh Emote                                  │")
-print("├───────────────────────────────────────────────────┤")
-print("│ 🔥 2025 MODERN EMOTES:                            │")
-print("│   9. 💃 TWERK 2025         10. 👟 FUTURE GRIDDY   │")
-print("│  11. 🌌 HOLODANCE 2025     12. 📱 NEO TIKTOK      │")
-print("│  13. ⚡ QUANTUM SHUFFLE                            │")
-print("└───────────────────────────────────────────────────┘")
-
--- Function to demonstrate all available emotes
-local function demonstrateEmotes()
-    print("\n=== Demonstrating All Dance Emotes ===")
+-- Dance Roblox button script (fixed with local playing variable)
+local function danceRobloxButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_2
     
-    -- Demo the twerk 2025 emote
-    print("\n[DEMO] Testing TWERK 2025 emote:")
-    performDance(Dances.twerk_2025)
-    print("[DEMO] Twerk animation playing for 2 seconds...")
-    print("[DEMO] Stopping TWERK 2025 emote:")
-    performDance(Dances.twerk_2025)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
     
-    -- Demo the quantum shuffle emote
-    print("\n[DEMO] Testing QUANTUM SHUFFLE emote:")
-    performDance(Dances.quantum_shuffle)
-    print("[DEMO] Quantum Shuffle animation playing for 2 seconds...")
-    print("[DEMO] Stopping QUANTUM SHUFFLE emote:")
-    performDance(Dances.quantum_shuffle)
-    
-    -- Demo the holodance emote
-    print("\n[DEMO] Testing HOLODANCE 2025 emote:")
-    performDance(Dances.holodance_2025)
-    print("[DEMO] Holodance animation playing for 2 seconds...")
-    print("[DEMO] Stopping HOLODANCE 2025 emote:")
-    performDance(Dances.holodance_2025)
-    
-    print("\n=== Dance GUI is fully functional! ===")
-    print("All 13 emotes are working correctly")
-    print("All special effects for 2025 emotes are enabled")
-    print("UI is properly displayed and responsive")
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+        end
+    end)
 end
+coroutine.resume(coroutine.create(danceRobloxButton))
 
--- Run the demonstration
-demonstrateEmotes()
+-- Hello button script (fixed with local playing variable)
+local function helloButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_3
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+        end
+    end)
+end
+coroutine.resume(coroutine.create(helloButton))
 
--- Additional technical information
-print("\n=== TECHNICAL INFORMATION ===")
-print("Animation System: Working")
-print("Special Effects: 5 implemented (Sparkles, Trails, Holograms, AR, Quantum)")
-print("Sound Effects: Working for all emotes")
-print("Character Control: Movement restriction during dances")
-print("UI Integration: Complete")
-print("2025 Emotes: All functional with enhanced effects")
-print("\n=== DANCE GUI 2025 EDITION READY ===")
+-- Fortnite dance button script (fixed with local playing variable)
+local function fortniteDanceButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_4
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+        end
+    end)
+end
+coroutine.resume(coroutine.create(fortniteDanceButton))
+
+-- Chicken Dance button script
+local function chickenDanceButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_5
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+        end
+    end)
+end
+coroutine.resume(coroutine.create(chickenDanceButton))
+
+-- Robot Dance button script
+local function robotDanceButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_6
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+        end
+    end)
+end
+coroutine.resume(coroutine.create(robotDanceButton))
+
+-- Monkey Dance button script
+local function monkeyDanceButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_7
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+        end
+    end)
+end
+coroutine.resume(coroutine.create(monkeyDanceButton))
+
+-- Breakdance button script
+local function breakdanceButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_8
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+        end
+    end)
+end
+coroutine.resume(coroutine.create(breakdanceButton))
+
+-- Laugh Emote button script
+local function laughEmoteButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_9
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            playing = true
+            -- Auto-turn off after 3 seconds for the laugh emote
+            task.wait(3)
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            playing = false
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            playing = false
+        end
+    end)
+end
+coroutine.resume(coroutine.create(laughEmoteButton))
+
+-- Twerk 2025 button script
+local function twerk2025Button()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_10
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            -- Add animation speed adjustment for twerking
+            emote:AdjustSpeed(1.2)
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+            
+            -- Add particle effects for twerking 2025 style
+            if SpecialEffects and SpecialEffects.twerk then
+                SpecialEffects.twerk(character, "start")
+            end
+            local particleEmitter = Instance.new("ParticleEmitter")
+            particleEmitter.Texture = "rbxassetid://8321585440" -- Sparkle texture
+            particleEmitter.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 255)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 50, 255))
+            })
+            particleEmitter.Rate = 10
+            particleEmitter.Rotation = NumberRange.new(-180, 180)
+            particleEmitter.RotSpeed = NumberRange.new(-30, 30)
+            particleEmitter.Speed = NumberRange.new(1, 3)
+            particleEmitter.SpreadAngle = Vector2.new(100, 100)
+            particleEmitter.Lifetime = NumberRange.new(0.5, 1)
+            particleEmitter.Size = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0.1),
+                NumberSequenceKeypoint.new(1, 0)
+            })
+            particleEmitter.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            particleEmitter.Parent = character.HumanoidRootPart
+            
+            -- Store for cleanup
+            script.particleEmitter = particleEmitter
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+            
+            -- Remove particles
+            if script.particleEmitter then
+                script.particleEmitter:Destroy()
+                script.particleEmitter = nil
+            end
+        end
+    end)
+end
+coroutine.resume(coroutine.create(twerk2025Button))
+
+-- Future Griddy button script
+local function futureGriddyButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_11
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+            
+            -- Future griddy trail effect
+            if SpecialEffects and SpecialEffects.griddy then
+                SpecialEffects.griddy(character, "start")
+            end
+            local trail = Instance.new("Trail")
+            trail.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 200, 255)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 255))
+            })
+            trail.Transparency = NumberSequence.new({
+                NumberSequenceKeypoint.new(0, 0),
+                NumberSequenceKeypoint.new(1, 1)
+            })
+            trail.Lifetime = 0.5
+            trail.MinLength = 0.1
+            trail.Attachment0 = Instance.new("Attachment", character.RightFoot)
+            trail.Attachment1 = Instance.new("Attachment", character.LeftFoot)
+            trail.Parent = character.HumanoidRootPart
+            
+            -- Store for cleanup
+            script.trail = trail
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+            
+            -- Remove trail
+            if script.trail then
+                script.trail:Destroy()
+                script.trail = nil
+            end
+        end
+    end)
+end
+coroutine.resume(coroutine.create(futureGriddyButton))
+
+-- HoloDance 2025 button script
+local function holoDance2025Button()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_12
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+            
+            -- Holographic effect for 2025
+            local highlight = Instance.new("Highlight")
+            highlight.FillColor = Color3.fromRGB(0, 50, 200)
+            highlight.OutlineColor = Color3.fromRGB(0, 150, 255)
+            highlight.FillTransparency = 0.7
+            highlight.OutlineTransparency = 0.3
+            highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+            highlight.Parent = character
+            
+            -- Store for cleanup
+            script.highlight = highlight
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+            
+            -- Remove highlight
+            if script.highlight then
+                script.highlight:Destroy()
+                script.highlight = nil
+            end
+        end
+    end)
+end
+coroutine.resume(coroutine.create(holoDance2025Button))
+
+-- Neo TikTok button script
+local function neoTikTokButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_13
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            -- Increase speed for TikTok style
+            emote:AdjustSpeed(1.5)
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+            
+            -- Neo TikTok 2025 AR effect
+            local billboardGui = Instance.new("BillboardGui")
+            billboardGui.Adornee = character.Head
+            billboardGui.Size = UDim2.new(3, 0, 0.5, 0)
+            billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+            billboardGui.AlwaysOnTop = true
+            
+            local textLabel = Instance.new("TextLabel")
+            textLabel.BackgroundTransparency = 1
+            textLabel.Size = UDim2.new(1, 0, 1, 0)
+            textLabel.Font = Enum.Font.GothamBold
+            textLabel.TextScaled = true
+            textLabel.TextColor3 = Color3.fromRGB(255, 100, 50)
+            textLabel.Text = "@TikTok2025"
+            textLabel.Parent = billboardGui
+            
+            billboardGui.Parent = character
+            
+            -- Store for cleanup
+            script.billboardGui = billboardGui
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+            
+            -- Remove billboard
+            if script.billboardGui then
+                script.billboardGui:Destroy()
+                script.billboardGui = nil
+            end
+        end
+    end)
+end
+coroutine.resume(coroutine.create(neoTikTokButton))
+
+-- Quantum Shuffle button script
+local function quantumShuffleButton()
+    local script = Instance.new('LocalScript')
+    script.Parent = TextButton_14
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hum = character:WaitForChild("Humanoid")
+    local emote = hum:LoadAnimation(script.Parent.Emote)
+    local playing = false
+    
+    script.Parent.MouseButton1Click:connect(function()
+        if not playing then
+            script.Parent.Sound.Playing = true
+            emote:Play()
+            hum.WalkSpeed = 0
+            hum.JumpPower = 0
+            playing = true
+            
+            -- 2025 quantum teleport effect
+            local function createTeleportEffect()
+                local oldPos = character.HumanoidRootPart.Position
+                
+                -- Small random offset teleport
+                task.delay(0.1, function()
+                    local randomOffset = Vector3.new(math.random(-2, 2), 0, math.random(-2, 2))
+                    character.HumanoidRootPart.Position = oldPos + randomOffset
+                    
+                    -- Teleport effect
+                    local part = Instance.new("Part")
+                    part.Shape = Enum.PartType.Ball
+                    part.Material = Enum.Material.Neon
+                    part.Size = Vector3.new(1, 1, 1)
+                    part.Position = oldPos
+                    part.Anchored = true
+                    part.CanCollide = false
+                    part.Color = Color3.fromRGB(0, 255, 100)
+                    part.Transparency = 0.5
+                    part.Parent = workspace
+                    
+                    -- Fade out
+                    for i = 0.5, 1, 0.1 do
+                        task.wait(0.05)
+                        part.Transparency = i
+                        part.Size = part.Size - Vector3.new(0.1, 0.1, 0.1)
+                    end
+                    part:Destroy()
+                end)
+            end
+            
+            -- Create the teleport effect every 0.5 seconds
+            local teleportLoop = task.spawn(function()
+                while playing do
+                    createTeleportEffect()
+                    task.wait(0.5)
+                end
+            end)
+            
+            -- Store for cleanup
+            script.teleportLoop = teleportLoop
+        else
+            script.Parent.Sound.Playing = false
+            emote:Stop()
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+            playing = false
+            
+            -- Stop teleport effect
+            if script.teleportLoop then
+                task.cancel(script.teleportLoop)
+                script.teleportLoop = nil
+            end
+        end
+    end)
+end
+coroutine.resume(coroutine.create(quantumShuffleButton))
+
+-- Handle character respawning
+local function setupRespawnHandler()
+    local player = game.Players.LocalPlayer
+    
+    player.CharacterAdded:Connect(function(newCharacter)
+        -- Reset all animations when character respawns
+        if Frame and Frame.Visible then
+            -- Re-initialize all buttons when character respawns
+            toggleMainGUI()
+            danceRobloxButton()
+            helloButton()
+            fortniteDanceButton()
+            chickenDanceButton()
+            robotDanceButton()
+            monkeyDanceButton()
+            breakdanceButton()
+            laughEmoteButton()
+            twerk2025Button()
+            futureGriddyButton()
+            holoDance2025Button()
+            neoTikTokButton()
+            quantumShuffleButton()
+        end
+    end)
+end
+coroutine.resume(coroutine.create(setupRespawnHandler))
+
+-- Return the ScreenGui so it can be used
+return Danceguinotvirusandattack
