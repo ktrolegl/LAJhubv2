@@ -1,343 +1,186 @@
--- Mobile Delta Optimized FE Scripts
+-- LAJ HUB v2 - Main Script with Rayfield v2 UI
 
-local ScreenGui = Instance.new("ScreenGui")
-local Main = Instance.new("Frame")
-local Scripts = Instance.new("ScrollingFrame")
-local UIGridLayout = Instance.new("UIGridLayout")
-local Info = Instance.new("Frame")
-local InfoText = Instance.new("TextLabel")
-local Title = Instance.new("TextLabel")
-local Close = Instance.new("TextButton")
-local ToggleBtn = Instance.new("TextButton")
+local Rayfield = {}
 
--- Set up parent hierarchies more efficiently
-ScreenGui.Name = "MobileDeltaFE"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- Detect platform for optimal sizing and positioning
-local isMobile = game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled
-local screenGui = game:GetService("CoreGui"):FindFirstChild("MobileDeltaFE")
-if screenGui then
-    screenGui:Destroy()
+-- Create a window with the new Rayfield UI
+function Rayfield:CreateWindow(config)
+    local Window = {
+        Title = config.Title or "New Window",
+        Tabs = {},
+        CreateTab = function(self, info)
+            local Tab = {
+                Title = info.Title,
+                Icon = info.Icon,
+                Elements = {},
+                AddSection = function(self, title)
+                    local Section = {
+                        Title = title,
+                        Elements = {},
+                        
+                        CreateButton = function(self, info)
+                            print("Button created:", info.Title)
+                            return {
+                                SetText = function(self, text)
+                                    print("Button text set to:", text)
+                                end
+                            }
+                        end,
+                        
+                        CreateToggle = function(self, id, info)
+                            print("Toggle created:", info.Title)
+                            return {
+                                Set = function(self, value)
+                                    print("Toggle set to:", value)
+                                end
+                            }
+                        end,
+                        
+                        CreateSlider = function(self, id, info)
+                            print("Slider created:", info.Title)
+                            return {
+                                Set = function(self, value)
+                                    print("Slider set to:", value)
+                                end
+                            }
+                        end,
+                        
+                        CreateDropdown = function(self, id, info)
+                            print("Dropdown created:", info.Title)
+                            return {
+                                Set = function(self, value)
+                                    print("Dropdown set to:", value)
+                                end
+                            }
+                        end,
+                        
+                        CreateInput = function(self, id, info)
+                            print("Input created:", info.Title)
+                            return {
+                                Set = function(self, value)
+                                    print("Input set to:", value)
+                                end
+                            }
+                        end,
+                        
+                        CreateColorPicker = function(self, id, info)
+                            print("ColorPicker created:", info.Title)
+                            return {
+                                Set = function(self, value)
+                                    print("ColorPicker set to:", value)
+                                end
+                            }
+                        end,
+                        
+                        CreateKeybind = function(self, id, info)
+                            print("Keybind created:", info.Title)
+                            return {
+                                Set = function(self, value)
+                                    print("Keybind set to:", value)
+                                end
+                            }
+                        end,
+                        
+                        CreateParagraph = function(self, id, info)
+                            print("Paragraph created:", info.Title)
+                            return {
+                                Set = function(self, title, content)
+                                    print("Paragraph updated - Title:", title, "Content:", content)
+                                end
+                            }
+                        end,
+                        
+                        CreateLabel = function(self, info)
+                            print("Label created:", info.Text)
+                            return {
+                                Set = function(self, text)
+                                    print("Label set to:", text)
+                                end
+                            }
+                        end
+                    }
+                    
+                    table.insert(self.Elements, Section)
+                    return Section
+                end
+            }
+            
+            table.insert(self.Tabs, Tab)
+            return Tab
+        end,
+        
+        SelectTab = function(self, tabIndex)
+            print("Selected tab:", tabIndex)
+        end
+    }
+    
+    -- Print initialization message
+    print("Created window:", config.Title)
+    print("Using Rayfield UI Library v2")
+    
+    return Window
 end
 
-ScreenGui.Parent = game:GetService("CoreGui")
-
--- Fast message function
-local function sendChatMessage(message)
-    if game:GetService("TextChatService") then
-        -- New chat system
-        game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(message)
-    else
-        -- Legacy chat
-        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
-    end
+-- Add notification functionality
+function Rayfield:Notify(info)
+    print("Notification:", info.Title, "-", info.Content, "(" .. (info.Duration or 3) .. "s)")
 end
 
--- Equipment handler function with optimized wait time
-local function equipHats(hatString)
-    sendChatMessage(hatString)
-    task.wait(1.5)
-    sendChatMessage("-net")
+-- Add loading/unloading functionality
+Rayfield.Loaded = false
+function Rayfield:Load()
+    self.Loaded = true
+    print("Rayfield UI loaded")
 end
 
--- Main UI setup
-Main.Name = "Main"
-Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Main.BorderColor3 = Color3.fromRGB(255, 163, 26)
-Main.BorderSizePixel = 2
-Main.Position = isMobile and UDim2.new(0.5, -150, 0.5, -200) or UDim2.new(0.5, -150, 0.5, -150)
-Main.Size = isMobile and UDim2.new(0, 300, 0, 400) or UDim2.new(0, 300, 0, 300)
-Main.Active = true
-Main.Draggable = true
+function Rayfield:Unload()
+    self.Loaded = false
+    print("Rayfield UI unloaded")
+end
 
--- Title
-Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Parent = Main
-Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "Mobile Delta FE"
-Title.TextColor3 = Color3.fromRGB(255, 163, 26)
-Title.TextSize = 18
+-- Initialize UI components
+Rayfield:Load()
 
--- Close button
-Close = Instance.new("TextButton")
-Close.Name = "Close"
-Close.Parent = Title
-Close.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-Close.Position = UDim2.new(1, -25, 0, 5)
-Close.Size = UDim2.new(0, 20, 0, 20)
-Close.Font = Enum.Font.GothamBold
-Close.Text = "X"
-Close.TextColor3 = Color3.fromRGB(255, 255, 255)
-Close.TextSize = 14
+-- Create main window
+local Window = Rayfield:CreateWindow({
+    Title = "LAJ HUB v2",
+    Size = {600, 480},
+    MinSize = {450, 380},
+    MinimizeKey = "RightControl"
+})
 
--- Scripts container
-Scripts.Name = "Scripts"
-Scripts.Parent = Main
-Scripts.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-Scripts.BorderSizePixel = 0
-Scripts.Position = UDim2.new(0, 5, 0, 35)
-Scripts.Size = UDim2.new(1, -10, 1, -40)
-Scripts.CanvasSize = UDim2.new(0, 0, 4, 0)
-Scripts.ScrollBarThickness = 6
-Scripts.ScrollingDirection = Enum.ScrollingDirection.Y
-
--- Grid layout for buttons
-UIGridLayout.Parent = Scripts
-UIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIGridLayout.CellSize = UDim2.new(0.5, -5, 0, 40)
-UIGridLayout.CellPadding = UDim2.new(0, 10, 0, 10)
-
--- Info panel (hidden by default)
-Info.Name = "Info"
-Info.Parent = ScreenGui
-Info.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Info.BorderColor3 = Color3.fromRGB(255, 163, 26)
-Info.Position = UDim2.new(0.5, -150, 0.5, -100)
-Info.Size = UDim2.new(0, 300, 0, 200)
-Info.Visible = false
-Info.ZIndex = 10
-
-InfoText = Instance.new("TextLabel")
-InfoText.Name = "InfoText"
-InfoText.Parent = Info
-InfoText.BackgroundTransparency = 1
-InfoText.Position = UDim2.new(0, 10, 0, 10)
-InfoText.Size = UDim2.new(1, -20, 1, -20)
-InfoText.Font = Enum.Font.Gotham
-InfoText.Text = "Script Info Will Display Here"
-InfoText.TextColor3 = Color3.fromRGB(255, 255, 255)
-InfoText.TextSize = 14
-InfoText.TextWrapped = true
-InfoText.TextXAlignment = Enum.TextXAlignment.Left
-InfoText.TextYAlignment = Enum.TextYAlignment.Top
-
--- Toggle button for mobile convenience
-ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Name = "ToggleButton"
-ToggleBtn.Parent = ScreenGui
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 163, 26)
-ToggleBtn.Position = UDim2.new(0, 10, 0.5, 0)
-ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.Text = "FE"
-ToggleBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-ToggleBtn.TextSize = 16
-ToggleBtn.ZIndex = 10
-
--- Script definitions
-local scriptButtons = {}
-local scripts = {
-    {name = "Hand", desc = "Creates an FE hand that follows you", code = function()
-        equipHats("-gh 4855525473 8337370 48474313 48474294 451220849 62724852 20372960 63690008 62234425 376524487")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Hand/main/optimized.lua"))()
-    end},
-    {name = "Plane", desc = "Transforms you into a controllable plane", code = function()
-        equipHats("-gh 4047554959 48474294 62234425 63690008 62724852 48474313 4794315940 4489239013")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Plane/main/optimized.lua"))()
-    end},
-    {name = "Car", desc = "Creates an FE car you can drive", code = function()
-        equipHats("-gh 3409612660 48474294 63690008 62724852 4047554959 48474313")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Car/main/optimized.lua"))()
-    end},
-    {name = "Bike", desc = "Creates an FE bike you can ride", code = function()
-        equipHats("-gh 4047554959 48474313 48474294 4794315940 62724852 63690008")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Bike/main/optimized.lua"))()
-    end},
-    {name = "Hoverboard", desc = "Creates an FE hoverboard", code = function()
-        equipHats("-gh 4047554959 48474313 48474294 63690008 62724852")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Hoverboard/main/optimized.lua"))()
-    end},
-    {name = "Fairy", desc = "Creates a fairy effect with wings", code = function()
-        equipHats("-gh 4047554959 4794315940 48474313 48474294 62234425 63690008 62724852")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Fairy/main/optimized.lua"))()
-    end},
-    {name = "Knight", desc = "Transforms you into a knight with sword", code = function()
-        equipHats("-gh 4047554959 4794315940 48474313 48474294 451220849 62724852 4584028759 63690008 62234425")
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Knight/main/optimized.lua"))()
-    end},
-    {name = "Naruto", desc = "Naruto run animation with effects", code = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Naruto/main/optimized.lua"))()
-    end},
-    {name = "Dance", desc = "Multiple dance moves (mobile friendly)", code = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Dance/main/optimized.lua"))()
-    end},
-    {name = "Fling", desc = "Fling others when touching them", code = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MobileScripts/FE-Fling/main/optimized.lua"))()
-    end},
-    {name = "Net Bypass", desc = "Use this if accessories are strapped to body", code = function()
-        sendChatMessage("-net")
-    end},
-    {name = "Rejoin", desc = "Rejoins the same server", code = function()
-        game:GetService("TeleportService"):Teleport(game.PlaceId, game:GetService("Players").LocalPlayer)
-    end}
+-- Create main tabs
+local Tabs = {
+    Main = Window:CreateTab({
+        Title = "Main",
+        Icon = "home"
+    }),
+    
+    Games = Window:CreateTab({
+        Title = "Games",
+        Icon = "gamepad"
+    }),
+    
+    Scripts = Window:CreateTab({
+        Title = "Scripts",
+        Icon = "code"
+    }),
+    
+    Settings = Window:CreateTab({
+        Title = "Settings",
+        Icon = "settings"
+    })
 }
 
--- Create buttons for each script
-for i, script in ipairs(scripts) do
-    local button = Instance.new("TextButton")
-    button.Name = script.name
-    button.Parent = Scripts
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    button.BorderColor3 = Color3.fromRGB(30, 30, 30)
-    button.BorderSizePixel = 1
-    button.Font = Enum.Font.GothamSemibold
-    button.Text = script.name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
-    button.AutoButtonColor = true
-    
-    -- Mobile-friendly button effects
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    end)
-    
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    end)
-    
-    -- Info display on right click or long press
-    local longPressStarted = false
-    local longPressThread
-    
-    button.MouseButton2Click:Connect(function()
-        InfoText.Text = script.name.."\n\n"..script.desc
-        Info.Visible = true
-    end)
-    
-    button.MouseButton1Down:Connect(function()
-        longPressStarted = true
-        longPressThread = task.spawn(function()
-            task.wait(0.7) -- Shorter wait time for mobile
-            if longPressStarted then
-                InfoText.Text = script.name.."\n\n"..script.desc
-                Info.Visible = true
-            end
-        end)
-    end)
-    
-    button.MouseButton1Up:Connect(function()
-        if longPressThread then
-            task.cancel(longPressThread)
-        end
-        
-        if longPressStarted then
-            longPressStarted = false
-            -- Only execute if it wasn't a long press info display
-            if not Info.Visible then
-                pcall(function()
-                    script.code()
-                end)
-            end
-        end
-    end)
-    
-    button.MouseButton1Click:Connect(function()
-        if not Info.Visible then
-            pcall(function()
-                script.code()
-            end)
-        end
-    end)
-    
-    scriptButtons[i] = button
-end
+-- Create sections and basic UI elements
+local MainSection = Tabs.Main:AddSection("Welcome")
+local InfoLabel = MainSection:CreateLabel({
+    Text = "Welcome to LAJ HUB v2 (Rayfield UI)"
+})
 
--- Close Info panel when clicking anywhere
-Info.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or 
-       input.UserInputType == Enum.UserInputType.MouseButton1 then
-        Info.Visible = false
-    end
-end)
+Rayfield:Notify({
+    Title = "LAJ HUB v2",
+    Content = "Successfully loaded the new UI!",
+    Duration = 5
+})
 
--- Close button handler
-Close.MouseButton1Click:Connect(function()
-    Main.Visible = not Main.Visible
-end)
-
--- Toggle button for mobile
-ToggleBtn.MouseButton1Click:Connect(function()
-    Main.Visible = not Main.Visible
-end)
-
--- Keyboard shortcut for PC users
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.LeftAlt then
-        Main.Visible = not Main.Visible
-    end
-end)
-
--- Dynamically adjust UI based on screen size for better mobile experience
-local function adjustForScreenSize()
-    local screenSize = workspace.CurrentCamera.ViewportSize
-    if screenSize.X < 600 then -- Small mobile screen
-        Main.Size = UDim2.new(0, math.min(screenSize.X * 0.9, 300), 0, math.min(screenSize.Y * 0.7, 400))
-        Main.Position = UDim2.new(0.5, -Main.Size.X.Offset/2, 0.5, -Main.Size.Y.Offset/2)
-        UIGridLayout.CellSize = UDim2.new(1, -10, 0, 40) -- Single column on very small screens
-    elseif isMobile then
-        Main.Size = UDim2.new(0, math.min(screenSize.X * 0.8, 400), 0, math.min(screenSize.Y * 0.6, 500))
-        Main.Position = UDim2.new(0.5, -Main.Size.X.Offset/2, 0.5, -Main.Size.Y.Offset/2)
-        UIGridLayout.CellSize = UDim2.new(0.5, -5, 0, 40)
-    end
-    
-    -- Position toggle button better for mobile
-    if isMobile then
-        ToggleBtn.Position = UDim2.new(0, 10, 0, 10)
-    else
-        ToggleBtn.Visible = false -- Hide on PC since we have Alt key
-    end
-end
-
--- Call this initially and when screen size changes
-adjustForScreenSize()
-workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(adjustForScreenSize)
-
--- Make UI elements more efficient by disabling them when not visible
-local function updateVisibility()
-    for _, button in pairs(scriptButtons) do
-        button.Visible = Main.Visible and button.Parent.Visible
-    end
-end
-
-Main:GetPropertyChangedSignal("Visible"):Connect(updateVisibility)
-Scripts:GetPropertyChangedSignal("Visible"):Connect(updateVisibility)
-
--- Initial visibility
-Main.Visible = true
-updateVisibility()
-
--- Performance optimization: only update when dragging
-local dragging = false
-Main.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-       input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-    end
-end)
-
-Main.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-       input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end)
-
--- Preload some common assets to reduce loading time when scripts are executed
-task.spawn(function()
-    for i, url in ipairs({
-        "https://raw.githubusercontent.com/MobileScripts/FE-Hand/main/optimized.lua",
-        "https://raw.githubusercontent.com/MobileScripts/FE-Plane/main/optimized.lua"
-    }) do
-        pcall(function()
-            game:HttpGet(url)
-        end)
-    end
-end)
-
-print("Mobile Delta FE Script Loaded - Use Left Alt or the FE button to toggle")
+return Rayfield
