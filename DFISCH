@@ -1,154 +1,13 @@
---[[
-    LAJHUBv2.lua - Clean Base Version
-    Simplified Rayfield UI implementation for LAJ HUB v2
-    
-    This is a clean base version with only the Rayfield UI framework.
-    Game-specific tabs and functionality will be added in future updates.
-]]
 
--- Roblox API environment check
-local inRoblox = type(game) == "table" and pcall(function() return game.PlaceId end)
 
--- Task library emulation for testing outside Roblox
-if not inRoblox then
-    if not task then task = {} end
-    if not task.wait then
-        task.wait = function(t)
-            t = t or 0
-            local start = os.clock()
-            while os.clock() - start < t do end
-            return true
-        end
-    end
-end
-
--- Rayfield UI library loader
-local Rayfield
-if inRoblox then
-    -- Load Rayfield from the web in real Roblox environment
-    Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-else
-    -- Mock Rayfield for testing outside Roblox
-    Rayfield = {
-        Loaded = false,
-        
-        Load = function(self)
-            self.Loaded = true
-            print("Rayfield UI loaded")
-            return self
-        end,
-        
-        CreateWindow = function(self, options)
-            print("Window created with name: " .. (options.Name or "Unnamed Window"))
-            
-            return {
-                Name = options.Name,
-                Tabs = {},
-                
-                CreateTab = function(self, options)
-                    print("Tab created: " .. (options.Title or "Unnamed Tab"))
-                    
-                    return {
-                        Title = options.Title,
-                        Sections = {},
-                        
-                        CreateSection = function(self, name)
-                            print("Section created: " .. (name or "Unnamed Section"))
-                            
-                            return {
-                                Name = name,
-                                
-                                CreateParagraph = function(self, options)
-                                    print("Paragraph created: " .. (options.Title or "Unnamed Paragraph"))
-                                    return {
-                                        Set = function(self, title, content)
-                                            print("Paragraph updated: " .. title .. " - " .. content)
-                                        end
-                                    }
-                                end,
-                                
-                                CreateButton = function(self, options)
-                                    print("Button created: " .. (options.Name or "Unnamed Button"))
-                                    return {
-                                        Set = function(self, text)
-                                            print("Button text updated: " .. text)
-                                        end
-                                    }
-                                end,
-                                
-                                CreateToggle = function(self, options)
-                                    print("Toggle created: " .. (options.Name or "Unnamed Toggle"))
-                                    return {
-                                        Set = function(self, state)
-                                            print("Toggle state set to: " .. tostring(state))
-                                        end
-                                    }
-                                end,
-                                
-                                CreateSlider = function(self, options)
-                                    print("Slider created: " .. (options.Name or "Unnamed Slider"))
-                                    return {
-                                        Set = function(self, value)
-                                            print("Slider value set to: " .. tostring(value))
-                                        end
-                                    }
-                                end,
-                                
-                                CreateDropdown = function(self, options)
-                                    print("Dropdown created: " .. (options.Name or "Unnamed Dropdown"))
-                                    return {
-                                        Set = function(self, value)
-                                            print("Dropdown value set to: " .. tostring(value))
-                                        end
-                                    }
-                                end,
-                                
-                                CreateInput = function(self, options)
-                                    print("Input created: " .. (options.Name or "Unnamed Input"))
-                                    return {
-                                        Set = function(self, value)
-                                            print("Input value set to: " .. tostring(value))
-                                        end
-                                    }
-                                end,
-                                
-                                CreateKeybind = function(self, options)
-                                    print("Keybind created: " .. (options.Name or "Unnamed Keybind"))
-                                    return {
-                                        Set = function(self, value)
-                                            print("Keybind set to: " .. tostring(value))
-                                        end
-                                    }
-                                end,
-                                
-                                CreateColorPicker = function(self, options)
-                                    print("ColorPicker created: " .. (options.Name or "Unnamed ColorPicker"))
-                                    return {
-                                        Set = function(self, value)
-                                            print("Color set to: " .. tostring(value))
-                                        end
-                                    }
-                                end
-                            }
-                        end
-                    }
-                end
-            }
-        end,
-        
-        Notify = function(self, options)
-            print("Notification: " .. (options.Title or "Notification") .. " - " .. (options.Content or ""))
-        end
-    }
-    
-    Rayfield:Load()
-end
+-- Load Rayfield UI library directly from the source
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Create the main window
 local Window = Rayfield:CreateWindow({
-    Name = "▶ LAJHUBv2 ◀",
+    Name = "▶ LAJHUBv2 EXPLOIT ◀",
     LoadingTitle = "LAJHUBv2",
-    LoadingSubtitle = "by LAJ HUB Technologies",
+    LoadingSubtitle = "Premium Roblox Exploits",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "LAJHUBv2",
@@ -169,35 +28,32 @@ local AnnouncementTab = Window:CreateTab({
 })
 
 -- Add sections to the announcement tab
-local AnnouncementSection = AnnouncementTab:CreateSection("LAJHUBv2 Coming Soon")
+local AnnouncementSection = AnnouncementTab:CreateSection("LAJHUBv2 Premium Exploits")
 
 -- Add content to the announcement section
 local StatusParagraph = AnnouncementSection:CreateParagraph({
     Title = "LAJHUBv2 Status",
-    Content = "LAJHUBv2 is currently in development. This is a preview version with limited functionality."
+    Content = "LAJHUBv2 exploit suite is currently in development. This is a preview version with limited functionality."
 })
 
 local UpdateParagraph = AnnouncementSection:CreateParagraph({
-    Title = "Update Information",
-    Content = "The full version will include enhanced game support, mobile optimization, and improved UI elements."
+    Title = "Coming Soon",
+    Content = "The full version will include auto-farm scripts, ESP/visual hacks, teleport exploits, item dupes, and more. All exploits are optimized for mobile execution."
 })
 
 -- Discord button
 local DiscordButton = AnnouncementSection:CreateButton({
     Name = "Join Discord for Updates",
     Callback = function()
-        -- Set clipboard in Roblox environment
-        if inRoblox and setclipboard then
+        if setclipboard then
             setclipboard("https://discord.gg/lajhub")
-            Rayfield:Notify({
-                Title = "Discord",
-                Content = "Discord link copied to clipboard!",
-                Duration = 3
-            })
-        else
-            print("Clipboard set to: https://discord.gg/lajhub")
-            print("Notification: Discord - Discord link copied to clipboard!")
         end
+        
+        Rayfield:Notify({
+            Title = "Discord",
+            Content = "Discord link copied to clipboard!",
+            Duration = 3
+        })
     end
 })
 
@@ -205,24 +61,22 @@ local DiscordButton = AnnouncementSection:CreateButton({
 local RayfieldButton = AnnouncementSection:CreateButton({
     Name = "Rayfield UI Discord",
     Callback = function()
-        if inRoblox and setclipboard then
+        if setclipboard then
             setclipboard("https://discord.gg/sirius")
-            Rayfield:Notify({
-                Title = "Rayfield Discord",
-                Content = "Rayfield UI Discord link copied to clipboard!",
-                Duration = 3
-            })
-        else
-            print("Clipboard set to: https://discord.gg/sirius")
-            print("Notification: Rayfield Discord - Discord link copied to clipboard!")
         end
+        
+        Rayfield:Notify({
+            Title = "Rayfield Discord",
+            Content = "Rayfield UI Discord link copied to clipboard!",
+            Duration = 3
+        })
     end
 })
 
 -- Send notification that script loaded successfully
 Rayfield:Notify({
-    Title = "LAJHUBv2",
-    Content = "Successfully loaded the UI! V2 coming soon...",
+    Title = "LAJHUBv2 EXPLOIT",
+    Content = "Successfully loaded the exploit UI! Premium hacks coming soon...",
     Duration = 5
 })
 
