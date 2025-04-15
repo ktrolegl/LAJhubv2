@@ -1,84 +1,379 @@
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
 
+local player = game.Players.LocalPlayer
 
--- Load Rayfield UI library directly from the source
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- // // // Services // // // --
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VirtualUser = game:GetService("VirtualUser")
+local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService('StarterGui')
+local UserInputService = game:GetService('UserInputService')
 
--- Create the main window
-local Window = Rayfield:CreateWindow({
-    Name = "▶ LAJHUBv2 EXPLOIT ◀",
-    LoadingTitle = "LAJHUBv2",
-    LoadingSubtitle = "Premium Roblox Exploits",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "LAJHUBv2",
-        FileName = "config"
-    },
-    Discord = {
-        Enabled = true,
-        Invite = "lajhub", -- Your Discord server invite code
-        RememberJoins = true
-    },
-    KeySystem = false -- Set to true to enable key system
-})
+-- // // // Locals // // // --
+local LocalPlayer = Players.LocalPlayer
+local LocalCharacter = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = LocalCharacter:FindFirstChild("HumanoidRootPart")
+local TweenService = game:GetService("TweenService")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local plr = game.Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
 
--- Create the announcement tab
-local AnnouncementTab = Window:CreateTab({
-    Title = "Announcement",
-    Icon = "rbxassetid://4483345998" -- Roblox asset ID for tab icon
-})
+if game.PlaceId == 87039211657390 or game.PlaceId == 128336380114944 then 
+    local Fluent = loadstring(game:HttpGet("https://you.whimper.xyz/sources/Fluent/main.lua"))()
+    local SaveManager = loadstring(game:HttpGet("https://you.whimper.xyz/sources/Fluent/SaveManager.lua"))()
+    local InterfaceManager = loadstring(game:HttpGet("https://you.whimper.xyz/sources/Fluent/InterfaceManager.lua"))()
+    
+    local NameScript = 'Arise Crossover [BETA]'
+    local updateScript = '11/03/25 03:30'
 
--- Add sections to the announcement tab
-local AnnouncementSection = AnnouncementTab:CreateSection("LAJHUBv2 Premium Exploits")
+    local Window = Fluent:CreateWindow({
+        Title = NameScript,
+        SubTitle = "by LAJ HUB (v1.0.0) UPD|" .. updateScript,
+        TabWidth = 130,
+        Size = UDim2.fromOffset(550, 330),
+        Acrylic = false,
+        Theme = "Amethyst",
+        MinimizeKey = Enum.KeyCode.LeftControl
+    })
 
--- Add content to the announcement section
-local StatusParagraph = AnnouncementSection:CreateParagraph({
-    Title = "LAJHUBv2 Status",
-    Content = "LAJHUBv2 exploit suite is currently in development. This is a preview version with limited functionality."
-})
+    -- ===================== Mobile Button for UI ===================== --
+    local screenGui = Instance.new("ScreenGui")
+    local minimizeButton = Instance.new("ImageButton")
+    local buttonCorner = Instance.new("UICorner")
 
-local UpdateParagraph = AnnouncementSection:CreateParagraph({
-    Title = "Coming Soon",
-    Content = "The full version will include auto-farm scripts, ESP/visual hacks, teleport exploits, item dupes, and more. All exploits are optimized for mobile execution."
-})
+    -- Configure ScreenGui
+    screenGui.Name = "MobileMinimize"
+    screenGui.Parent = game:GetService("CoreGui")
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Discord button
-local DiscordButton = AnnouncementSection:CreateButton({
-    Name = "Join Discord for Updates",
-    Callback = function()
-        if setclipboard then
-            setclipboard("https://discord.gg/lajhub")
+    -- Configure ImageButton (Minimize Button)
+    minimizeButton.Parent = screenGui
+    minimizeButton.BackgroundColor3 = Color3.new(1.000000, 1.000000, 1.000000)
+    minimizeButton.BorderColor3 = Color3.new(1.000000, 1.000000, 1.000000)
+    minimizeButton.BorderSizePixel = 0
+    minimizeButton.Position = UDim2.new(0,584,0,14)
+
+    -- Set default size
+    local originalSize = UDim2.new(0, 45, 0, 45)
+    minimizeButton.Size = originalSize + UDim2.new(0, originalSize.X.Offset * 0.15, 0, originalSize.Y.Offset * 0.15)
+    minimizeButton.Image = "rbxassetid://131642672159441"
+
+    -- Add rounded corners
+    buttonCorner.CornerRadius = UDim.new(0.2, 0)
+    buttonCorner.Parent = minimizeButton
+
+    -- Variables for dragging
+    local dragging = false
+    local dragInput, touchPos, buttonPos
+
+    -- Function to start dragging
+    minimizeButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            touchPos = input.Position
+            buttonPos = minimizeButton.Position
+
+            -- When dragging ends
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
-        
-        Rayfield:Notify({
-            Title = "Discord",
-            Content = "Discord link copied to clipboard!",
-            Duration = 3
+    end)
+
+    -- Function to detect mouse/touch movement
+    minimizeButton.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    -- Function for dragging the button
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - touchPos
+            minimizeButton.Position = UDim2.new(
+                buttonPos.X.Scale,
+                buttonPos.X.Offset + delta.X,
+                buttonPos.Y.Scale,
+                buttonPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    -- Minimize window on click
+    minimizeButton.MouseButton1Click:Connect(function()
+        Window:Minimize()
+    end)
+    -- ===================== Mobile Button for UI ===================== --
+
+    function ShowNotification(Content,SubContent)
+        Fluent:Notify({
+            Title = "LAJ HUB",
+            Content = Content,
+            SubContent = SubContent,
+            Duration = 2.5
         })
     end
-})
 
--- Link to Rayfield Discord (for support with UI library)
-local RayfieldButton = AnnouncementSection:CreateButton({
-    Name = "Rayfield UI Discord",
-    Callback = function()
-        if setclipboard then
-            setclipboard("https://discord.gg/sirius")
+    --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
+    local Tabs = {
+        Main = Window:AddTab({ Title = "Main", Icon = "gamepad-2" }),
+        Tools = Window:AddTab({ Title = "Tools", Icon = "wrench" }),
+        Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+    }
+
+    local Options = Fluent.Options
+
+    -- ============================================= Other Code =====================================
+    do -- no delete
+        ShowNotification(NameScript,"Script Update " .. updateScript)
+
+        -- ======== Configuration Variables ======== 
+        -- ======== Configuration Variables ========
+
+        -- ======== Global Flags / Settings ========
+        for _, v in ipairs{
+            "AutoArise", "AutoFarm"
+        } do 
+            _G[v] = false 
         end
+
+        -- ======== Global Flags / Settings ========
         
-        Rayfield:Notify({
-            Title = "Rayfield Discord",
-            Content = "Rayfield UI Discord link copied to clipboard!",
-            Duration = 3
-        })
+        -- ==================================== Start Function Group ============================
+            
+            -- ============================= Task Priority System =============================
+            _G.DebugMode = false
+
+            VariableIndex = VariableIndex or {
+                ["AutoFarm"] = false,
+            }
+                
+            VariableTable = VariableTable or {
+                ["AutoFarm"] = 1,
+            }
+                
+            local function logDebug(message)
+                if _G.DebugMode then
+                    warn(message)
+                end
+            end
+                
+            local function GetFirstTask()
+                local minPriority = math.huge
+                local firstTask = nil
+                for key, value in pairs(VariableTable) do
+                    if value < minPriority then
+                        minPriority = value
+                        firstTask = key
+                    end
+                end
+                return firstTask
+            end
+                
+            local function IsLowerPriorityTaskActive(PriorityToCheck)
+                for TaskName, TaskPriority in pairs(VariableTable) do
+                    if TaskPriority < PriorityToCheck and VariableIndex[TaskName] then
+                        logDebug("⛔ Blocked by lower priority task: " .. TaskName)
+                        return true
+                    end
+                end
+                return false
+            end
+                
+            local function TaskManager(Variable, Status, Starting)
+                local FirstTask = GetFirstTask()
+            
+                if Status == "Get" then
+                    if Variable == FirstTask and VariableIndex[Variable] then
+                        logDebug("✅ First task (" .. Variable .. ") active.")
+                        return true
+                    end
+            
+                    if VariableIndex[FirstTask] then
+                        logDebug("⛔ Blocked by first task: " .. FirstTask)
+                        return false
+                    end
+            
+                    if IsLowerPriorityTaskActive(VariableTable[Variable]) then
+                        logDebug("⛔ Blocked due to active lower priority task.")
+                        return false
+                    end
+            
+                    logDebug("✅ Task " .. Variable .. " is allowed.")
+                    return VariableIndex[Variable] or false
+            
+                elseif Status == "Post" then
+                    VariableIndex[Variable] = Starting
+                    logDebug(Starting and "▶️ Task started: " or "✅ Task ended: " .. Variable)
+            
+                elseif Status == "Check" then
+                    logDebug("🔍 Task status check: " .. Variable .. " = " .. tostring(VariableIndex[Variable]))
+                    return VariableIndex[Variable]
+                end
+            
+                return false
+            end
+            -- ============================= Task Priority System =============================
+
+            -- Format number with commas
+            local function formatNumber(num)
+                return string.gsub(num, "(%d)(%d%d%d)$", "%1,%2")  -- Add commas for thousands
+            end
+            
+            -- Initialize game-specific functions
+            local function initializeGameFunctions()
+                -- Add your game-specific functions here
+                print("Game functions initialized")
+            end
+
+            -- Main game loop
+            local function runMainGameLoop()
+                while wait(0.1) do
+                    if _G.AutoFarm and TaskManager("AutoFarm", "Get") then
+                        pcall(function()
+                            -- Add your auto farm code here
+                            print("Auto farming active")
+                        end)
+                    end
+                    
+                    if _G.AutoArise and TaskManager("AutoArise", "Get") then
+                        pcall(function()
+                            -- Add your auto arise code here
+                            print("Auto arise active")
+                        end)
+                    end
+                end
+            end
+
+            -- Initialize the UI with all settings
+            local function setupUI()
+                -- Main tab
+                local MainToggle = Tabs.Main:AddToggle("AutoFarmToggle", {
+                    Title = "Auto Farm",
+                    Default = false,
+                    Callback = function(Value)
+                        _G.AutoFarm = Value
+                        TaskManager("AutoFarm", "Post", Value)
+                        
+                        if Value then
+                            ShowNotification("Enabled Auto Farm", "Your character will automatically farm")
+                        else
+                            ShowNotification("Disabled Auto Farm", "Auto farming has been stopped")
+                        end
+                    end
+                })
+
+                local AriseToggle = Tabs.Main:AddToggle("AutoAriseToggle", {
+                    Title = "Auto Arise",
+                    Default = false,
+                    Callback = function(Value)
+                        _G.AutoArise = Value
+                        TaskManager("AutoArise", "Post", Value)
+                        
+                        if Value then
+                            ShowNotification("Enabled Auto Arise", "Your character will automatically use arise")
+                        else
+                            ShowNotification("Disabled Auto Arise", "Auto arise has been stopped")
+                        end
+                    end
+                })
+                
+                -- Tools tab
+                Tabs.Tools:AddButton({
+                    Title = "Teleport to Spawn",
+                    Callback = function()
+                        if game:GetService("Workspace"):FindFirstChild("SpawnLocation") then
+                            local spawnLocation = game:GetService("Workspace"):FindFirstChild("SpawnLocation")
+                            LocalPlayer.Character:SetPrimaryPartCFrame(spawnLocation.CFrame + Vector3.new(0, 5, 0))
+                            ShowNotification("Teleported", "You have been teleported to spawn")
+                        else
+                            ShowNotification("Error", "Could not find spawn location")
+                        end
+                    end
+                })
+                
+                Tabs.Tools:AddButton({
+                    Title = "Collect All Items",
+                    Callback = function()
+                        ShowNotification("Collecting Items", "Attempting to collect all items")
+                        -- Add item collection code here
+                    end
+                })
+                
+                -- Settings tab
+                local MobileSection = Tabs.Settings:AddSection("Mobile Support")
+                
+                Tabs.Settings:AddToggle("MobileButtonToggle", {
+                    Title = "Show Mobile Button",
+                    Default = true,
+                    Callback = function(Value)
+                        minimizeButton.Visible = Value
+                    end
+                })
+                
+                Tabs.Settings:AddSlider("UIScaleSlider", {
+                    Title = "UI Scale",
+                    Default = 1,
+                    Min = 0.5,
+                    Max = 1.5,
+                    Rounding = 1,
+                    Callback = function(Value)
+                        -- Adjust UI scale based on value
+                        screenGui.UIScale = Value
+                    end
+                })
+                
+                local PerformanceSection = Tabs.Settings:AddSection("Performance")
+                
+                Tabs.Settings:AddToggle("LowGraphicsToggle", {
+                    Title = "Low Graphics Mode",
+                    Default = false,
+                    Callback = function(Value)
+                        if Value then
+                            -- Reduce graphics for better performance
+                            settings().Rendering.QualityLevel = 1
+                            ShowNotification("Low Graphics Mode", "Enabled for better performance")
+                        else
+                            -- Restore normal graphics
+                            settings().Rendering.QualityLevel = 7
+                            ShowNotification("Normal Graphics Mode", "Graphics settings restored")
+                        end
+                    end
+                })
+                
+                Tabs.Settings:AddButton({
+                    Title = "Clear Memory",
+                    Callback = function()
+                        for i = 1, 5 do
+                            game:GetService("Debris"):AddItem(Instance.new("Part"), 0)
+                        end
+                        collectgarbage()
+                        ShowNotification("Memory Cleared", "Successfully cleared memory")
+                    end
+                })
+            end
+
+            -- Start the script
+            initializeGameFunctions()
+            setupUI()
+            spawn(runMainGameLoop)
+            
+            ShowNotification("Script Loaded", "Arise Crossover script has been successfully loaded!")
+        end
     end
-})
-
--- Send notification that script loaded successfully
-Rayfield:Notify({
-    Title = "LAJHUBv2 EXPLOIT",
-    Content = "Successfully loaded the exploit UI! Premium hacks coming soon...",
-    Duration = 5
-})
-
--- Return the window for other scripts to access
-return Window
+else
+    -- If not in the correct game
+    warn("This script is only for Arise Crossover game. Current game: " .. game.PlaceId)
+end
