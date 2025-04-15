@@ -1,91 +1,230 @@
+--[[
+    LAJHUBv2.lua - Clean Base Version
+    Simplified Rayfield UI implementation for LAJ HUB v2
+    
+    This is a clean base version with only the Rayfield UI framework.
+    Game-specific tabs and functionality will be added in future updates.
+]]
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Roblox API environment check
+local inRoblox = type(game) == "table" and pcall(function() return game.PlaceId end)
 
-local Players = game:GetService("Players")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local TweenService = game:GetService("TweenService")
-local wrk = game:GetService("Workspace")
-local rs = game:GetService("ReplicatedStorage")
-local plr = Players.LocalPlayer
-local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+-- Task library emulation for testing outside Roblox
+if not inRoblox then
+    if not task then task = {} end
+    if not task.wait then
+        task.wait = function(t)
+            t = t or 0
+            local start = os.clock()
+            while os.clock() - start < t do end
+            return true
+        end
+    end
+end
 
-local sinks = workspace.World.Areas["Starter Resaurant"].Sinks
-local selectedItem
+-- Rayfield UI library loader
+local Rayfield
+if inRoblox then
+    -- Load Rayfield from the web in real Roblox environment
+    Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+else
+    -- Mock Rayfield for testing outside Roblox
+    Rayfield = {
+        Loaded = false,
+        
+        Load = function(self)
+            self.Loaded = true
+            print("Rayfield UI loaded")
+            return self
+        end,
+        
+        CreateWindow = function(self, options)
+            print("Window created with name: " .. (options.Name or "Unnamed Window"))
+            
+            return {
+                Name = options.Name,
+                Tabs = {},
+                
+                CreateTab = function(self, options)
+                    print("Tab created: " .. (options.Title or "Unnamed Tab"))
+                    
+                    return {
+                        Title = options.Title,
+                        Sections = {},
+                        
+                        CreateSection = function(self, name)
+                            print("Section created: " .. (name or "Unnamed Section"))
+                            
+                            return {
+                                Name = name,
+                                
+                                CreateParagraph = function(self, options)
+                                    print("Paragraph created: " .. (options.Title or "Unnamed Paragraph"))
+                                    return {
+                                        Set = function(self, title, content)
+                                            print("Paragraph updated: " .. title .. " - " .. content)
+                                        end
+                                    }
+                                end,
+                                
+                                CreateButton = function(self, options)
+                                    print("Button created: " .. (options.Name or "Unnamed Button"))
+                                    return {
+                                        Set = function(self, text)
+                                            print("Button text updated: " .. text)
+                                        end
+                                    }
+                                end,
+                                
+                                CreateToggle = function(self, options)
+                                    print("Toggle created: " .. (options.Name or "Unnamed Toggle"))
+                                    return {
+                                        Set = function(self, state)
+                                            print("Toggle state set to: " .. tostring(state))
+                                        end
+                                    }
+                                end,
+                                
+                                CreateSlider = function(self, options)
+                                    print("Slider created: " .. (options.Name or "Unnamed Slider"))
+                                    return {
+                                        Set = function(self, value)
+                                            print("Slider value set to: " .. tostring(value))
+                                        end
+                                    }
+                                end,
+                                
+                                CreateDropdown = function(self, options)
+                                    print("Dropdown created: " .. (options.Name or "Unnamed Dropdown"))
+                                    return {
+                                        Set = function(self, value)
+                                            print("Dropdown value set to: " .. tostring(value))
+                                        end
+                                    }
+                                end,
+                                
+                                CreateInput = function(self, options)
+                                    print("Input created: " .. (options.Name or "Unnamed Input"))
+                                    return {
+                                        Set = function(self, value)
+                                            print("Input value set to: " .. tostring(value))
+                                        end
+                                    }
+                                end,
+                                
+                                CreateKeybind = function(self, options)
+                                    print("Keybind created: " .. (options.Name or "Unnamed Keybind"))
+                                    return {
+                                        Set = function(self, value)
+                                            print("Keybind set to: " .. tostring(value))
+                                        end
+                                    }
+                                end,
+                                
+                                CreateColorPicker = function(self, options)
+                                    print("ColorPicker created: " .. (options.Name or "Unnamed ColorPicker"))
+                                    return {
+                                        Set = function(self, value)
+                                            print("Color set to: " .. tostring(value))
+                                        end
+                                    }
+                                end
+                            }
+                        end
+                    }
+                end
+            }
+        end,
+        
+        Notify = function(self, options)
+            print("Notification: " .. (options.Title or "Notification") .. " - " .. (options.Content or ""))
+        end
+    }
+    
+    Rayfield:Load()
+end
 
-local circleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.circleHandler"
-local secondCircleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.secondCircleHandler"
-
+-- Create the main window
 local Window = Rayfield:CreateWindow({
-    Name = "▶ LAJ HUB V 2 ◀",
-    Icon = 0,
-    LoadingTitle = "Loading...",
+    Name = "▶ LAJHUBv2 ◀",
+    LoadingTitle = "LAJHUBv2",
     LoadingSubtitle = "by LAJ HUB Technologies",
-    Theme = "DarkBlue",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "LAJHUBv2",
+        FileName = "config"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "lajhub", -- Your Discord server invite code
+        RememberJoins = true
+    },
+    KeySystem = false -- Set to true to enable key system
 })
 
-local Main = Window:CreateTab("Main")
-local Misc = Window:CreateTab("Misc")
-local Player = Window:CreateTab("Player")
+-- Create the announcement tab
+local AnnouncementTab = Window:CreateTab({
+    Title = "Announcement",
+    Icon = "rbxassetid://4483345998" -- Roblox asset ID for tab icon
+})
 
+-- Add sections to the announcement tab
+local AnnouncementSection = AnnouncementTab:CreateSection("LAJHUBv2 Coming Soon")
 
-local circleHandlerClick = nil
-local secondCircleHandlerClick = nil
+-- Add content to the announcement section
+local StatusParagraph = AnnouncementSection:CreateParagraph({
+    Title = "LAJHUBv2 Status",
+    Content = "LAJHUBv2 is currently in development. This is a preview version with limited functionality."
+})
 
-function troll(text, textColor, strokeColor)
-    local player = Players.LocalPlayer
-    if not player then return end
-    
-    local gui = player:FindFirstChild("PlayerGui")
-    if not gui then return end
-    
-    local passiveGui = gui:FindFirstChild("passivegui")
-    if not passiveGui then return end
-    
-    local infoPop = passiveGui:FindFirstChild("infopop")
-    if not infoPop then return end
-    
-    local textTemp = infoPop:FindFirstChild("textTemp")
-    if not textTemp then return end
-    
-    if not text then return end
-    
-    textColor = textColor or Color3.new(1, 1, 1)
-    strokeColor = strokeColor or Color3.new(0, 0, 0)
-    
-    local newText = textTemp:Clone()
-    newText.Text = text
-    newText.TextColor3 = textColor
-    newText.Size = UDim2.new(1, 0, 0, 0)
-    newText.Visible = true
-    newText.Parent = infoPop
-    
-    if newText:FindFirstChild("UIStroke") then
-        newText.UIStroke.Color = strokeColor
-    end
-    
-    TweenService:Create(newText, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(1, 0, 0.15, 0)
-    }):Play()
-    
-    task.delay(4, function()
-        TweenService:Create(newText, TweenInfo.new(1), { TextTransparency = 1 }):Play()
-        if newText:FindFirstChild("UIStroke") then
-            TweenService:Create(newText.UIStroke, TweenInfo.new(1), { Transparency = 1 }):Play()
-        end
-        game:GetService("Debris"):AddItem(newText, 1)
-    end)
-end
+local UpdateParagraph = AnnouncementSection:CreateParagraph({
+    Title = "Update Information",
+    Content = "The full version will include enhanced game support, mobile optimization, and improved UI elements."
+})
 
-for _, func in next, getgc(true) do
-    if typeof(func) == "function" then
-        local funcName = debug.info(func, "n")
-        local funcParent = debug.info(func, "s")
-
-        if funcName == "inputBegan" and funcParent == circleHandler then
-            circleHandlerClick = func
-        elseif funcName == "inputBegan" and funcParent == secondCircleHandler then
-            secondCircleHandlerClick = func
-            break
+-- Discord button
+local DiscordButton = AnnouncementSection:CreateButton({
+    Name = "Join Discord for Updates",
+    Callback = function()
+        -- Set clipboard in Roblox environment
+        if inRoblox and setclipboard then
+            setclipboard("https://discord.gg/lajhub")
+            Rayfield:Notify({
+                Title = "Discord",
+                Content = "Discord link copied to clipboard!",
+                Duration = 3
+            })
+        else
+            print("Clipboard set to: https://discord.gg/lajhub")
+            print("Notification: Discord - Discord link copied to clipboard!")
         end
     end
-end
+})
+
+-- Link to Rayfield Discord (for support with UI library)
+local RayfieldButton = AnnouncementSection:CreateButton({
+    Name = "Rayfield UI Discord",
+    Callback = function()
+        if inRoblox and setclipboard then
+            setclipboard("https://discord.gg/sirius")
+            Rayfield:Notify({
+                Title = "Rayfield Discord",
+                Content = "Rayfield UI Discord link copied to clipboard!",
+                Duration = 3
+            })
+        else
+            print("Clipboard set to: https://discord.gg/sirius")
+            print("Notification: Rayfield Discord - Discord link copied to clipboard!")
+        end
+    end
+})
+
+-- Send notification that script loaded successfully
+Rayfield:Notify({
+    Title = "LAJHUBv2",
+    Content = "Successfully loaded the UI! V2 coming soon...",
+    Duration = 5
+})
+
+-- Return the window for other scripts to access
+return Window
