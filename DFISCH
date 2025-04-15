@@ -1,7 +1,25 @@
 -- LAJ HUB v2 - Main Script with Rayfield v2 UI
--- Rayfield UI Library Discord Server: https://discord.gg/sirius
+-- Rayfield UI Library Discord Server: https://discord.gg/sirius ts
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local function LoadRayfield()
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+    end
+    
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+    end)
+    
+    if success then
+        return result
+    else
+        warn("Failed to load Rayfield from URL: " .. tostring(result))
+        -- Fallback to local implementation
+        return {}
+    end
+end
+
+local Rayfield = LoadRayfield()
 
 -- Create a window with the new Rayfield UI
 function Rayfield:CreateWindow(config)
