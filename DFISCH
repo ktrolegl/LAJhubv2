@@ -1,205 +1,92 @@
--- LAJ HUB v2 - Main Script with Rayfield v2 UI
--- Rayfield UI Library Discord Server: https://discord.gg/sirius ts
 
-local function LoadRayfield()
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
-    end
-    
-    local success, result = pcall(function()
-        return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-    end)
-    
-    if success then
-        return result
-    else
-        warn("Failed to load Rayfield from URL: " .. tostring(result))
-        -- Fallback to local implementation
-        return {}
-    end
-end
 
-local Rayfield = LoadRayfield()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Create a window with the new Rayfield UI
-function Rayfield:CreateWindow(config)
-    local Window = {
-        Title = config.Title or "New Window",
-        Tabs = {},
-        CreateTab = function(self, info)
-            local Tab = {
-                Title = info.Title,
-                Icon = info.Icon,
-                Elements = {},
-                AddSection = function(self, title)
-                    local Section = {
-                        Title = title,
-                        Elements = {},
-                        
-                        CreateButton = function(self, info)
-                            print("Button created:", info.Title)
-                            return {
-                                SetText = function(self, text)
-                                    print("Button text set to:", text)
-                                end
-                            }
-                        end,
-                        
-                        CreateToggle = function(self, id, info)
-                            print("Toggle created:", info.Title)
-                            return {
-                                Set = function(self, value)
-                                    print("Toggle set to:", value)
-                                end
-                            }
-                        end,
-                        
-                        CreateSlider = function(self, id, info)
-                            print("Slider created:", info.Title)
-                            return {
-                                Set = function(self, value)
-                                    print("Slider set to:", value)
-                                end
-                            }
-                        end,
-                        
-                        CreateDropdown = function(self, id, info)
-                            print("Dropdown created:", info.Title)
-                            return {
-                                Set = function(self, value)
-                                    print("Dropdown set to:", value)
-                                end
-                            }
-                        end,
-                        
-                        CreateInput = function(self, id, info)
-                            print("Input created:", info.Title)
-                            return {
-                                Set = function(self, value)
-                                    print("Input set to:", value)
-                                end
-                            }
-                        end,
-                        
-                        CreateColorPicker = function(self, id, info)
-                            print("ColorPicker created:", info.Title)
-                            return {
-                                Set = function(self, value)
-                                    print("ColorPicker set to:", value)
-                                end
-                            }
-                        end,
-                        
-                        CreateKeybind = function(self, id, info)
-                            print("Keybind created:", info.Title)
-                            return {
-                                Set = function(self, value)
-                                    print("Keybind set to:", value)
-                                end
-                            }
-                        end,
-                        
-                        CreateParagraph = function(self, id, info)
-                            print("Paragraph created:", info.Title)
-                            return {
-                                Set = function(self, title, content)
-                                    print("Paragraph updated - Title:", title, "Content:", content)
-                                end
-                            }
-                        end,
-                        
-                        CreateLabel = function(self, info)
-                            print("Label created:", info.Text)
-                            return {
-                                Set = function(self, text)
-                                    print("Label set to:", text)
-                                end
-                            }
-                        end
-                    }
-                    
-                    table.insert(self.Elements, Section)
-                    return Section
-                end
-            }
-            
-            table.insert(self.Tabs, Tab)
-            return Tab
-        end,
-        
-        SelectTab = function(self, tabIndex)
-            print("Selected tab:", tabIndex)
-        end
-    }
-    
-    -- Print initialization message
-    print("Created window:", config.Title)
-    print("Using Rayfield UI Library v2")
-    
-    return Window
-end
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local TweenService = game:GetService("TweenService")
+local wrk = game:GetService("Workspace")
+local rs = game:GetService("ReplicatedStorage")
+local plr = Players.LocalPlayer
+local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
 
--- Add notification functionality
-function Rayfield:Notify(info)
-    print("Notification:", info.Title, "-", info.Content, "(" .. (info.Duration or 3) .. "s)")
-end
+local sinks = workspace.World.Areas["Starter Resaurant"].Sinks
+local selectedItem
 
--- Add loading/unloading functionality
-Rayfield.Loaded = false
-function Rayfield:Load()
-    self.Loaded = true
-    print("Rayfield UI loaded")
-end
+local circleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.circleHandler"
+local secondCircleHandler = "Players." .. plr.Name .. ".PlayerGui.gameui.skill test.skillTestScript.secondCircleHandler"
 
-function Rayfield:Unload()
-    self.Loaded = false
-    print("Rayfield UI unloaded")
-end
-
--- Initialize UI components
-Rayfield:Load()
-
--- Create main window
 local Window = Rayfield:CreateWindow({
-    Title = "LAJ HUB v2",
-    Size = {600, 480},
-    MinSize = {450, 380},
-    MinimizeKey = "RightControl"
+    Name = "▶ LAJ HUB V 2 ◀",
+    Icon = 0,
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "by LAJ HUB Technologies",
+    Theme = "DarkBlue",
 })
 
--- Create main tabs
-local Tabs = {
-    Main = Window:CreateTab({
-        Title = "Main",
-        Icon = "home"
-    }),
-    
-    Games = Window:CreateTab({
-        Title = "Games",
-        Icon = "gamepad"
-    }),
-    
-    Scripts = Window:CreateTab({
-        Title = "Scripts",
-        Icon = "code"
-    }),
-    
-    Settings = Window:CreateTab({
-        Title = "Settings",
-        Icon = "settings"
-    })
-}
+local Main = Window:CreateTab("Main")
+local Misc = Window:CreateTab("Misc")
+local Player = Window:CreateTab("Player")
 
--- Create sections and basic UI elements
-local MainSection = Tabs.Main:AddSection("Welcome")
-local InfoLabel = MainSection:CreateLabel({
-    Text = "Welcome to LAJ HUB v2 (Rayfield UI)"
-})
 
-Rayfield:Notify({
-    Title = "LAJ HUB v2",
-    Content = "Successfully loaded the new UI!",
-    Duration = 5
-})
+local circleHandlerClick = nil
+local secondCircleHandlerClick = nil
 
-return Rayfield
+function troll(text, textColor, strokeColor)
+    local player = Players.LocalPlayer
+    if not player then return end
+    
+    local gui = player:FindFirstChild("PlayerGui")
+    if not gui then return end
+    
+    local passiveGui = gui:FindFirstChild("passivegui")
+    if not passiveGui then return end
+    
+    local infoPop = passiveGui:FindFirstChild("infopop")
+    if not infoPop then return end
+    
+    local textTemp = infoPop:FindFirstChild("textTemp")
+    if not textTemp then return end
+    
+    if not text then return end
+    
+    textColor = textColor or Color3.new(1, 1, 1)
+    strokeColor = strokeColor or Color3.new(0, 0, 0)
+    
+    local newText = textTemp:Clone()
+    newText.Text = text
+    newText.TextColor3 = textColor
+    newText.Size = UDim2.new(1, 0, 0, 0)
+    newText.Visible = true
+    newText.Parent = infoPop
+    
+    if newText:FindFirstChild("UIStroke") then
+        newText.UIStroke.Color = strokeColor
+    end
+    
+    TweenService:Create(newText, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(1, 0, 0.15, 0)
+    }):Play()
+    
+    task.delay(4, function()
+        TweenService:Create(newText, TweenInfo.new(1), { TextTransparency = 1 }):Play()
+        if newText:FindFirstChild("UIStroke") then
+            TweenService:Create(newText.UIStroke, TweenInfo.new(1), { Transparency = 1 }):Play()
+        end
+        game:GetService("Debris"):AddItem(newText, 1)
+    end)
+end
+
+for _, func in next, getgc(true) do
+    if typeof(func) == "function" then
+        local funcName = debug.info(func, "n")
+        local funcParent = debug.info(func, "s")
+
+        if funcName == "inputBegan" and funcParent == circleHandler then
+            circleHandlerClick = func
+        elseif funcName == "inputBegan" and funcParent == secondCircleHandler then
+            secondCircleHandlerClick = func
+            break
+        end
+    end
+end
