@@ -1,6 +1,7 @@
 -- LAJ HUB v2 - Main Script with Rayfield v2 UI
+-- Rayfield UI Library Discord Server: https://discord.gg/sirius
 
-local Rayfield = {}
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Create a window with the new Rayfield UI
 function Rayfield:CreateWindow(config)
