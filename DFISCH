@@ -1,36 +1,44 @@
 --[[
-    LAJHUBv2.lua - Premium Roblox Exploitation Tool
-    
-    A collection of game hacks, exploits and scripts for Roblox
-    Built for mobile performance with Delta, Hydrogen, and other platforms
+    LAJHUBv2 - The Original Working Version 
+    Exact copy of the first version that worked properly
 ]]
 
--- Load Rayfield UI library directly from the source
+-- Load the Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Create the main window
+-- Create the main window with proper configuration
 local Window = Rayfield:CreateWindow({
-    Name = "▶ LAJHUBv2 EXPLOIT ◀",
-    LoadingTitle = "Loading...",
+    Name = "▶ LAJHUBv2 ◀",
+    LoadingTitle = "LAJHUBv2",
     LoadingSubtitle = "by LAJ HUB",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "LAJHUBv2",
         FileName = "config"
     },
+    KeySystem = false,
+    KeySettings = {
+        Title = "LAJHUBv2",
+        Subtitle = "Key System",
+        Note = "Join the discord (discord.gg/lajhub)",
+        FileName = "Key",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"Hello"}
+    }
 })
 
 -- Create tabs
-local HomeTab = Window:CreateTab("Home")
-local ScriptsTab = Window:CreateTab("Scripts")
-local SettingsTab = Window:CreateTab("Settings")
+local HomeTab = Window:CreateTab("Home", 4483362458)
+local ScriptsTab = Window:CreateTab("Scripts", 4483362458)
+local SettingsTab = Window:CreateTab("Settings", 4483362458)
 
 -- Home Tab Content
 local WelcomeSection = HomeTab:CreateSection("Welcome to LAJHUBv2")
 
 HomeTab:CreateParagraph({
-    Title = "LAJHUBv2 Premium Exploit",
-    Content = "Welcome to LAJHUBv2, the premium Roblox exploit with advanced features. This UI is designed for optimal performance on mobile platforms."
+    Title = "LAJHUBv2",
+    Content = "Welcome to LAJHUBv2, a Roblox script hub with useful features."
 })
 
 HomeTab:CreateButton({
@@ -46,21 +54,10 @@ HomeTab:CreateButton({
         else
             Rayfield:Notify({
                 Title = "Discord",
-                Content = "Unable to copy to clipboard",
+                Content = "Unable to copy to clipboard. Discord: discord.gg/lajhub",
                 Duration = 3,
             })
         end
-    end,
-})
-
-HomeTab:CreateButton({
-    Name = "Check for Updates",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Update Check",
-            Content = "Your version is up to date!",
-            Duration = 3,
-        })
     end,
 })
 
@@ -68,12 +65,20 @@ HomeTab:CreateButton({
 local PopularSection = ScriptsTab:CreateSection("Popular Scripts")
 
 ScriptsTab:CreateButton({
-    Name = "Infinite Yield",
+    Name = "LAJ Infinite Yield",
     Callback = function()
         Rayfield:Notify({
-            Title = "Infinite Yield",
-            Content = "Loading Infinite Yield...",
+            Title = "LAJ Infinite Yield",
+            Content = "Loading LAJ Infinite Yield admin commands...",
             Duration = 3,
+        })
+        
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/ktrolegl/LAJhubv2/main/laj_infinite_yield.lua'))()
+        
+        Rayfield:Notify({
+            Title = "LAJ Infinite Yield",
+            Content = "Successfully loaded! Use ; to enter commands",
+            Duration = 5,
         })
     end,
 })
@@ -86,33 +91,8 @@ ScriptsTab:CreateButton({
             Content = "Loading Dex Explorer...",
             Duration = 3,
         })
-    end,
-})
-
-local GamesSection = ScriptsTab:CreateSection("Game Scripts")
-
-ScriptsTab:CreateDropdown({
-    Name = "Select Game",
-    Options = {"Adopt Me", "Blox Fruits", "Jailbreak", "Murder Mystery 2", "Shindo Life"},
-    CurrentOption = "",
-    Flag = "GameDropdown",
-    Callback = function(Option)
-        Rayfield:Notify({
-            Title = "Game Selected",
-            Content = "Selected: " .. Option,
-            Duration = 3,
-        })
-    end,
-})
-
-ScriptsTab:CreateButton({
-    Name = "Load Selected Game Script",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Script Loader",
-            Content = "Loading script for selected game...",
-            Duration = 3,
-        })
+        
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDex.lua"))()
     end,
 })
 
@@ -132,7 +112,7 @@ SettingsTab:CreateToggle({
     end,
 })
 
-local ThemeColorPicker = SettingsTab:CreateColorPicker({
+SettingsTab:CreateColorPicker({
     Name = "UI Theme Color",
     Color = Color3.fromRGB(89, 150, 255),
     Flag = "UIColor",
@@ -145,38 +125,9 @@ local ThemeColorPicker = SettingsTab:CreateColorPicker({
     end,
 })
 
-local PerformanceSection = SettingsTab:CreateSection("Performance")
-
-SettingsTab:CreateSlider({
-    Name = "Animation Smoothness",
-    Range = {0, 100},
-    Increment = 5,
-    CurrentValue = 75,
-    Flag = "AnimationSmoothnessSlider",
-    Callback = function(Value)
-        -- Animation smoothness value stored
-    end,
-})
-
-SettingsTab:CreateToggle({
-    Name = "Mobile Optimization",
-    CurrentValue = true,
-    Flag = "MobileOptimization",
-    Callback = function(Value)
-        Rayfield:Notify({
-            Title = "Mobile Optimization",
-            Content = Value and "Mobile optimization enabled" or "Mobile optimization disabled",
-            Duration = 3,
-        })
-    end,
-})
-
 -- Show notification on load
 Rayfield:Notify({
-    Title = "LAJHUBv2 EXPLOIT",
-    Content = "Successfully loaded the exploit UI!",
+    Title = "LAJHUBv2",
+    Content = "Successfully loaded the script hub!",
     Duration = 5,
 })
-
--- Return the window for other scripts to access
-return Window
