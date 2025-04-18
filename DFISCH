@@ -32,12 +32,12 @@ local Colors = {
 
 -- UI Parameters
 local UI = {
-    Width = 320,       -- Mobile width
-    Height = 240,      -- Mobile height
+    Width = 420,       -- Mobile width (increased size)
+    Height = 330,      -- Mobile height (increased size)
     Corner = 6,        -- Rounded corners
-    ButtonHeight = 36, -- Button height for touch
-    IconSize = 20,     -- Icon size
-    Padding = 10       -- Standard padding
+    ButtonHeight = 40, -- Button height for touch (increased)
+    IconSize = 24,     -- Icon size (increased)
+    Padding = 12       -- Standard padding (increased)
 }
 
 -- Animation Settings
@@ -273,8 +273,8 @@ function LAJHub:CreateTabButtons()
         local icon = Create("ImageLabel", {
             Name = "Icon",
             BackgroundTransparency = 1,
-            Position = UDim2.new(0.5, -20, 0, 3),
-            Size = UDim2.new(0, 18, 0, 18),
+            Position = UDim2.new(0.5, -12, 0, 3),
+            Size = UDim2.new(0, 24, 0, 24),
             Image = tab.icon,
             ImageColor3 = Colors.TextDark,
             Parent = button
