@@ -1,892 +1,1333 @@
-0--[[
-    LAJ HUB Modern UI (Ronix Style)
-    Clean, minimalist UI inspired by Ronix Hub design
+--[[
+    LAJ HUB PREMIUM RONIX
+    Enhanced clean UI inspired by Ronix Hub but with premium finishes
     
     Features:
-    - Simple, clean interface with dark theme
-    - Modern navigation with clear visual indicators
-    - Focused design for better usability
-    - Streamlined game script execution
+    - Minimalist dark theme with clean design
+    - Premium animations and transitions
+    - Subtle but impressive effects
+    - Sleek modern visual style with attention to detail
 ]]
 
 -- Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
--- UI Elements
-local LAJHub = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local TopBar = Instance.new("Frame")
-local TitleLabel = Instance.new("TextLabel")
-local CloseButton = Instance.new("TextButton")
-local Shadow = Instance.new("ImageLabel")
-local SideBar = Instance.new("Frame")
-local HomeButton = Instance.new("ImageButton")
-local HomeIndicator = Instance.new("Frame")
-local GamesButton = Instance.new("ImageButton")
-local GamesIndicator = Instance.new("Frame")
-local SettingsButton = Instance.new("ImageButton")
-local SettingsIndicator = Instance.new("Frame")
-local ContentFrame = Instance.new("Frame")
+local LocalPlayer = Players.LocalPlayer
 
--- Home Page
-local HomePage = Instance.new("Frame")
-local LogoContainer = Instance.new("Frame")
-local LogoImage = Instance.new("ImageLabel")
-local DescriptionLabel = Instance.new("TextLabel")
-local QuickAccessLabel = Instance.new("TextLabel")
-local QuickAccessFrame = Instance.new("Frame")
-local QuickBloxFruits = Instance.new("TextButton")
-local QuickDeadRails = Instance.new("TextButton")
-
--- Games Page
-local GamesPage = Instance.new("ScrollingFrame")
-local GamesUIListLayout = Instance.new("UIListLayout")
-local GamesUIPadding = Instance.new("UIPadding")
-
--- Settings Page
-local SettingsPage = Instance.new("Frame")
-local SettingsTitle = Instance.new("TextLabel")
-local AutoLoadContainer = Instance.new("Frame")
-local AutoLoadLabel = Instance.new("TextLabel")
-local AutoLoadToggle = Instance.new("Frame")
-local AutoLoadBall = Instance.new("Frame")
-local VersionLabel = Instance.new("TextLabel")
-local DiscordLabel = Instance.new("TextLabel")
-
--- Animation settings
-local TweenInfo_Default = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local TweenInfo_Long = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
--- Clean Ronix-style UI Colors
-local colors = {
-    background = Color3.fromRGB(25, 25, 35),       -- Dark background
-    sideBar = Color3.fromRGB(30, 30, 40),          -- Slightly lighter sidebar
-    topBar = Color3.fromRGB(30, 30, 40),           -- Same as sidebar for consistency
-    accent = Color3.fromRGB(115, 86, 209),         -- Purple accent
-    accentLight = Color3.fromRGB(135, 100, 235),   -- Light purple for highlights
-    accentDark = Color3.fromRGB(93, 68, 175),      -- Darker purple
-    text = Color3.fromRGB(255, 255, 255),          -- White text
-    subText = Color3.fromRGB(200, 200, 220),       -- Dimmed text
-    border = Color3.fromRGB(50, 50, 70),           -- Border color
-    button = Color3.fromRGB(45, 45, 65),           -- Button background
-    buttonHover = Color3.fromRGB(55, 55, 75),      -- Button hover
-    success = Color3.fromRGB(65, 190, 110),        -- Green
-    error = Color3.fromRGB(215, 65, 65),           -- Red
-    shadow = Color3.fromRGB(10, 10, 18)            -- Shadow color
+-- Configuration
+local Config = {
+    -- UI Settings
+    UI = {
+        Name = "LAJ Hub",
+        Version = "Premium",
+        Width = 520,
+        Height = 350,
+        CornerRadius = 6,
+    },
+    
+    -- Colors (enhanced Ronix style)
+    Colors = {
+        Background = Color3.fromRGB(22, 22, 30),        -- Dark background
+        BackgroundSecondary = Color3.fromRGB(28, 28, 36), -- Slightly lighter bg
+        ElementBackground = Color3.fromRGB(35, 35, 45),  -- Element backgrounds
+        Accent = Color3.fromRGB(115, 86, 209),          -- Purple accent
+        AccentDark = Color3.fromRGB(93, 68, 175),       -- Darker purple
+        AccentLight = Color3.fromRGB(135, 106, 230),    -- Lighter purple
+        Text = Color3.fromRGB(255, 255, 255),           -- White text
+        TextDimmed = Color3.fromRGB(200, 200, 220),     -- Dimmed text
+        Border = Color3.fromRGB(50, 50, 70),            -- Border color
+        Button = Color3.fromRGB(45, 45, 65),            -- Button background
+        ButtonHover = Color3.fromRGB(55, 55, 75),       -- Button hover
+        Success = Color3.fromRGB(65, 190, 110),         -- Green
+        Error = Color3.fromRGB(215, 65, 65),            -- Red
+        Shadow = Color3.fromRGB(15, 15, 20),            -- Shadow color
+    },
+    
+    -- Animation settings
+    Animation = {
+        ShortTween = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        DefaultTween = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        LongTween = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        SmoothTween = TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+    },
+    
+    -- Fonts
+    Fonts = {
+        Title = Enum.Font.GothamBold,
+        Subtitle = Enum.Font.GothamSemibold,
+        Text = Enum.Font.Gotham,
+        Mono = Enum.Font.Code,
+    },
 }
 
--- Set properties
-LAJHub.Name = "LAJHub"
-LAJHub.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-pcall(function() LAJHub.Parent = game:GetService("CoreGui") end)
-if not LAJHub.Parent then LAJHub.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end
+-- Helper functions
+local Helper = {}
 
--- Main Frame with special effects
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = LAJHub
-MainFrame.BackgroundColor3 = colors.background
-MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
-MainFrame.Size = UDim2.new(0, 500, 0, 350)
-MainFrame.ClipsDescendants = true
-MainFrame.Active = true
-MainFrame.Draggable = true
-
--- Add main frame background gradient
-local MainFrameGradient = Instance.new("UIGradient")
-MainFrameGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, colors.background),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 3, 18))
-})
-MainFrameGradient.Rotation = 45
-MainFrameGradient.Parent = MainFrame
-
-TopBar.Name = "TopBar"
-TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = colors.topBar
-TopBar.BorderSizePixel = 0
-TopBar.Size = UDim2.new(1, 0, 0, 30)
-
--- Simple title (Ronix style)
-TitleLabel.Name = "TitleLabel"
-TitleLabel.Parent = TopBar
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Position = UDim2.new(0, 10, 0, 0)
-TitleLabel.Size = UDim2.new(1, -40, 1, 0)
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Welcome to LAJ HUB"
-TitleLabel.TextColor3 = colors.text
-TitleLabel.TextSize = 16
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-CloseButton.Name = "CloseButton"
-CloseButton.Parent = TopBar
-CloseButton.BackgroundTransparency = 1
-CloseButton.Position = UDim2.new(1, -25, 0.5, -8)
-CloseButton.Size = UDim2.new(0, 16, 0, 16)
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Text = "✕"
-CloseButton.TextColor3 = colors.text
-CloseButton.TextSize = 14
-CloseButton.MouseButton1Click:Connect(function()
-    LAJHub:Destroy()
-end)
-
--- Create rounded corners for elements
-local function ApplyCorners(instance, radius)
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, radius or 4)
-    UICorner.Parent = instance
-    return UICorner
+-- Create UI elements easily
+function Helper.Create(className)
+    return function(properties)
+        local obj = Instance.new(className)
+        for prop, value in pairs(properties) do
+            obj[prop] = value
+        end
+        return obj
+    end
 end
 
-ApplyCorners(MainFrame, 8)
-ApplyCorners(CloseButton, 4)
+-- Simplify tweening
+function Helper.Tween(object, tweenInfo, properties)
+    local tween = TweenService:Create(object, tweenInfo, properties)
+    tween:Play()
+    return tween
+end
 
--- Create Enhanced Shadow with glow effect
-Shadow.Name = "Shadow"
-Shadow.Parent = MainFrame
-Shadow.BackgroundTransparency = 1
-Shadow.Position = UDim2.new(0, -15, 0, -15)
-Shadow.Size = UDim2.new(1, 30, 1, 30)
-Shadow.ZIndex = -1
-Shadow.Image = "rbxassetid://6014261993"
-Shadow.ImageColor3 = colors.shadow
-Shadow.ImageTransparency = 0.4
-Shadow.ScaleType = Enum.ScaleType.Slice
-Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
+-- Create rounded corners
+function Helper.Round(instance, radius)
+    local corner = Helper.Create("UICorner")({
+        CornerRadius = UDim.new(0, radius or Config.UI.CornerRadius),
+        Parent = instance
+    })
+    return corner
+end
 
--- Add simple border (Ronix style is cleaner, less glowy)
-local MainStroke = Instance.new("UIStroke")
-MainStroke.Parent = MainFrame
-MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-MainStroke.Color = colors.border
-MainStroke.Thickness = 1
-MainStroke.Transparency = 0.7
+-- Create stroke
+function Helper.Stroke(instance, color, thickness, transparency)
+    local stroke = Helper.Create("UIStroke")({
+        Color = color or Config.Colors.Border,
+        Thickness = thickness or 1,
+        Transparency = transparency or 0,
+        Parent = instance
+    })
+    return stroke
+end
 
--- Create Sidebar
-SideBar.Name = "SideBar"
-SideBar.Parent = MainFrame
-SideBar.BackgroundColor3 = colors.sideBar
-SideBar.BorderSizePixel = 0
-SideBar.Position = UDim2.new(0, 0, 0, 30)
-SideBar.Size = UDim2.new(0, 50, 1, -30)
+-- Create shadow
+function Helper.Shadow(instance, size, transparency)
+    local offset = size or 15
+    local shadow = Helper.Create("ImageLabel")({
+        Name = "Shadow",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://6014261993",
+        ImageColor3 = Config.Colors.Shadow,
+        ImageTransparency = transparency or 0.5,
+        Position = UDim2.new(0, -offset, 0, -offset),
+        Size = UDim2.new(1, offset*2, 1, offset*2),
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(49, 49, 450, 450),
+        ZIndex = instance.ZIndex - 1,
+        Parent = instance
+    })
+    return shadow
+end
 
--- Create sidebar buttons
-HomeButton.Name = "HomeButton"
-HomeButton.Parent = SideBar
-HomeButton.BackgroundTransparency = 1
-HomeButton.Position = UDim2.new(0, 0, 0, 10)
-HomeButton.Size = UDim2.new(1, 0, 0, 40)
-HomeButton.Font = Enum.Font.GothamBold
-HomeButton.Text = ""
-HomeButton.TextColor3 = colors.text
-HomeButton.TextSize = 12
+-- Create gradient
+function Helper.Gradient(instance, colors, rotation)
+    local gradient = Helper.Create("UIGradient")({
+        Color = colors,
+        Rotation = rotation or 0,
+        Parent = instance
+    })
+    return gradient
+end
 
-HomeIcon.Name = "HomeIcon"
-HomeIcon.Parent = HomeButton
-HomeIcon.BackgroundTransparency = 1
-HomeIcon.Position = UDim2.new(0.5, -12, 0.5, -12)
-HomeIcon.Size = UDim2.new(0, 24, 0, 24)
-HomeIcon.Image = "rbxassetid://7733960981" -- Home icon
-HomeIcon.ImageColor3 = colors.accent
+-- Create a ripple effect for buttons
+function Helper.Ripple(button, rippleColor)
+    local rippleContainer = Helper.Create("Frame")({
+        Name = "RippleContainer",
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = button.ZIndex + 1,
+        Parent = button
+    })
+    
+    Helper.Round(rippleContainer, Helper.GetCornerRadius(button))
+    
+    button.MouseButton1Down:Connect(function(x, y)
+        -- Create ripple
+        local mouse = UserInputService:GetMouseLocation()
+        local buttonPos = button.AbsolutePosition
+        local relX, relY = mouse.X - buttonPos.X, mouse.Y - buttonPos.Y
+        
+        -- Find the longest distance to a corner
+        local cornerDistances = {
+            (Vector2.new(0, 0) - Vector2.new(relX, relY)).Magnitude,
+            (Vector2.new(button.AbsoluteSize.X, 0) - Vector2.new(relX, relY)).Magnitude,
+            (Vector2.new(0, button.AbsoluteSize.Y) - Vector2.new(relX, relY)).Magnitude,
+            (Vector2.new(button.AbsoluteSize.X, button.AbsoluteSize.Y) - Vector2.new(relX, relY)).Magnitude
+        }
+        local maxDistance = math.max(unpack(cornerDistances))
+        
+        -- Create ripple circle
+        local ripple = Helper.Create("Frame")({
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = rippleColor or Config.Colors.AccentLight,
+            BackgroundTransparency = 0.7,
+            Position = UDim2.new(0, relX, 0, relY),
+            Size = UDim2.new(0, 0, 0, 0),
+            Parent = rippleContainer
+        })
+        Helper.Round(ripple, 9999) -- Make it circular
+        
+        -- Animate ripple expansion
+        Helper.Tween(ripple, Config.Animation.DefaultTween, {
+            Size = UDim2.new(0, maxDistance * 2, 0, maxDistance * 2),
+            BackgroundTransparency = 1
+        })
+        
+        -- Remove ripple after animation
+        game:GetService("Debris"):AddItem(ripple, Config.Animation.DefaultTween.Time + 0.1)
+    end)
+    
+    return rippleContainer
+end
 
-GamesButton.Name = "GamesButton"
-GamesButton.Parent = SideBar
-GamesButton.BackgroundTransparency = 1
-GamesButton.Position = UDim2.new(0, 0, 0, 60)
-GamesButton.Size = UDim2.new(1, 0, 0, 40)
-GamesButton.Font = Enum.Font.GothamBold
-GamesButton.Text = ""
-GamesButton.TextColor3 = colors.text
-GamesButton.TextSize = 12
+-- Get UICorner radius if it exists
+function Helper.GetCornerRadius(instance)
+    local corner = instance:FindFirstChildOfClass("UICorner")
+    if corner then
+        local radius = corner.CornerRadius
+        if radius.Scale > 0 then
+            return math.min(
+                instance.AbsoluteSize.X * radius.Scale, 
+                instance.AbsoluteSize.Y * radius.Scale
+            ) + radius.Offset
+        else
+            return radius.Offset
+        end
+    end
+    return 0
+end
 
-GamesIcon.Name = "GamesIcon"
-GamesIcon.Parent = GamesButton
-GamesIcon.BackgroundTransparency = 1
-GamesIcon.Position = UDim2.new(0.5, -12, 0.5, -12)
-GamesIcon.Size = UDim2.new(0, 24, 0, 24)
-GamesIcon.Image = "rbxassetid://7734042071" -- Game controller icon
-GamesIcon.ImageColor3 = colors.text
+-- Main UI Class
+local LAJHub = {}
+LAJHub.__index = LAJHub
 
-CreditsButton.Name = "CreditsButton"
-CreditsButton.Parent = SideBar
-CreditsButton.BackgroundTransparency = 1
-CreditsButton.Position = UDim2.new(0, 0, 0, 110)
-CreditsButton.Size = UDim2.new(1, 0, 0, 40)
-CreditsButton.Font = Enum.Font.GothamBold
-CreditsButton.Text = ""
-CreditsButton.TextColor3 = colors.text
-CreditsButton.TextSize = 12
-
-CreditsIcon.Name = "CreditsIcon"
-CreditsIcon.Parent = CreditsButton
-CreditsIcon.BackgroundTransparency = 1
-CreditsIcon.Position = UDim2.new(0.5, -12, 0.5, -12)
-CreditsIcon.Size = UDim2.new(0, 24, 0, 24)
-CreditsIcon.Image = "rbxassetid://7734110748" -- Info icon
-CreditsIcon.ImageColor3 = colors.text
-
-SettingsButton.Name = "SettingsButton"
-SettingsButton.Parent = SideBar
-SettingsButton.BackgroundTransparency = 1
-SettingsButton.Position = UDim2.new(0, 0, 0, 160)
-SettingsButton.Size = UDim2.new(1, 0, 0, 40)
-SettingsButton.Font = Enum.Font.GothamBold
-SettingsButton.Text = ""
-SettingsButton.TextColor3 = colors.text
-SettingsButton.TextSize = 12
-
-SettingsIcon.Name = "SettingsIcon"
-SettingsIcon.Parent = SettingsButton
-SettingsIcon.BackgroundTransparency = 1
-SettingsIcon.Position = UDim2.new(0.5, -12, 0.5, -12)
-SettingsIcon.Size = UDim2.new(0, 24, 0, 24)
-SettingsIcon.Image = "rbxassetid://7734053495" -- Settings icon
-SettingsIcon.ImageColor3 = colors.text
-
--- Content Frame
-ContentFrame.Name = "ContentFrame"
-ContentFrame.Parent = MainFrame
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.Position = UDim2.new(0, 50, 0, 30)
-ContentFrame.Size = UDim2.new(1, -50, 1, -30)
-
--- Home Page
-HomePage.Name = "HomePage"
-HomePage.Parent = ContentFrame
-HomePage.BackgroundTransparency = 1
-HomePage.Size = UDim2.new(1, 0, 1, 0)
-HomePage.Visible = true
-
-WelcomeLabel.Name = "WelcomeLabel"
-WelcomeLabel.Parent = HomePage
-WelcomeLabel.BackgroundTransparency = 1
-WelcomeLabel.Position = UDim2.new(0, 20, 0, 20)
-WelcomeLabel.Size = UDim2.new(1, -40, 0, 30)
-WelcomeLabel.Font = Enum.Font.GothamBold
-WelcomeLabel.Text = "Welcome to LAJ HUB"
-WelcomeLabel.TextColor3 = colors.text
-WelcomeLabel.TextSize = 24
-WelcomeLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-LogoImage.Name = "LogoImage"
-LogoImage.Parent = HomePage
-LogoImage.BackgroundTransparency = 1
-LogoImage.Position = UDim2.new(0.5, -50, 0, 60)
-LogoImage.Size = UDim2.new(0, 100, 0, 100)
-LogoImage.Image = "rbxassetid://6022668888" -- Placeholder logo
-LogoImage.ImageColor3 = colors.accent
-
-DescriptionLabel.Name = "DescriptionLabel"
-DescriptionLabel.Parent = HomePage
-DescriptionLabel.BackgroundTransparency = 1
-DescriptionLabel.Position = UDim2.new(0, 20, 0, 170)
-DescriptionLabel.Size = UDim2.new(1, -40, 0, 60)
-DescriptionLabel.Font = Enum.Font.Gotham
-DescriptionLabel.Text = "Your premium script hub for Roblox games. Select a game from the Games tab to load scripts."
-DescriptionLabel.TextColor3 = colors.subText
-DescriptionLabel.TextSize = 14
-DescriptionLabel.TextWrapped = true
-DescriptionLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-QuickAccessLabel.Name = "QuickAccessLabel"
-QuickAccessLabel.Parent = HomePage
-QuickAccessLabel.BackgroundTransparency = 1
-QuickAccessLabel.Position = UDim2.new(0, 20, 0, 240)
-QuickAccessLabel.Size = UDim2.new(1, -40, 0, 20)
-QuickAccessLabel.Font = Enum.Font.GothamBold
-QuickAccessLabel.Text = "Quick Access"
-QuickAccessLabel.TextColor3 = colors.text
-QuickAccessLabel.TextSize = 16
-QuickAccessLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-QuickAccessFrame.Name = "QuickAccessFrame"
-QuickAccessFrame.Parent = HomePage
-QuickAccessFrame.BackgroundTransparency = 1
-QuickAccessFrame.Position = UDim2.new(0, 20, 0, 270)
-QuickAccessFrame.Size = UDim2.new(1, -40, 0, 50)
-
--- Enhanced Quick Access Buttons
-QuickBloxFruits.Name = "QuickBloxFruits"
-QuickBloxFruits.Parent = QuickAccessFrame
-QuickBloxFruits.BackgroundColor3 = colors.button
-QuickBloxFruits.BorderSizePixel = 0
-QuickBloxFruits.Position = UDim2.new(0, 0, 0, 0)
-QuickBloxFruits.Size = UDim2.new(0.48, 0, 1, 0)
-QuickBloxFruits.Font = Enum.Font.GothamSemibold
-QuickBloxFruits.Text = "Blox Fruits"
-QuickBloxFruits.TextColor3 = colors.text
-QuickBloxFruits.TextSize = 14
-ApplyCorners(QuickBloxFruits, 8)
-
--- Add gradient to button
-local BloxFruitsGradient = Instance.new("UIGradient")
-BloxFruitsGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, colors.button:Lerp(colors.accent, 0.1)),
-    ColorSequenceKeypoint.new(1, colors.button)
-})
-BloxFruitsGradient.Rotation = 90
-BloxFruitsGradient.Parent = QuickBloxFruits
-
--- Add stroke to button
-local BloxFruitsStroke = Instance.new("UIStroke")
-BloxFruitsStroke.Color = colors.accent
-BloxFruitsStroke.Thickness = 1
-BloxFruitsStroke.Transparency = 0.7
-BloxFruitsStroke.Parent = QuickBloxFruits
-
-QuickDeadRails.Name = "QuickDeadRails"
-QuickDeadRails.Parent = QuickAccessFrame
-QuickDeadRails.BackgroundColor3 = colors.button
-QuickDeadRails.BorderSizePixel = 0
-QuickDeadRails.Position = UDim2.new(0.52, 0, 0, 0)
-QuickDeadRails.Size = UDim2.new(0.48, 0, 1, 0)
-QuickDeadRails.Font = Enum.Font.GothamSemibold
-QuickDeadRails.Text = "Dead Rails"
-QuickDeadRails.TextColor3 = colors.text
-QuickDeadRails.TextSize = 14
-ApplyCorners(QuickDeadRails, 8)
-
--- Add gradient to button
-local DeadRailsGradient = Instance.new("UIGradient")
-DeadRailsGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, colors.button:Lerp(colors.accent, 0.1)),
-    ColorSequenceKeypoint.new(1, colors.button)
-})
-DeadRailsGradient.Rotation = 90
-DeadRailsGradient.Parent = QuickDeadRails
-
--- Add stroke to button
-local DeadRailsStroke = Instance.new("UIStroke")
-DeadRailsStroke.Color = colors.accent
-DeadRailsStroke.Thickness = 1
-DeadRailsStroke.Transparency = 0.7
-DeadRailsStroke.Parent = QuickDeadRails
-
--- Games Page
-GamesPage.Name = "GamesPage"
-GamesPage.Parent = ContentFrame
-GamesPage.BackgroundTransparency = 1
-GamesPage.Size = UDim2.new(1, 0, 1, 0)
-GamesPage.Visible = false
-
-GamesLabel.Name = "GamesLabel"
-GamesLabel.Parent = GamesPage
-GamesLabel.BackgroundTransparency = 1
-GamesLabel.Position = UDim2.new(0, 20, 0, 20)
-GamesLabel.Size = UDim2.new(1, -40, 0, 30)
-GamesLabel.Font = Enum.Font.GothamBold
-GamesLabel.Text = "Game Scripts"
-GamesLabel.TextColor3 = colors.text
-GamesLabel.TextSize = 24
-GamesLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-GameSearchBar.Name = "GameSearchBar"
-GameSearchBar.Parent = GamesPage
-GameSearchBar.BackgroundColor3 = colors.button
-GameSearchBar.BorderSizePixel = 0
-GameSearchBar.Position = UDim2.new(0, 20, 0, 60)
-GameSearchBar.Size = UDim2.new(1, -40, 0, 35)
-GameSearchBar.Font = Enum.Font.Gotham
-GameSearchBar.PlaceholderText = "Search games..."
-GameSearchBar.Text = ""
-GameSearchBar.TextColor3 = colors.text
-GameSearchBar.TextSize = 14
-GameSearchBar.TextXAlignment = Enum.TextXAlignment.Left
-ApplyCorners(GameSearchBar, 6)
-
-SearchIcon.Name = "SearchIcon"
-SearchIcon.Parent = GameSearchBar
-SearchIcon.BackgroundTransparency = 1
-SearchIcon.Position = UDim2.new(1, -35, 0.5, -10)
-SearchIcon.Size = UDim2.new(0, 20, 0, 20)
-SearchIcon.Image = "rbxassetid://7022243779" -- Search icon
-SearchIcon.ImageColor3 = colors.text
-
-GamesList.Name = "GamesList"
-GamesList.Parent = GamesPage
-GamesList.BackgroundTransparency = 1
-GamesList.BorderSizePixel = 0
-GamesList.Position = UDim2.new(0, 20, 0, 110)
-GamesList.Size = UDim2.new(1, -40, 1, -120)
-GamesList.CanvasSize = UDim2.new(0, 0, 0, 0)
-GamesList.ScrollBarThickness = 4
-GamesList.ScrollBarImageColor3 = colors.accent
-
-GamesUIListLayout.Name = "GamesUIListLayout"
-GamesUIListLayout.Parent = GamesList
-GamesUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-GamesUIListLayout.Padding = UDim.new(0, 10)
-
--- Credits Page
-CreditsPage.Name = "CreditsPage"
-CreditsPage.Parent = ContentFrame
-CreditsPage.BackgroundTransparency = 1
-CreditsPage.Size = UDim2.new(1, 0, 1, 0)
-CreditsPage.Visible = false
-
-CreditsLabel.Name = "CreditsLabel"
-CreditsLabel.Parent = CreditsPage
-CreditsLabel.BackgroundTransparency = 1
-CreditsLabel.Position = UDim2.new(0, 20, 0, 20)
-CreditsLabel.Size = UDim2.new(1, -40, 0, 30)
-CreditsLabel.Font = Enum.Font.GothamBold
-CreditsLabel.Text = "Credits"
-CreditsLabel.TextColor3 = colors.text
-CreditsLabel.TextSize = 24
-CreditsLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-DeveloperLabel.Name = "DeveloperLabel"
-DeveloperLabel.Parent = CreditsPage
-DeveloperLabel.BackgroundTransparency = 1
-DeveloperLabel.Position = UDim2.new(0, 20, 0, 70)
-DeveloperLabel.Size = UDim2.new(1, -40, 0, 20)
-DeveloperLabel.Font = Enum.Font.GothamBold
-DeveloperLabel.Text = "Developer:"
-DeveloperLabel.TextColor3 = colors.text
-DeveloperLabel.TextSize = 16
-DeveloperLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-DeveloperName.Name = "DeveloperName"
-DeveloperName.Parent = CreditsPage
-DeveloperName.BackgroundTransparency = 1
-DeveloperName.Position = UDim2.new(0, 20, 0, 95)
-DeveloperName.Size = UDim2.new(1, -40, 0, 20)
-DeveloperName.Font = Enum.Font.Gotham
-DeveloperName.Text = "LAJ HUB Team"
-DeveloperName.TextColor3 = colors.subText
-DeveloperName.TextSize = 14
-DeveloperName.TextXAlignment = Enum.TextXAlignment.Left
-
-DiscordLabel.Name = "DiscordLabel"
-DiscordLabel.Parent = CreditsPage
-DiscordLabel.BackgroundTransparency = 1
-DiscordLabel.Position = UDim2.new(0, 20, 0, 135)
-DiscordLabel.Size = UDim2.new(1, -40, 0, 20)
-DiscordLabel.Font = Enum.Font.GothamBold
-DiscordLabel.Text = "Discord:"
-DiscordLabel.TextColor3 = colors.text
-DiscordLabel.TextSize = 16
-DiscordLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-DiscordLink.Name = "DiscordLink"
-DiscordLink.Parent = CreditsPage
-DiscordLink.BackgroundTransparency = 1
-DiscordLink.Position = UDim2.new(0, 20, 0, 160)
-DiscordLink.Size = UDim2.new(1, -120, 0, 20)
-DiscordLink.Font = Enum.Font.Gotham
-DiscordLink.Text = "discord.gg/lajhub"
-DiscordLink.TextColor3 = colors.accent
-DiscordLink.TextSize = 14
-DiscordLink.TextXAlignment = Enum.TextXAlignment.Left
-
-CopyDiscordButton.Name = "CopyDiscordButton"
-CopyDiscordButton.Parent = CreditsPage
-CopyDiscordButton.BackgroundColor3 = colors.button
-CopyDiscordButton.BorderSizePixel = 0
-CopyDiscordButton.Position = UDim2.new(1, -90, 0, 155)
-CopyDiscordButton.Size = UDim2.new(0, 70, 0, 30)
-CopyDiscordButton.Font = Enum.Font.Gotham
-CopyDiscordButton.Text = "Copy"
-CopyDiscordButton.TextColor3 = colors.text
-CopyDiscordButton.TextSize = 14
-ApplyCorners(CopyDiscordButton, 6)
-
-VersionLabel.Name = "VersionLabel"
-VersionLabel.Parent = CreditsPage
-VersionLabel.BackgroundTransparency = 1
-VersionLabel.Position = UDim2.new(0, 20, 1, -40)
-VersionLabel.Size = UDim2.new(1, -40, 0, 20)
-VersionLabel.Font = Enum.Font.Gotham
-VersionLabel.Text = "Version: 1.0.0"
-VersionLabel.TextColor3 = colors.subText
-VersionLabel.TextSize = 14
-VersionLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Settings Page
-SettingsPage.Name = "SettingsPage"
-SettingsPage.Parent = ContentFrame
-SettingsPage.BackgroundTransparency = 1
-SettingsPage.Size = UDim2.new(1, 0, 1, 0)
-SettingsPage.Visible = false
-
-SettingsLabel.Name = "SettingsLabel"
-SettingsLabel.Parent = SettingsPage
-SettingsLabel.BackgroundTransparency = 1
-SettingsLabel.Position = UDim2.new(0, 20, 0, 20)
-SettingsLabel.Size = UDim2.new(1, -40, 0, 30)
-SettingsLabel.Font = Enum.Font.GothamBold
-SettingsLabel.Text = "Settings"
-SettingsLabel.TextColor3 = colors.text
-SettingsLabel.TextSize = 24
-SettingsLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-ThemeLabel.Name = "ThemeLabel"
-ThemeLabel.Parent = SettingsPage
-ThemeLabel.BackgroundTransparency = 1
-ThemeLabel.Position = UDim2.new(0, 20, 0, 70)
-ThemeLabel.Size = UDim2.new(0, 100, 0, 30)
-ThemeLabel.Font = Enum.Font.GothamBold
-ThemeLabel.Text = "Theme:"
-ThemeLabel.TextColor3 = colors.text
-ThemeLabel.TextSize = 16
-ThemeLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-ThemeDropdown.Name = "ThemeDropdown"
-ThemeDropdown.Parent = SettingsPage
-ThemeDropdown.BackgroundColor3 = colors.button
-ThemeDropdown.BorderSizePixel = 0
-ThemeDropdown.Position = UDim2.new(0, 130, 0, 70)
-ThemeDropdown.Size = UDim2.new(0, 150, 0, 30)
-ThemeDropdown.Font = Enum.Font.Gotham
-ThemeDropdown.Text = "Dark Purple"
-ThemeDropdown.TextColor3 = colors.text
-ThemeDropdown.TextSize = 14
-ApplyCorners(ThemeDropdown, 6)
-
-ThemeOptions.Name = "ThemeOptions"
-ThemeOptions.Parent = SettingsPage
-ThemeOptions.BackgroundColor3 = colors.button
-ThemeOptions.BorderSizePixel = 0
-ThemeOptions.Position = UDim2.new(0, 130, 0, 105)
-ThemeOptions.Size = UDim2.new(0, 150, 0, 0)
-ThemeOptions.ClipsDescendants = true
-ThemeOptions.Visible = false
-ApplyCorners(ThemeOptions, 6)
-
-AutoLoadLabel.Name = "AutoLoadLabel"
-AutoLoadLabel.Parent = SettingsPage
-AutoLoadLabel.BackgroundTransparency = 1
-AutoLoadLabel.Position = UDim2.new(0, 20, 0, 120)
-AutoLoadLabel.Size = UDim2.new(0, 180, 0, 30)
-AutoLoadLabel.Font = Enum.Font.GothamBold
-AutoLoadLabel.Text = "Auto-Load Scripts:"
-AutoLoadLabel.TextColor3 = colors.text
-AutoLoadLabel.TextSize = 16
-AutoLoadLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-AutoLoadToggle.Name = "AutoLoadToggle"
-AutoLoadToggle.Parent = SettingsPage
-AutoLoadToggle.BackgroundColor3 = colors.success
-AutoLoadToggle.BorderSizePixel = 0
-AutoLoadToggle.Position = UDim2.new(0, 200, 0, 125)
-AutoLoadToggle.Size = UDim2.new(0, 40, 0, 20)
-AutoLoadToggle.Font = Enum.Font.SourceSans
-AutoLoadToggle.Text = ""
-AutoLoadToggle.TextColor3 = colors.text
-AutoLoadToggle.TextSize = 14
-ApplyCorners(AutoLoadToggle, 10)
-
-AutoLoadStatus.Name = "AutoLoadStatus"
-AutoLoadStatus.Parent = SettingsPage
-AutoLoadStatus.BackgroundTransparency = 1
-AutoLoadStatus.Position = UDim2.new(0, 250, 0, 120)
-AutoLoadStatus.Size = UDim2.new(0, 100, 0, 30)
-AutoLoadStatus.Font = Enum.Font.Gotham
-AutoLoadStatus.Text = "Enabled"
-AutoLoadStatus.TextColor3 = colors.success
-AutoLoadStatus.TextSize = 14
-AutoLoadStatus.TextXAlignment = Enum.TextXAlignment.Left
-
--- Function to create a notification
-local function Notify(title, message, duration, notifType)
-    local notifColor = colors.accent
-    if notifType == "success" then
-        notifColor = colors.success
-    elseif notifType == "warning" then
-        notifColor = colors.warning
-    elseif notifType == "error" then
-        notifColor = colors.error
+-- Initialize the UI
+function LAJHub.new()
+    local self = setmetatable({}, LAJHub)
+    
+    -- Create GUI container
+    self.GUI = Helper.Create("ScreenGui")({
+        Name = "LAJHubPremium",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        IgnoreGuiInset = true
+    })
+    
+    -- Try to parent to CoreGui for better persistence
+    pcall(function() self.GUI.Parent = CoreGui end)
+    if not self.GUI.Parent then
+        self.GUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
     end
     
-    local Notification = Instance.new("Frame")
-    local NotifCorner = Instance.new("UICorner")
-    local NotifTitle = Instance.new("TextLabel")
-    local NotifMessage = Instance.new("TextLabel")
+    -- Create a blur effect for the entire screen (subtle)
+    self.Blur = Helper.Create("BlurEffect")({
+        Name = "LAJHubBlur",
+        Size = 0,
+        Parent = game:GetService("Lighting")
+    })
+    Helper.Tween(self.Blur, Config.Animation.LongTween, {Size = 5})
     
-    Notification.Name = "Notification"
-    Notification.Parent = LAJHub
-    Notification.BackgroundColor3 = colors.background
-    Notification.BorderSizePixel = 0
-    Notification.Position = UDim2.new(1, 10, 0.5, -40)
-    Notification.Size = UDim2.new(0, 250, 0, 80)
-    Notification.ZIndex = 5
+    -- Create the background frame that covers the whole screen with transparency
+    self.Background = Helper.Create("Frame")({
+        Name = "Background",
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = self.GUI
+    })
+    Helper.Tween(self.Background, Config.Animation.LongTween, {BackgroundTransparency = 0.5})
     
-    NotifCorner.CornerRadius = UDim.new(0, 6)
-    NotifCorner.Parent = Notification
+    -- Make the background clickable to close the UI
+    self.Background.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            self:Close()
+        end
+    end)
     
-    NotifTitle.Name = "NotifTitle"
-    NotifTitle.Parent = Notification
-    NotifTitle.BackgroundColor3 = notifColor
-    NotifTitle.BorderSizePixel = 0
-    NotifTitle.Size = UDim2.new(1, 0, 0, 25)
-    NotifTitle.ZIndex = 6
-    NotifTitle.Font = Enum.Font.GothamBold
-    NotifTitle.Text = "  " .. title
-    NotifTitle.TextColor3 = colors.text
-    NotifTitle.TextSize = 14
-    NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
-    ApplyCorners(NotifTitle, 6)
+    -- Create main container with proper centering
+    self.Container = Helper.Create("Frame")({
+        Name = "Container",
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = self.GUI
+    })
     
-    NotifMessage.Name = "NotifMessage"
-    NotifMessage.Parent = Notification
-    NotifMessage.BackgroundTransparency = 1
-    NotifMessage.Position = UDim2.new(0, 10, 0, 30)
-    NotifMessage.Size = UDim2.new(1, -20, 1, -35)
-    NotifMessage.ZIndex = 6
-    NotifMessage.Font = Enum.Font.Gotham
-    NotifMessage.Text = message
-    NotifMessage.TextColor3 = colors.text
-    NotifMessage.TextSize = 14
-    NotifMessage.TextWrapped = true
+    -- Create main frame
+    self.Main = Helper.Create("Frame")({
+        Name = "Main",
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Config.Colors.Background,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, 0, 0, 0), -- Start small for animation
+        Parent = self.Container
+    })
     
-    -- Animation
-    Notification:TweenPosition(UDim2.new(1, -260, 0.5, -40), "Out", "Quad", 0.5, true)
-    delay(duration or 3, function()
-        Notification:TweenPosition(UDim2.new(1, 10, 0.5, -40), "In", "Quad", 0.5, true, function()
-            Notification:Destroy()
-        end)
+    -- Add rounded corners
+    Helper.Round(self.Main, Config.UI.CornerRadius)
+    
+    -- Add shadow
+    Helper.Shadow(self.Main, 25, 0.5)
+    
+    -- Add subtle border
+    Helper.Stroke(self.Main, Config.Colors.Border, 1, 0.7)
+    
+    -- Create subtle background pattern
+    local pattern = Helper.Create("ImageLabel")({
+        Name = "BackgroundPattern",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://7484843607", -- Grid pattern
+        ImageColor3 = Config.Colors.Border,
+        ImageTransparency = 0.95,
+        ScaleType = Enum.ScaleType.Tile,
+        TileSize = UDim2.new(0, 50, 0, 50),
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 0,
+        Parent = self.Main
+    })
+    
+    -- Add top bar
+    self:CreateTopBar()
+    
+    -- Add navigation sidebar
+    self:CreateSidebar()
+    
+    -- Create content area
+    self:CreateContentArea()
+    
+    -- Populate the tabs with content
+    self:CreateHomeTab()
+    self:CreateGamesTab()
+    self:CreateSettingsTab()
+    
+    -- Make the UI draggable
+    self:MakeDraggable()
+    
+    -- Animate the UI opening
+    Helper.Tween(self.Main, Config.Animation.LongTween, {
+        Size = UDim2.new(0, Config.UI.Width, 0, Config.UI.Height),
+    }).Completed:Connect(function()
+        self:SwitchTab("Home")
+        -- Show welcome notification after opening animation
+        self:Notify("Welcome", "LAJ Hub Premium loaded successfully!", 3)
+    end)
+    
+    -- Particle System (optional subtle ambient particles)
+    self:CreateParticleSystem()
+    
+    -- Setup tab selection indicators
+    self.ActiveTab = nil
+    
+    return self
+end
+
+-- Create top bar with title and controls
+function LAJHub:CreateTopBar()
+    self.TopBar = Helper.Create("Frame")({
+        Name = "TopBar",
+        BackgroundColor3 = Config.Colors.BackgroundSecondary,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 35),
+        Parent = self.Main
+    })
+    
+    -- Round the top corners
+    Helper.Round(self.TopBar, Config.UI.CornerRadius)
+    
+    -- Fix the corners (only round top)
+    local bottomFix = Helper.Create("Frame")({
+        Name = "BottomFix",
+        BackgroundColor3 = Config.Colors.BackgroundSecondary,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 1, -Config.UI.CornerRadius),
+        Size = UDim2.new(1, 0, 0, Config.UI.CornerRadius),
+        Parent = self.TopBar
+    })
+    
+    -- Add hub logo
+    self.Logo = Helper.Create("ImageLabel")({
+        Name = "Logo",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0.5, -12),
+        Size = UDim2.new(0, 24, 0, 24),
+        Image = "rbxassetid://7743878358", -- Can be replaced with your own logo
+        ImageColor3 = Config.Colors.Accent,
+        Parent = self.TopBar
+    })
+    
+    -- Add title
+    self.Title = Helper.Create("TextLabel")({
+        Name = "Title",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 40, 0, 0),
+        Size = UDim2.new(1, -80, 1, 0),
+        Font = Config.Fonts.Title,
+        Text = Config.UI.Name .. " " .. Config.UI.Version,
+        TextColor3 = Config.Colors.Text,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = self.TopBar
+    })
+    
+    -- Create close button
+    self.CloseButton = Helper.Create("TextButton")({
+        Name = "CloseButton",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -30, 0.5, -10),
+        Size = UDim2.new(0, 20, 0, 20),
+        Font = Config.Fonts.Title,
+        Text = "✕",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 16,
+        Parent = self.TopBar
+    })
+    
+    -- Add close button hover effect
+    self.CloseButton.MouseEnter:Connect(function()
+        Helper.Tween(self.CloseButton, Config.Animation.ShortTween, {
+            TextColor3 = Config.Colors.Error
+        })
+    end)
+    
+    self.CloseButton.MouseLeave:Connect(function()
+        Helper.Tween(self.CloseButton, Config.Animation.ShortTween, {
+            TextColor3 = Config.Colors.Text
+        })
+    end)
+    
+    -- Add click functionality to close
+    self.CloseButton.MouseButton1Click:Connect(function()
+        self:Close()
     end)
 end
 
--- Function to load a script for a game
-local function LoadScript(scriptUrl, gameName)
-    pcall(function()
-        loadstring(game:HttpGet(scriptUrl, true))()
-    end)
-    Notify("LAJ HUB", "Loaded script for " .. gameName, 3, "success")
+-- Create left sidebar with navigation icons
+function LAJHub:CreateSidebar()
+    self.Sidebar = Helper.Create("Frame")({
+        Name = "Sidebar",
+        BackgroundColor3 = Config.Colors.BackgroundSecondary,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 35),
+        Size = UDim2.new(0, 50, 1, -35),
+        Parent = self.Main
+    })
+    
+    -- Create navigation buttons collection
+    self.NavButtons = {}
+    
+    -- Create home button
+    self.NavButtons.Home = self:CreateNavButton("Home", "rbxassetid://7734328486", 0)
+    
+    -- Create games button
+    self.NavButtons.Games = self:CreateNavButton("Games", "rbxassetid://7743878966", 1)
+    
+    -- Create settings button
+    self.NavButtons.Settings = self:CreateNavButton("Settings", "rbxassetid://7734053495", 2)
 end
 
--- Game scripts data
-local gameScripts = {
-    {
-        name = "Speed Hub X - Blox Fruits",
-        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
-        game = "Blox Fruits"
-    },
-    {
-        name = "Speed Hub X - Dead Rails",
-        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
-        game = "Dead Rails"
-    },
-    {
-        name = "Speed Hub X - Muscle Legends",
-        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
-        game = "Muscle Legends"
-    },
-    {
-        name = "Speed Hub X - Fisch",
-        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
-        game = "Fisch"
-    },
-    {
-        name = "Speed Hub X - The Strongest Battlegrounds",
-        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
-        game = "The Strongest Battlegrounds"
-    },
-    {
-        name = "Speed Hub X - Arise Crossover",
-        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
-        game = "Arise Crossover"
-    },
-    {
-        name = "Speed Hub X - Bubble Gum Simulator",
-        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
-        game = "Bubble Gum Simulator"
-    },
-    {
-        name = "Speed Hub X - Anime Reborn",
-        url = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Reborn.lua",
-        game = "Anime Reborn"
-    },
-    {
-        name = "Speed Hub X - Anime Vanguards",
-        url = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Vanguards.lua",
-        game = "Anime Vanguards"
+-- Create a navigation button
+function LAJHub:CreateNavButton(name, icon, order)
+    local button = Helper.Create("ImageButton")({
+        Name = name .. "Button",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 10 + (order * 50)),
+        Size = UDim2.new(1, 0, 0, 40),
+        Image = icon,
+        ImageColor3 = Config.Colors.TextDimmed,
+        ImageTransparency = 0.4,
+        ScaleType = Enum.ScaleType.Fit,
+        Parent = self.Sidebar
+    })
+    
+    -- Add selection indicator
+    local indicator = Helper.Create("Frame")({
+        Name = "Indicator",
+        BackgroundColor3 = Config.Colors.Accent,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0.5, -15),
+        Size = UDim2.new(0, 2, 0, 30),
+        Visible = false,
+        Parent = button
+    })
+    
+    -- Add hover effect
+    button.MouseEnter:Connect(function()
+        if not indicator.Visible then
+            Helper.Tween(button, Config.Animation.ShortTween, {
+                ImageColor3 = Config.Colors.Text,
+                ImageTransparency = 0
+            })
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if not indicator.Visible then
+            Helper.Tween(button, Config.Animation.ShortTween, {
+                ImageColor3 = Config.Colors.TextDimmed,
+                ImageTransparency = 0.4
+            })
+        end
+    end)
+    
+    -- Add button functionality
+    button.MouseButton1Click:Connect(function()
+        self:SwitchTab(name)
+    end)
+    
+    return {
+        Button = button,
+        Indicator = indicator
     }
-}
+end
 
--- Create game buttons
-for i, script in ipairs(gameScripts) do
-    local GameButton = Instance.new("TextButton")
-    GameButton.Name = script.name
-    GameButton.Parent = GamesList
-    GameButton.BackgroundColor3 = colors.button
-    GameButton.BorderSizePixel = 0
-    GameButton.Size = UDim2.new(1, 0, 0, 50)
-    GameButton.Font = Enum.Font.Gotham
-    GameButton.Text = "  " .. script.name
-    GameButton.TextColor3 = colors.text
-    GameButton.TextSize = 14
-    GameButton.TextXAlignment = Enum.TextXAlignment.Left
-    ApplyCorners(GameButton, 6)
+-- Create content area
+function LAJHub:CreateContentArea()
+    self.Content = Helper.Create("Frame")({
+        Name = "Content",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 50, 0, 35),
+        Size = UDim2.new(1, -50, 1, -35),
+        ClipsDescendants = true,
+        Parent = self.Main
+    })
     
-    -- Hover effect
-    GameButton.MouseEnter:Connect(function()
-        GameButton.BackgroundColor3 = colors.buttonHover
+    -- Create content pages
+    self.Pages = {}
+    
+    -- Home page
+    self.Pages.Home = Helper.Create("Frame")({
+        Name = "HomePage",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Visible = false,
+        Parent = self.Content
+    })
+    
+    -- Games page
+    self.Pages.Games = Helper.Create("ScrollingFrame")({
+        Name = "GamesPage",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0),
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = Config.Colors.Accent,
+        ScrollBarImageTransparency = 0.5,
+        VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right,
+        Visible = false,
+        Parent = self.Content
+    })
+    
+    -- Add layout for games page
+    Helper.Create("UIListLayout")({
+        Padding = UDim.new(0, 8),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Parent = self.Pages.Games
+    })
+    
+    -- Add padding for games page
+    Helper.Create("UIPadding")({
+        PaddingLeft = UDim.new(0, 15),
+        PaddingRight = UDim.new(0, 15),
+        PaddingTop = UDim.new(0, 15),
+        PaddingBottom = UDim.new(0, 15),
+        Parent = self.Pages.Games
+    })
+    
+    -- Settings page
+    self.Pages.Settings = Helper.Create("Frame")({
+        Name = "SettingsPage",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Visible = false,
+        Parent = self.Content
+    })
+end
+
+-- Create home tab content
+function LAJHub:CreateHomeTab()
+    local homePage = self.Pages.Home
+    
+    -- Welcome header
+    local welcomeLabel = Helper.Create("TextLabel")({
+        Name = "WelcomeLabel",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 20),
+        Size = UDim2.new(1, -40, 0, 30),
+        Font = Config.Fonts.Title,
+        Text = "Welcome",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 24,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = homePage
+    })
+    
+    -- Add logo container
+    local logoContainer = Helper.Create("Frame")({
+        Name = "LogoContainer",
+        AnchorPoint = Vector2.new(0.5, 0),
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0.5, 0, 0, 60),
+        Size = UDim2.new(0, 100, 0, 100),
+        Parent = homePage
+    })
+    
+    -- Logo image with glowing effect
+    local logoImage = Helper.Create("ImageLabel")({
+        Name = "LogoImage",
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, 80, 0, 80),
+        Image = "rbxassetid://7743878358", -- Can be replaced with your own logo
+        ImageColor3 = Config.Colors.Accent,
+        Parent = logoContainer
+    })
+    
+    -- Add subtle pulse animation to logo
+    spawn(function()
+        while logoImage and logoImage.Parent do
+            Helper.Tween(logoImage, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                ImageColor3 = Config.Colors.AccentLight
+            }).Completed:Wait()
+            
+            Helper.Tween(logoImage, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                ImageColor3 = Config.Colors.Accent
+            }).Completed:Wait()
+        end
     end)
     
-    GameButton.MouseLeave:Connect(function()
-        GameButton.BackgroundColor3 = colors.button
-    end)
+    -- Description text
+    local descriptionLabel = Helper.Create("TextLabel")({
+        Name = "DescriptionLabel",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 170),
+        Size = UDim2.new(1, -40, 0, 40),
+        Font = Config.Fonts.Text,
+        Text = "Your premium script hub for Roblox games. Select a game from the Games tab to load scripts.",
+        TextColor3 = Config.Colors.TextDimmed,
+        TextSize = 14,
+        TextWrapped = true,
+        Parent = homePage
+    })
     
-    -- Click to load script
-    GameButton.MouseButton1Click:Connect(function()
-        LoadScript(script.url, script.game)
+    -- Quick access section
+    local quickAccessLabel = Helper.Create("TextLabel")({
+        Name = "QuickAccessLabel",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 220),
+        Size = UDim2.new(1, -40, 0, 20),
+        Font = Config.Fonts.Subtitle,
+        Text = "Quick Access",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = homePage
+    })
+    
+    -- Quick access buttons container
+    local quickAccessFrame = Helper.Create("Frame")({
+        Name = "QuickAccessFrame",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 250),
+        Size = UDim2.new(1, -40, 0, 50),
+        Parent = homePage
+    })
+    
+    -- Create blox fruits quick access button
+    local bloxFruits = self:CreateButton("Blox Fruits", function()
+        self:ExecuteScript("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", "Blox Fruits")
+    end, quickAccessFrame, UDim2.new(0, 0, 0, 0), UDim2.new(0.48, 0, 0, 40))
+    
+    -- Create dead rails quick access button
+    local deadRails = self:CreateButton("Dead Rails", function()
+        self:ExecuteScript("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", "Dead Rails")
+    end, quickAccessFrame, UDim2.new(0.52, 0, 0, 0), UDim2.new(0.48, 0, 0, 40))
+end
+
+-- Create games tab content
+function LAJHub:CreateGamesTab()
+    local gamesPage = self.Pages.Games
+    
+    -- Game scripts data
+    local gameScripts = {
+        {
+            name = "Blox Fruits",
+            description = "Auto-farm, ESP, teleports, and more",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Dead Rails",
+            description = "Auto-farm, ESP, teleports, and gameplay enhancements",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Pet Simulator 99",
+            description = "Auto-farm coins, eggs, and other features",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Anime Fighting Simulator",
+            description = "Auto-train, auto-farm, and teleports",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Adopt Me",
+            description = "Auto-farm, teleports, and other features",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Jailbreak",
+            description = "Auto-rob, ESP, and other features",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Arsenal",
+            description = "Aimbot, ESP, and other combat enhancements",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Murder Mystery 2",
+            description = "ESP, coin farm, and other features",
+            url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        }
+    }
+    
+    -- Create game cards
+    for i, game in ipairs(gameScripts) do
+        self:CreateGameCard(game.name, game.description, game.url, i)
+    end
+    
+    -- Update canvas size based on content
+    local layout = gamesPage:FindFirstChildOfClass("UIListLayout")
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        gamesPage.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
     end)
 end
 
--- Update canvas size
-local function UpdateCanvasSize()
-    GamesList.CanvasSize = UDim2.new(0, 0, 0, GamesUIListLayout.AbsoluteContentSize.Y + 10)
+-- Create settings tab content
+function LAJHub:CreateSettingsTab()
+    local settingsPage = self.Pages.Settings
+    
+    -- Title
+    local titleLabel = Helper.Create("TextLabel")({
+        Name = "TitleLabel",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 20),
+        Size = UDim2.new(1, -40, 0, 30),
+        Font = Config.Fonts.Title,
+        Text = "Settings",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 24,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = settingsPage
+    })
+    
+    -- Auto-load setting
+    local autoLoadContainer = Helper.Create("Frame")({
+        Name = "AutoLoadContainer",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 70),
+        Size = UDim2.new(1, -40, 0, 24),
+        Parent = settingsPage
+    })
+    
+    -- Auto-load label
+    Helper.Create("TextLabel")({
+        Name = "AutoLoadLabel",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -60, 1, 0),
+        Font = Config.Fonts.Text,
+        Text = "Auto-load scripts",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = autoLoadContainer
+    })
+    
+    -- Toggle switch
+    local toggleButton = Helper.Create("Frame")({
+        Name = "ToggleButton",
+        BackgroundColor3 = Config.Colors.Accent,
+        Position = UDim2.new(1, -40, 0.5, -10),
+        Size = UDim2.new(0, 40, 0, 20),
+        Parent = autoLoadContainer
+    })
+    Helper.Round(toggleButton, 10)
+    
+    -- Toggle indicator ball
+    local toggleBall = Helper.Create("Frame")({
+        Name = "ToggleBall",
+        BackgroundColor3 = Config.Colors.Text,
+        Position = UDim2.new(1, -18, 0.5, -8),
+        Size = UDim2.new(0, 16, 0, 16),
+        Parent = toggleButton
+    })
+    Helper.Round(toggleBall, 8)
+    
+    -- Add toggle functionality
+    local toggleEnabled = true
+    toggleButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            toggleEnabled = not toggleEnabled
+            
+            local targetPos = toggleEnabled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+            local targetColor = toggleEnabled and Config.Colors.Accent or Config.Colors.Button
+            
+            Helper.Tween(toggleBall, Config.Animation.DefaultTween, {
+                Position = targetPos
+            })
+            
+            Helper.Tween(toggleButton, Config.Animation.DefaultTween, {
+                BackgroundColor3 = targetColor
+            })
+        end
+    end)
+    
+    -- Theme selection
+    local themeLabel = Helper.Create("TextLabel")({
+        Name = "ThemeLabel",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 110),
+        Size = UDim2.new(1, -40, 0, 24),
+        Font = Config.Fonts.Text,
+        Text = "Theme",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = settingsPage
+    })
+    
+    -- Theme buttons container
+    local themeContainer = Helper.Create("Frame")({
+        Name = "ThemeContainer",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 0, 140),
+        Size = UDim2.new(1, -40, 0, 30),
+        Parent = settingsPage
+    })
+    
+    -- Dark theme button (selected by default)
+    local darkButton = Helper.Create("TextButton")({
+        Name = "DarkButton",
+        BackgroundColor3 = Config.Colors.ElementBackground,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(0.3, -5, 1, 0),
+        Font = Config.Fonts.Text,
+        Text = "Dark",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 14,
+        Parent = themeContainer
+    })
+    Helper.Round(darkButton, 4)
+    Helper.Stroke(darkButton, Config.Colors.Accent, 2)
+    Helper.Ripple(darkButton)
+    
+    -- Light theme button
+    local lightButton = Helper.Create("TextButton")({
+        Name = "LightButton",
+        BackgroundColor3 = Config.Colors.ElementBackground,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.35, 0, 0, 0),
+        Size = UDim2.new(0.3, -5, 1, 0),
+        Font = Config.Fonts.Text,
+        Text = "Light",
+        TextColor3 = Config.Colors.TextDimmed,
+        TextSize = 14,
+        Parent = themeContainer
+    })
+    Helper.Round(lightButton, 4)
+    Helper.Stroke(lightButton, Config.Colors.Border, 1, 0.7)
+    Helper.Ripple(lightButton)
+    
+    -- System theme button
+    local systemButton = Helper.Create("TextButton")({
+        Name = "SystemButton",
+        BackgroundColor3 = Config.Colors.ElementBackground,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.7, 0, 0, 0),
+        Size = UDim2.new(0.3, 0, 1, 0),
+        Font = Config.Fonts.Text,
+        Text = "System",
+        TextColor3 = Config.Colors.TextDimmed,
+        TextSize = 14,
+        Parent = themeContainer
+    })
+    Helper.Round(systemButton, 4)
+    Helper.Stroke(systemButton, Config.Colors.Border, 1, 0.7)
+    Helper.Ripple(systemButton)
+    
+    -- Version label
+    Helper.Create("TextLabel")({
+        Name = "VersionLabel",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 1, -40),
+        Size = UDim2.new(1, -40, 0, 20),
+        Font = Config.Fonts.Text,
+        Text = Config.UI.Name .. " " .. Config.UI.Version,
+        TextColor3 = Config.Colors.TextDimmed,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = settingsPage
+    })
+    
+    -- Discord link
+    Helper.Create("TextLabel")({
+        Name = "DiscordLabel",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 20, 1, -20),
+        Size = UDim2.new(1, -40, 0, 20),
+        Font = Config.Fonts.Text,
+        Text = "discord.gg/lajhub",
+        TextColor3 = Config.Colors.Accent,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = settingsPage
+    })
 end
 
-UpdateCanvasSize()
-GamesUIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvasSize)
+-- Create a game card for games tab
+function LAJHub:CreateGameCard(name, description, url, order)
+    local card = Helper.Create("Frame")({
+        Name = name .. "Card",
+        BackgroundColor3 = Config.Colors.BackgroundSecondary,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 70),
+        LayoutOrder = order,
+        Parent = self.Pages.Games
+    })
+    Helper.Round(card, Config.UI.CornerRadius)
+    
+    -- Game title
+    local gameTitle = Helper.Create("TextLabel")({
+        Name = "GameTitle",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0, 8),
+        Size = UDim2.new(1, -110, 0, 24),
+        Font = Config.Fonts.Subtitle,
+        Text = name,
+        TextColor3 = Config.Colors.Text,
+        TextSize = 15,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = card
+    })
+    
+    -- Game description
+    local description = Helper.Create("TextLabel")({
+        Name = "Description",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0, 32),
+        Size = UDim2.new(1, -110, 0, 32),
+        Font = Config.Fonts.Text,
+        Text = description,
+        TextColor3 = Config.Colors.TextDimmed,
+        TextSize = 13,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = card
+    })
+    
+    -- Execute button
+    local executeButton = Helper.Create("TextButton")({
+        Name = "ExecuteButton",
+        BackgroundColor3 = Config.Colors.Accent,
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, -100, 0.5, -15),
+        Size = UDim2.new(0, 90, 0, 30),
+        Font = Config.Fonts.Subtitle,
+        Text = "EXECUTE",
+        TextColor3 = Config.Colors.Text,
+        TextSize = 14,
+        Parent = card
+    })
+    Helper.Round(executeButton, 4)
+    Helper.Ripple(executeButton, Color3.fromRGB(255, 255, 255))
+    
+    -- Add button functionality
+    executeButton.MouseButton1Click:Connect(function()
+        self:ExecuteScript(url, name)
+    end)
+    
+    -- Add hover effects
+    card.MouseEnter:Connect(function()
+        Helper.Tween(card, Config.Animation.ShortTween, {
+            BackgroundColor3 = Config.Colors.BackgroundSecondary:Lerp(Config.Colors.Accent, 0.05)
+        })
+    end)
+    
+    card.MouseLeave:Connect(function()
+        Helper.Tween(card, Config.Animation.ShortTween, {
+            BackgroundColor3 = Config.Colors.BackgroundSecondary
+        })
+    end)
+    
+    executeButton.MouseEnter:Connect(function()
+        Helper.Tween(executeButton, Config.Animation.ShortTween, {
+            BackgroundColor3 = Config.Colors.AccentDark
+        })
+    end)
+    
+    executeButton.MouseLeave:Connect(function()
+        Helper.Tween(executeButton, Config.Animation.ShortTween, {
+            BackgroundColor3 = Config.Colors.Accent
+        })
+    end)
+    
+    return card
+end
 
--- Set up quick access buttons
-QuickBloxFruits.MouseButton1Click:Connect(function()
-    LoadScript("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", "Blox Fruits")
-end)
+-- Create a button with ripple effect
+function LAJHub:CreateButton(text, callback, parent, position, size)
+    local button = Helper.Create("TextButton")({
+        Name = text .. "Button",
+        BackgroundColor3 = Config.Colors.Button,
+        BorderSizePixel = 0,
+        Position = position,
+        Size = size,
+        Font = Config.Fonts.Subtitle,
+        Text = text,
+        TextColor3 = Config.Colors.Text,
+        TextSize = 14,
+        Parent = parent
+    })
+    
+    -- Add rounded corners
+    Helper.Round(button, 4)
+    
+    -- Add subtle stroke
+    Helper.Stroke(button, Config.Colors.Accent, 1, 0.7)
+    
+    -- Add ripple effect
+    Helper.Ripple(button)
+    
+    -- Add hover effects
+    button.MouseEnter:Connect(function()
+        Helper.Tween(button, Config.Animation.ShortTween, {
+            BackgroundColor3 = Config.Colors.ButtonHover
+        })
+    end)
+    
+    button.MouseLeave:Connect(function()
+        Helper.Tween(button, Config.Animation.ShortTween, {
+            BackgroundColor3 = Config.Colors.Button
+        })
+    end)
+    
+    -- Add functionality
+    button.MouseButton1Click:Connect(function()
+        if callback then
+            callback()
+        end
+    end)
+    
+    return button
+end
 
-QuickDeadRails.MouseButton1Click:Connect(function()
-    LoadScript("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", "Dead Rails")
-end)
-
--- Hover effects for quick access
-QuickBloxFruits.MouseEnter:Connect(function()
-    QuickBloxFruits.BackgroundColor3 = colors.buttonHover
-end)
-
-QuickBloxFruits.MouseLeave:Connect(function()
-    QuickBloxFruits.BackgroundColor3 = colors.button
-end)
-
-QuickDeadRails.MouseEnter:Connect(function()
-    QuickDeadRails.BackgroundColor3 = colors.buttonHover
-end)
-
-QuickDeadRails.MouseLeave:Connect(function()
-    QuickDeadRails.BackgroundColor3 = colors.button
-end)
-
--- Tab switching
-local pages = {
-    HomeButton = HomePage,
-    GamesButton = GamesPage,
-    CreditsButton = CreditsPage,
-    SettingsButton = SettingsPage
-}
-
-local function SwitchPage(button)
+-- Switch between tabs
+function LAJHub:SwitchTab(tabName)
+    -- Don't do anything if we're already on this tab
+    if self.ActiveTab == tabName then
+        return
+    end
+    
+    -- Store the new active tab
+    self.ActiveTab = tabName
+    
     -- Hide all pages
-    for _, page in pairs(pages) do
-        page.Visible = false
-    end
-    
-    -- Reset all icons
-    HomeIcon.ImageColor3 = colors.text
-    GamesIcon.ImageColor3 = colors.text
-    CreditsIcon.ImageColor3 = colors.text
-    SettingsIcon.ImageColor3 = colors.text
-    
-    -- Show selected page
-    pages[button.Name].Visible = true
-    
-    -- Highlight selected icon
-    button:FindFirstChild(button.Name:gsub("Button", "Icon")).ImageColor3 = colors.accent
-end
-
-HomeButton.MouseButton1Click:Connect(function()
-    SwitchPage(HomeButton)
-end)
-
-GamesButton.MouseButton1Click:Connect(function()
-    SwitchPage(GamesButton)
-end)
-
-CreditsButton.MouseButton1Click:Connect(function()
-    SwitchPage(CreditsButton)
-end)
-
-SettingsButton.MouseButton1Click:Connect(function()
-    SwitchPage(SettingsButton)
-end)
-
--- Copy Discord link
-CopyDiscordButton.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard("discord.gg/lajhub")
-        Notify("LAJ HUB", "Discord link copied to clipboard", 3, "success")
-    else
-        Notify("LAJ HUB", "Copy to clipboard not supported", 3, "error")
-    end
-end)
-
--- Game search functionality
-GameSearchBar:GetPropertyChangedSignal("Text"):Connect(function()
-    local searchText = GameSearchBar.Text:lower()
-    
-    for _, button in ipairs(GamesList:GetChildren()) do
-        if button:IsA("TextButton") then
-            if searchText == "" or string.find(button.Text:lower(), searchText) then
-                button.Visible = true
-            else
-                button.Visible = false
-            end
+    for name, page in pairs(self.Pages) do
+        if page.Visible then
+            Helper.Tween(page, Config.Animation.ShortTween, {
+                Position = UDim2.new(0.1, 0, 0, 0),
+                Transparency = 1
+            }).Completed:Connect(function()
+                page.Visible = false
+                page.Position = UDim2.new(-0.1, 0, 0, 0)
+            end)
         end
     end
     
-    UpdateCanvasSize()
-end)
-
--- Initial highlight for home tab
-HomeIcon.ImageColor3 = colors.accent
-
--- Welcome message
-Notify("LAJ HUB", "Welcome to LAJ HUB! Select a game to begin.", 3, "accent")
-
--- Auto-detect game
-local function AutoDetectGame()
-    local gameId = game.PlaceId
-    local gameName = game.Name:lower()
-    
-    for _, script in ipairs(gameScripts) do
-        if string.find(gameName, script.game:lower()) then
-            if AutoLoadToggle.BackgroundColor3 == colors.success then
-                LoadScript(script.url, script.game)
-                return true
-            else
-                Notify("LAJ HUB", "Detected: " .. script.game .. "\nEnable Auto-Load in settings to load automatically", 5, "info")
-                return true
-            end
-        end
+    -- Reset all navigation button states
+    for name, navButton in pairs(self.NavButtons) do
+        navButton.Indicator.Visible = false
+        
+        Helper.Tween(navButton.Button, Config.Animation.ShortTween, {
+            ImageColor3 = Config.Colors.TextDimmed,
+            ImageTransparency = 0.4
+        })
     end
     
-    return false
-end
-
--- Try to detect the game
-if not AutoDetectGame() then
-    -- No match found, show generic message
-    Notify("LAJ HUB", "Select a game from the Games tab", 3, "info")
-end
-
--- Update the auto-load toggle
-AutoLoadToggle.MouseButton1Click:Connect(function()
-    if AutoLoadToggle.BackgroundColor3 == colors.success then
-        AutoLoadToggle.BackgroundColor3 = colors.button
-        AutoLoadStatus.Text = "Disabled"
-        AutoLoadStatus.TextColor3 = colors.subText
+    -- Show the selected page with animation
+    if self.Pages[tabName] then
+        local page = self.Pages[tabName]
+        page.Position = UDim2.new(-0.1, 0, 0, 0)
+        page.Visible = true
+        
+        Helper.Tween(page, Config.Animation.DefaultTween, {
+            Position = UDim2.new(0, 0, 0, 0),
+            Transparency = 0
+        })
+    end
+    
+    -- Update the active navigation button
+    if self.NavButtons[tabName] then
+        local navButton = self.NavButtons[tabName]
+        navButton.Indicator.Visible = true
+        
+        Helper.Tween(navButton.Button, Config.Animation.ShortTween, {
+            ImageColor3 = Config.Colors.Accent,
+            ImageTransparency = 0
+        })
+    end
+    
+    -- Update title based on selected tab
+    if tabName == "Home" then
+        self.Title.Text = Config.UI.Name .. " " .. Config.UI.Version
     else
-        AutoLoadToggle.BackgroundColor3 = colors.success
-        AutoLoadStatus.Text = "Enabled"
-        AutoLoadStatus.TextColor3 = colors.success
+        self.Title.Text = tabName
     end
-end)
+end
 
--- Return the hub (for later access)
-return LAJHub
+-- Create notification
+function LAJHub:Notify(title, message, duration)
+    duration = duration or 3
+    
+    -- Create notification container
+    local notification = Helper.Create("Frame")({
+        Name = "Notification",
+        AnchorPoint = Vector2.new(1, 1),
+        BackgroundColor3 = Config.Colors.BackgroundSecondary,
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, 10, 1, -10),
+        Size = UDim2.new(0, 250, 0, 80),
+        ZIndex = 10,
+        Parent = self.GUI
+    })
+    
+    -- Add rounded corners
+    Helper.Round(notification, Config.UI.CornerRadius)
+    
+    -- Add subtle shadow
+    Helper.Shadow(notification, 10, 0.7)
+    
+    -- Add accent bar
+    local accentBar = Helper.Create("Frame")({
+        Name = "AccentBar",
+        BackgroundColor3 = Config.Colors.Accent,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(0, 4, 1, 0),
+        ZIndex = 11,
+        Parent = notification
+    })
+    
+    -- Add title
+    local titleLabel = Helper.Create("TextLabel")({
+        Name = "Title",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 15, 0, 8),
+        Size = UDim2.new(1, -25, 0, 20),
+        Font = Config.Fonts.Subtitle,
+        Text = title,
+        TextColor3 = Config.Colors.Accent,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 11,
+        Parent = notification
+    })
+    
+    -- Add message
+    local messageLabel = Helper.Create("TextLabel")({
+        Name = "Message",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 15, 0, 32),
+        Size = UDim2.new(1, -25, 0, 40),
+        Font = Config.Fonts.Text,
+        Text = message,
+        TextColor3 = Config.Colors.Text,
+        TextSize = 14,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 11,
+        Parent = notification
+    })
+    
+    -- Progress bar for notification duration
+    local progressBar = Helper.Create("Frame")({
+        Name = "ProgressBar",
+        BackgroundColor3 = Config.Colors.Accent,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 1, -2),
+        Size = UDim2.new(1, 0, 0, 2),
+        ZIndex = 11,
+        Parent = notification
+    })
+    
+    -- Animate in
+    notification.Position = UDim2.new(1, 300, 1, -10)
+    Helper.Tween(notification, Config.Animation.DefaultTween, {
+        Position = UDim2.new(1, -10, 1, -10)
+    })
+    
+    -- Animate progress bar
+    Helper.Tween(progressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+        Size = UDim2.new(0, 0, 0, 2)
+    })
+    
+    -- Auto remove after duration
+    spawn(function()
+        wait(duration)
+        
+        -- Animate out
+        Helper.Tween(notification, Config.Animation.DefaultTween, {
+            Position = UDim2.new(1, 300, 1, -10)
+        }).Completed:Wait()
+        
+        notification:Destroy()
+    end)
+    
+    return notification
+end
+
+-- Close the UI
+function LAJHub:Close()
+    -- Fade out the entire UI
+    Helper.Tween(self.Main, Config.Animation.DefaultTween, {
+        Size = UDim2.new(0, 0, 0, 0)
+    })
+    
+    Helper.Tween(self.Background, Config.Animation.DefaultTween, {
+        BackgroundTransparency = 1
+    })
+    
+    Helper.Tween(self.Blur, Config.Animation.DefaultTween, {
+        Size = 0
+    }).Completed:Connect(function()
+        -- Remove the blur first
+        self.Blur:Destroy()
+        
+        -- Then destroy the entire UI
+        self.GUI:Destroy()
+    end)
+end
+
+-- Make UI draggable
+function LAJHub:MakeDraggable()
+    local frame = self.Main
+    local dragToggle, dragStart, startPos
+    
+    self.TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragToggle = true
+            dragStart = input.Position
+            startPos = frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragToggle = false
+                end
+            end)
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+-- Create subtle particle effects
+function LAJHub:CreateParticleSystem()
+    -- Create particle container
+    self.ParticleContainer = Helper.Create("Frame")({
+        Name = "ParticleContainer",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 0,
+        Parent = self.Main
+    })
+    
+    -- Create particles
+    local particleCount = 15
+    local particles = {}
+    
+    for i = 1, particleCount do
+        local size = math.random(2, 4)
+        local particle = Helper.Create("Frame")({
+            Name = "Particle" .. i,
+            BackgroundColor3 = Config.Colors.Accent,
+            BackgroundTransparency = math.random(85, 95) / 100,
+            BorderSizePixel = 0,
+            Position = UDim2.new(math.random(0, 100) / 100, 0, math.random(0, 100) / 100, 0),
+            Size = UDim2.new(0, size, 0, size),
+            ZIndex = 0,
+            Parent = self.ParticleContainer
+        })
+        Helper.Round(particle, size / 2)
+        table.insert(particles, particle)
+    end
+    
+    -- Animate particles
+    spawn(function()
+        while self.ParticleContainer and self.ParticleContainer.Parent do
+            for _, particle in ipairs(particles) do
+                if particle and particle.Parent then
+                    -- Random slow upward/sideways drift
+                    local xOffset = math.random(-20, 20)
+                    local yOffset = math.random(-50, -20)
+                    local duration = math.random(30, 60) / 10
+                    
+                    Helper.Tween(particle, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+                        Position = UDim2.new(
+                            particle.Position.X.Scale,
+                            particle.Position.X.Offset + xOffset,
+                            particle.Position.Y.Scale,
+                            particle.Position.Y.Offset + yOffset
+                        ),
+                        BackgroundTransparency = 1
+                    }).Completed:Connect(function()
+                        -- Reset particle
+                        if particle and particle.Parent then
+                            particle.Position = UDim2.new(math.random(0, 100) / 100, 0, 1, 5)
+                            particle.BackgroundTransparency = math.random(85, 95) / 100
+                        end
+                    end)
+                end
+            end
+            wait(0.5)
+        end
+    end)
+end
+
+-- Execute a script
+function LAJHub:ExecuteScript(url, gameName)
+    self:Notify("Executing", "Loading script for " .. gameName .. "...", 1)
+    
+    -- Use pcall to safely execute the script
+    pcall(function()
+        loadstring(game:HttpGet(url, true))()
+    end)
+    
+    -- Notify success
+    self:Notify("Success", "Successfully loaded script for " .. gameName, 3)
+end
+
+-- Create the hub instance
+local hub = LAJHub.new()
+return hub
