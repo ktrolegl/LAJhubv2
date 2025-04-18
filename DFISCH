@@ -1,18 +1,48 @@
 --[[
-    LAJ HUB - PREMIUM PERSISTENT UI
-    Ultra-modern dark theme UI with advanced animations and effects
-    Stays active and visible even when clicking elsewhere
-    Features premium animations, effects, and responsive design
+    LAJ HUB Modern UI - Enhanced Edition
+    Ultra-sleek modern UI with premium animations and effects
+    Features automatic script detection and easy game selection
 ]]
 
--- Services
+-- Create Services
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
 
--- Utility functions
+-- Premium color scheme (deep purple/black theme with neon accents)
+local colors = {
+    background = Color3.fromRGB(15, 10, 25),      -- Ultra dark background
+    backgroundAlt = Color3.fromRGB(20, 15, 30),   -- Slightly lighter background for contrast
+    backgroundLight = Color3.fromRGB(30, 20, 45), -- Light background for buttons
+    accent = Color3.fromRGB(140, 70, 255),        -- Vibrant purple
+    accentGradient = Color3.fromRGB(110, 50, 220),-- Darker purple for gradients
+    accentBright = Color3.fromRGB(180, 100, 255), -- Brighter purple for highlights
+    accentSecondary = Color3.fromRGB(0, 200, 255),-- Cyan blue accent
+    accentTertiary = Color3.fromRGB(255, 70, 100),-- Pink accent
+    text = Color3.fromRGB(240, 240, 255),         -- Almost white text
+    textDim = Color3.fromRGB(180, 180, 200),      -- Dimmed text
+    shadow = Color3.fromRGB(0, 0, 0),             -- Shadow color
+    success = Color3.fromRGB(70, 230, 130),       -- Success green
+    warning = Color3.fromRGB(255, 180, 40),       -- Warning yellow
+    error = Color3.fromRGB(255, 70, 70)           -- Error red
+}
+
+-- UI Configuration
+local config = {
+    cornerRadius = 8,
+    borderWidth = 1,
+    frameWidth = 550,
+    frameHeight = 350,
+    sidebarWidth = 60,
+    titlebarHeight = 40,
+    animSpeed = 0.3,
+    animSpeedFast = 0.15,
+    animSpeedSlow = 0.5,
+    buttonSize = 36
+}
+
+-- Helper function to easily create UI elements
 local function Create(instanceType)
     return function(properties)
         local instance = Instance.new(instanceType)
@@ -23,78 +53,29 @@ local function Create(instanceType)
     end
 end
 
--- Premium color scheme (deep purple with electric accents)
-local colors = {
-    background = Color3.fromRGB(20, 12, 28),    -- Deep dark purple background
-    backgroundLight = Color3.fromRGB(30, 20, 40), -- Slightly lighter background
-    backgroundDark = Color3.fromRGB(15, 8, 22),  -- Darker background
-    accent = Color3.fromRGB(130, 60, 255),      -- Vibrant purple accent
-    accentLight = Color3.fromRGB(160, 100, 255), -- Lighter accent
-    accentDark = Color3.fromRGB(100, 40, 200),   -- Darker accent
-    secondaryAccent = Color3.fromRGB(0, 210, 255), -- Cyan accent for contrast
-    tertiaryAccent = Color3.fromRGB(255, 70, 140), -- Pink accent for highlights
-    text = Color3.fromRGB(240, 240, 255),        -- White text
-    textDim = Color3.fromRGB(170, 170, 190),     -- Dimmed text
-    button = Color3.fromRGB(40, 25, 60),         -- Button background
-    buttonHover = Color3.fromRGB(60, 35, 90),    -- Button hover
-    shadow = Color3.fromRGB(0, 0, 0),            -- Shadow color
-    success = Color3.fromRGB(70, 200, 120),      -- Success indicators
-    warning = Color3.fromRGB(240, 180, 60),      -- Warning indicators
-    error = Color3.fromRGB(240, 60, 60)          -- Error indicators
-}
-
--- Configuration
-local config = {
-    cornerRadius = 8,            -- Corner radius for UI elements
-    borderThickness = 1.5,       -- Border thickness
-    animationSpeed = 0.3,        -- Animation speed
-    glowIntensity = 0.8,         -- Glow effect intensity
-    accentPulseSpeed = 2,        -- Accent color pulse animation speed
-    hoverExpandScale = 1.05,     -- How much buttons expand on hover
-    sidebarWidth = 60,           -- Width of the sidebar
-    mainFrameWidth = 550,        -- Width of the main frame
-    mainFrameHeight = 350,       -- Height of the main frame
-    topBarHeight = 40,           -- Height of the top bar
-    tabButtonSize = 36,          -- Size of tab buttons
-    showParticles = true,        -- Whether to show ambient particles
-    showTooltips = true,         -- Whether to show tooltips
-    enableSounds = true          -- Whether to play UI sounds
-}
-
--- Main UI Creation
+-- Create main UI
 local LAJHub = Create("ScreenGui")({
-    Name = "LAJHubPremium",
+    Name = "LAJHub",
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
     ResetOnSpawn = false,
     DisplayOrder = 100
 })
 
--- Try to parent to CoreGui
-pcall(function() LAJHub.Parent = CoreGui end)
+-- Try to parent to CoreGui for persistence
+pcall(function() LAJHub.Parent = game:GetService("CoreGui") end)
 if not LAJHub.Parent then LAJHub.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
 
--- Main Container
+-- Main container
 local MainFrame = Create("Frame")({
     Name = "MainFrame",
     Parent = LAJHub,
     BackgroundColor3 = colors.background,
     BorderSizePixel = 0,
-    Position = UDim2.new(0.5, -config.mainFrameWidth/2, 0.5, -config.mainFrameHeight/2),
-    Size = UDim2.new(0, config.mainFrameWidth, 0, config.mainFrameHeight),
+    Position = UDim2.new(0.5, -config.frameWidth/2, 0.5, -config.frameHeight/2),
+    Size = UDim2.new(0, config.frameWidth, 0, config.frameHeight),
     ClipsDescendants = true,
     Active = true,
-    Draggable = true,
-    Visible = true
-})
-
--- Apply a gradient to the main frame for depth
-local MainGradient = Create("UIGradient")({
-    Parent = MainFrame,
-    Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, colors.background),
-        ColorSequenceKeypoint.new(1, colors.backgroundDark)
-    }),
-    Rotation = 45
+    Draggable = true
 })
 
 -- Add corners to main frame
@@ -103,14 +84,37 @@ local MainCorner = Create("UICorner")({
     CornerRadius = UDim.new(0, config.cornerRadius)
 })
 
--- Create drop shadow
+-- Add gradient to main frame for depth
+local MainGradient = Create("UIGradient")({
+    Parent = MainFrame,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, colors.background),
+        ColorSequenceKeypoint.new(1, colors.background:Lerp(Color3.new(0,0,0), 0.3))
+    }),
+    Rotation = 45
+})
+
+-- Add outer glow
+local OuterGlow = Create("ImageLabel")({
+    Name = "OuterGlow",
+    Parent = MainFrame,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, -20, 0, -20),
+    Size = UDim2.new(1, 40, 1, 40),
+    Image = "rbxassetid://5028857084", -- Soft glow
+    ImageColor3 = colors.accent,
+    ImageTransparency = 0.7,
+    ZIndex = -1
+})
+
+-- Create shadow
 local Shadow = Create("ImageLabel")({
     Name = "Shadow",
     Parent = MainFrame,
     BackgroundTransparency = 1,
     Position = UDim2.new(0, -15, 0, -15),
     Size = UDim2.new(1, 30, 1, 30),
-    ZIndex = -1,
+    ZIndex = -2,
     Image = "rbxassetid://6014261993",
     ImageColor3 = colors.shadow,
     ImageTransparency = 0.5,
@@ -118,141 +122,118 @@ local Shadow = Create("ImageLabel")({
     SliceCenter = Rect.new(49, 49, 450, 450)
 })
 
--- Add outer stroke for premium look
-local OuterStroke = Create("UIStroke")({
+-- Add pulsing neon border
+local NeonBorder = Create("UIStroke")({
     Parent = MainFrame,
     ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
     Color = colors.accent,
-    Thickness = config.borderThickness,
-    Transparency = 0.7
+    Thickness = config.borderWidth,
+    Transparency = 0.3
 })
 
--- Create pulsing glow effect
-local GlowEffect = Create("ImageLabel")({
-    Name = "GlowEffect",
-    Parent = MainFrame,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, -20, 0, -20),
-    Size = UDim2.new(1, 40, 1, 40),
-    ZIndex = -2,
-    Image = "rbxassetid://5028857084", -- Glow texture
-    ImageColor3 = colors.accent,
-    ImageTransparency = 0.8
-})
-
--- Create ambient particles
-if config.showParticles then
-    local Particles = Create("Frame")({
-        Name = "Particles",
-        Parent = MainFrame,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 1, 0),
-        ZIndex = 5
-    })
-    
-    -- Create individual particles
-    for i = 1, 20 do
-        local particle = Create("Frame")({
-            Name = "Particle_" .. i,
-            Parent = Particles,
-            BackgroundColor3 = colors.accent,
-            BackgroundTransparency = math.random(70, 95) / 100,
-            BorderSizePixel = 0,
-            Position = UDim2.new(math.random(1, 100) / 100, 0, math.random(1, 100) / 100, 0),
-            Size = UDim2.new(0, math.random(1, 3), 0, math.random(1, 3)),
-            ZIndex = 3
-        })
+-- Animate border
+spawn(function()
+    while NeonBorder and NeonBorder.Parent do
+        TweenService:Create(NeonBorder, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Color = colors.accentBright,
+            Transparency = 0.1
+        }):Play()
         
-        -- Make particles round
-        Create("UICorner")({
-            Parent = particle,
-            CornerRadius = UDim.new(1, 0)
-        })
+        wait(1.5)
         
-        -- Animate particles floating
-        spawn(function()
-            while particle and particle.Parent do
-                local moveX = math.random(-30, 30) / 100
-                local moveY = math.random(-30, 30) / 100
-                local duration = math.random(3, 8)
-                
-                TweenService:Create(particle, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-                    Position = UDim2.new(
-                        math.clamp(particle.Position.X.Scale + moveX, 0, 1), 0,
-                        math.clamp(particle.Position.Y.Scale + moveY, 0, 1), 0
-                    ),
-                    BackgroundTransparency = math.random(70, 95) / 100
-                }):Play()
-                
-                wait(duration)
-            end
-        end)
+        if not NeonBorder or not NeonBorder.Parent then break end
+        
+        TweenService:Create(NeonBorder, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Color = colors.accent,
+            Transparency = 0.3
+        }):Play()
+        
+        wait(1.5)
     end
-end
+end)
 
--- Create top bar
+-- Top bar
 local TopBar = Create("Frame")({
     Name = "TopBar",
     Parent = MainFrame,
-    BackgroundColor3 = colors.backgroundDark,
+    BackgroundColor3 = colors.backgroundAlt,
     BorderSizePixel = 0,
-    Size = UDim2.new(1, 0, 0, config.topBarHeight)
+    Size = UDim2.new(1, 0, 0, config.titlebarHeight)
 })
 
--- Apply gradient to top bar
-local TopBarGradient = Create("UIGradient")({
-    Parent = TopBar,
-    Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, colors.backgroundDark),
-        ColorSequenceKeypoint.new(1, colors.background)
-    }),
-    Rotation = 90
-})
-
--- Round the top corners of the top bar
-local TopBarCorner = Create("UICorner")({
+-- Add top corners
+local TopCorner = Create("UICorner")({
     Parent = TopBar,
     CornerRadius = UDim.new(0, config.cornerRadius)
 })
 
--- Fix the corners at the bottom of the top bar
-local TopBarFix = Create("Frame")({
-    Name = "TopBarFix",
+-- Fix corners at bottom of top bar
+local TopFix = Create("Frame")({
+    Name = "TopFix",
     Parent = TopBar,
-    BackgroundColor3 = colors.backgroundDark,
+    BackgroundColor3 = colors.backgroundAlt,
     BorderSizePixel = 0,
     Position = UDim2.new(0, 0, 0.5, 0),
     Size = UDim2.new(1, 0, 0.5, 0)
 })
 
--- Apply the same gradient to the fix
-TopBarGradient:Clone().Parent = TopBarFix
+-- Add gradient to top bar
+local TopGradient = Create("UIGradient")({
+    Parent = TopBar,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, colors.backgroundAlt:Lerp(colors.accent, 0.05)),
+        ColorSequenceKeypoint.new(1, colors.backgroundAlt)
+    }),
+    Rotation = 90
+})
 
--- Title logo
+-- Title and logo
 local TitleIcon = Create("ImageLabel")({
     Name = "TitleIcon",
     Parent = TopBar,
     BackgroundTransparency = 1,
-    Position = UDim2.new(0, 10, 0, 5),
-    Size = UDim2.new(0, 30, 0, 30),
-    Image = "rbxassetid://7743878358", -- Custom logo (shark icon)
+    Position = UDim2.new(0, 12, 0, 6),
+    Size = UDim2.new(0, 28, 0, 28),
+    Image = "rbxassetid://7743878358", -- Shark icon
     ImageColor3 = colors.accent
 })
 
 -- Add glow to logo
-local LogoGlow = Create("ImageLabel")({
-    Name = "LogoGlow",
+local IconGlow = Create("ImageLabel")({
+    Name = "IconGlow",
     Parent = TitleIcon,
     BackgroundTransparency = 1,
     Position = UDim2.new(0, -5, 0, -5),
     Size = UDim2.new(1, 10, 1, 10),
     Image = "rbxassetid://5028857084", -- Glow texture
     ImageColor3 = colors.accent,
-    ImageTransparency = 0.6,
+    ImageTransparency = 0.7,
     ZIndex = -1
 })
 
--- Title text
+-- Animate the icon glow
+spawn(function()
+    while IconGlow and IconGlow.Parent do
+        TweenService:Create(IconGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            ImageTransparency = 0.5,
+            Size = UDim2.new(1, 15, 1, 15),
+            Position = UDim2.new(0, -7.5, 0, -7.5)
+        }):Play()
+        
+        wait(1.5)
+        
+        if not IconGlow or not IconGlow.Parent then break end
+        
+        TweenService:Create(IconGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            ImageTransparency = 0.7,
+            Size = UDim2.new(1, 10, 1, 10),
+            Position = UDim2.new(0, -5, 0, -5)
+        }):Play()
+        
+        wait(1.5)
+    end
+end)
+
 local TitleLabel = Create("TextLabel")({
     Name = "TitleLabel",
     Parent = TopBar,
@@ -260,230 +241,112 @@ local TitleLabel = Create("TextLabel")({
     Position = UDim2.new(0, 50, 0, 0),
     Size = UDim2.new(1, -120, 1, 0),
     Font = Enum.Font.GothamBold,
-    Text = "LAJ HUB PREMIUM",
+    Text = "LAJ HUB",
     TextColor3 = colors.accent,
     TextSize = 18,
     TextXAlignment = Enum.TextXAlignment.Left
 })
 
--- Animate the title glow
+-- Add animated color gradient to title
 spawn(function()
     while TitleLabel and TitleLabel.Parent do
-        TweenService:Create(TitleLabel, TweenInfo.new(config.accentPulseSpeed, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-            TextColor3 = colors.accentLight
+        TweenService:Create(TitleLabel, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            TextColor3 = colors.accentBright
         }):Play()
         
-        wait(config.accentPulseSpeed)
+        wait(2)
         
         if not TitleLabel or not TitleLabel.Parent then break end
         
-        TweenService:Create(TitleLabel, TweenInfo.new(config.accentPulseSpeed, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+        TweenService:Create(TitleLabel, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
             TextColor3 = colors.accent
         }):Play()
         
-        wait(config.accentPulseSpeed)
+        wait(2)
     end
 end)
 
--- Minimize button
-local MinimizeButton = Create("TextButton")({
-    Name = "MinimizeButton",
-    Parent = TopBar,
-    BackgroundColor3 = colors.warning,
-    BorderSizePixel = 0,
-    Position = UDim2.new(1, -70, 0.5, -8),
-    Size = UDim2.new(0, 16, 0, 16),
-    Font = Enum.Font.GothamBold,
-    Text = "",
-    TextColor3 = colors.text,
-    TextSize = 14,
-    AutoButtonColor = false
-})
-
--- Add a minus sign to the minimize button
-local MinimizeLine = Create("Frame")({
-    Name = "MinimizeLine",
-    Parent = MinimizeButton,
-    BackgroundColor3 = colors.backgroundDark,
-    BorderSizePixel = 0,
-    Position = UDim2.new(0.5, -5, 0.5, -1),
-    Size = UDim2.new(0, 10, 0, 2),
-    ZIndex = 2
-})
-
--- Round the minimize button
-local MinimizeCorner = Create("UICorner")({
-    Parent = MinimizeButton,
-    CornerRadius = UDim.new(1, 0)
-})
-
--- Create a glow effect for the minimize button
-local MinimizeGlow = Create("ImageLabel")({
-    Name = "MinimizeGlow",
-    Parent = MinimizeButton,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, -4, 0, -4),
-    Size = UDim2.new(1, 8, 1, 8),
-    Image = "rbxassetid://5028857084", -- Glow texture
-    ImageColor3 = colors.warning,
-    ImageTransparency = 0.8,
-    ZIndex = -1
-})
-
--- Close button
-local CloseButton = Create("TextButton")({
+-- Window controls
+local CloseButton = Create("ImageButton")({
     Name = "CloseButton",
     Parent = TopBar,
     BackgroundColor3 = colors.error,
-    BorderSizePixel = 0,
-    Position = UDim2.new(1, -40, 0.5, -8),
-    Size = UDim2.new(0, 16, 0, 16),
-    Font = Enum.Font.GothamBold,
-    Text = "",
-    TextColor3 = colors.text,
-    TextSize = 14,
+    BackgroundTransparency = 0.8,
+    Position = UDim2.new(1, -30, 0.5, -9),
+    Size = UDim2.new(0, 18, 0, 18),
+    Image = "rbxassetid://6764432408", -- X icon
+    ImageColor3 = colors.text,
+    ImageTransparency = 0.2,
     AutoButtonColor = false
 })
 
--- Add an X to the close button
-local CloseX1 = Create("Frame")({
-    Name = "CloseX1",
-    Parent = CloseButton,
-    BackgroundColor3 = colors.backgroundDark,
-    BorderSizePixel = 0,
-    Position = UDim2.new(0.5, -5, 0.5, -1),
-    Size = UDim2.new(0, 10, 0, 2),
-    Rotation = 45,
-    ZIndex = 2
-})
-
-local CloseX2 = Create("Frame")({
-    Name = "CloseX2",
-    Parent = CloseButton,
-    BackgroundColor3 = colors.backgroundDark,
-    BorderSizePixel = 0,
-    Position = UDim2.new(0.5, -5, 0.5, -1),
-    Size = UDim2.new(0, 10, 0, 2),
-    Rotation = -45,
-    ZIndex = 2
-})
-
--- Round the close button
-local CloseCorner = Create("UICorner")({
+-- Add corner to close button
+Create("UICorner")({
     Parent = CloseButton,
     CornerRadius = UDim.new(1, 0)
 })
 
--- Create a glow effect for the close button
-local CloseGlow = Create("ImageLabel")({
-    Name = "CloseGlow",
-    Parent = CloseButton,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, -4, 0, -4),
-    Size = UDim2.new(1, 8, 1, 8),
-    Image = "rbxassetid://5028857084", -- Glow texture
-    ImageColor3 = colors.error,
-    ImageTransparency = 0.8,
-    ZIndex = -1
+-- Minimize button
+local MinimizeButton = Create("ImageButton")({
+    Name = "MinimizeButton",
+    Parent = TopBar,
+    BackgroundColor3 = colors.warning,
+    BackgroundTransparency = 0.8,
+    Position = UDim2.new(1, -60, 0.5, -9),
+    Size = UDim2.new(0, 18, 0, 18),
+    Image = "rbxassetid://6764432138", -- Minimize icon
+    ImageColor3 = colors.text,
+    ImageTransparency = 0.2,
+    AutoButtonColor = false
 })
 
--- Minimized button (shows when UI is minimized)
-local MinimizedButton = Create("Frame")({
-    Name = "MinimizedButton",
-    Parent = LAJHub,
-    BackgroundColor3 = colors.backgroundDark,
-    BorderSizePixel = 0,
-    Position = UDim2.new(0, 20, 0, 20),
-    Size = UDim2.new(0, 140, 0, 40),
-    Visible = false,
-    Active = true,
-    Draggable = true,
-    ZIndex = 10
+-- Add corner to minimize button
+Create("UICorner")({
+    Parent = MinimizeButton,
+    CornerRadius = UDim.new(1, 0)
 })
 
--- Round the minimized button
-local MinimizedCorner = Create("UICorner")({
-    Parent = MinimizedButton,
-    CornerRadius = UDim.new(0, config.cornerRadius)
-})
-
--- Add stroke to minimized button
-local MinimizedStroke = Create("UIStroke")({
-    Parent = MinimizedButton,
-    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-    Color = colors.accent,
-    Thickness = config.borderThickness,
-    Transparency = 0
-})
-
--- Add glow to minimized button
-local MinimizedGlow = Create("ImageLabel")({
-    Name = "MinimizedGlow",
-    Parent = MinimizedButton,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, -10, 0, -10),
-    Size = UDim2.new(1, 20, 1, 20),
-    Image = "rbxassetid://5028857084", -- Glow texture
-    ImageColor3 = colors.accent,
-    ImageTransparency = 0.7,
-    ZIndex = 9
-})
-
--- Minimized button content
-local MinimizedIcon = Create("ImageLabel")({
-    Name = "MinimizedIcon",
-    Parent = MinimizedButton,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, 8, 0, 5),
-    Size = UDim2.new(0, 30, 0, 30),
-    Image = "rbxassetid://7743878358", -- Custom logo
-    ImageColor3 = colors.accent,
-    ZIndex = 11
-})
-
-local MinimizedText = Create("TextLabel")({
-    Name = "MinimizedText",
-    Parent = MinimizedButton,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, 45, 0, 0),
-    Size = UDim2.new(1, -50, 1, 0),
-    Font = Enum.Font.GothamBold,
-    Text = "LAJ HUB",
-    TextColor3 = colors.accent,
-    TextSize = 16,
-    ZIndex = 11
-})
-
--- Create content frame
+-- Main content area
 local ContentFrame = Create("Frame")({
     Name = "ContentFrame",
     Parent = MainFrame,
     BackgroundTransparency = 1,
-    Position = UDim2.new(0, 0, 0, config.topBarHeight),
-    Size = UDim2.new(1, 0, 1, -config.topBarHeight)
+    Position = UDim2.new(0, 0, 0, config.titlebarHeight),
+    Size = UDim2.new(1, 0, 1, -config.titlebarHeight)
 })
 
--- Create side panel
+-- Side panel
 local SidePanel = Create("Frame")({
     Name = "SidePanel",
     Parent = ContentFrame,
-    BackgroundColor3 = colors.backgroundDark,
+    BackgroundColor3 = colors.backgroundAlt,
     BorderSizePixel = 0,
     Position = UDim2.new(0, 0, 0, 0),
     Size = UDim2.new(0, config.sidebarWidth, 1, 0)
 })
 
--- Apply gradient to side panel
-local SidePanelGradient = Create("UIGradient")({
+-- Add gradient to side panel
+local SideGradient = Create("UIGradient")({
     Parent = SidePanel,
     Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, colors.backgroundDark),
-        ColorSequenceKeypoint.new(1, colors.background)
+        ColorSequenceKeypoint.new(0, colors.backgroundAlt),
+        ColorSequenceKeypoint.new(1, colors.backgroundAlt:Lerp(colors.background, 0.3))
     }),
     Rotation = 0
 })
 
--- Create main content area
+-- Add separator line
+local SideSeparator = Create("Frame")({
+    Name = "Separator",
+    Parent = SidePanel,
+    BackgroundColor3 = colors.accent,
+    BorderSizePixel = 0,
+    Position = UDim2.new(1, -1, 0, 0),
+    Size = UDim2.new(0, 1, 1, 0),
+    Transparency = 0.7
+})
+
+-- Main content area
 local MainContent = Create("Frame")({
     Name = "MainContent",
     Parent = ContentFrame,
@@ -492,25 +355,25 @@ local MainContent = Create("Frame")({
     Size = UDim2.new(1, -config.sidebarWidth, 1, 0)
 })
 
--- Create tab buttons container in side panel
-local TabButtonsContainer = Create("Frame")({
-    Name = "TabButtonsContainer",
+-- Create tab buttons container
+local NavButtons = Create("Frame")({
+    Name = "NavButtons",
     Parent = SidePanel,
     BackgroundTransparency = 1,
     Position = UDim2.new(0, 0, 0, 10),
     Size = UDim2.new(1, 0, 1, -20)
 })
 
--- Create tab button layout
-local TabButtonLayout = Create("UIListLayout")({
-    Parent = TabButtonsContainer,
+-- Create button layout
+local NavLayout = Create("UIListLayout")({
+    Parent = NavButtons,
     FillDirection = Enum.FillDirection.Vertical,
     HorizontalAlignment = Enum.HorizontalAlignment.Center,
     SortOrder = Enum.SortOrder.LayoutOrder,
     Padding = UDim.new(0, 15)
 })
 
--- Create content tabs
+-- Create tabs
 local HomeTab = Create("ScrollingFrame")({
     Name = "HomeTab",
     Parent = MainContent,
@@ -521,6 +384,7 @@ local HomeTab = Create("ScrollingFrame")({
     Size = UDim2.new(1, 0, 1, 0),
     ScrollBarThickness = 4,
     ScrollBarImageColor3 = colors.accent,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
     Visible = true
 })
 
@@ -534,6 +398,7 @@ local GamesTab = Create("ScrollingFrame")({
     Size = UDim2.new(1, 0, 1, 0),
     ScrollBarThickness = 4,
     ScrollBarImageColor3 = colors.accent,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
     Visible = false
 })
 
@@ -547,6 +412,7 @@ local CreditsTab = Create("ScrollingFrame")({
     Size = UDim2.new(1, 0, 1, 0),
     ScrollBarThickness = 4,
     ScrollBarImageColor3 = colors.accent,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
     Visible = false
 })
 
@@ -560,10 +426,11 @@ local SettingsTab = Create("ScrollingFrame")({
     Size = UDim2.new(1, 0, 1, 0),
     ScrollBarThickness = 4,
     ScrollBarImageColor3 = colors.accent,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
     Visible = false
 })
 
--- Add UI layouts to tabs
+-- Add layouts to tabs
 local HomeLayout = Create("UIListLayout")({
     Parent = HomeTab,
     FillDirection = Enum.FillDirection.Vertical,
@@ -596,54 +463,63 @@ local SettingsLayout = Create("UIListLayout")({
     Padding = UDim.new(0, 15)
 })
 
--- UI UTILITIES AND COMPONENTS
-
--- Function to create a tab button
-local function CreateTabButton(name, icon, tooltip, order)
-    local buttonContainer = Create("Frame")({
-        Name = name .. "Container",
-        Parent = TabButtonsContainer,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0, config.tabButtonSize + 8, 0, config.tabButtonSize + 8),
-        LayoutOrder = order
+-- Add padding to tabs
+local function AddPadding(parent)
+    Create("UIPadding")({
+        Parent = parent,
+        PaddingTop = UDim.new(0, 15),
+        PaddingBottom = UDim.new(0, 15)
     })
-    
+end
+
+AddPadding(HomeTab)
+AddPadding(GamesTab)
+AddPadding(CreditsTab)
+AddPadding(SettingsTab)
+
+-- UI COMPONENTS
+
+-- Function to create a modern nav button
+local function CreateNavButton(name, icon, tooltip, order)
     local button = Create("ImageButton")({
         Name = name .. "Button",
-        Parent = buttonContainer,
+        Parent = NavButtons,
         BackgroundColor3 = colors.backgroundLight,
         BackgroundTransparency = 0.8,
         BorderSizePixel = 0,
-        Position = UDim2.new(0.5, -config.tabButtonSize/2, 0.5, -config.tabButtonSize/2),
-        Size = UDim2.new(0, config.tabButtonSize, 0, config.tabButtonSize),
+        Position = UDim2.new(0.5, -config.buttonSize/2, 0, 0),
+        Size = UDim2.new(0, config.buttonSize, 0, config.buttonSize),
         Image = icon,
         ImageColor3 = colors.textDim,
-        ScaleType = Enum.ScaleType.Fit,
-        AutoButtonColor = false
+        AutoButtonColor = false,
+        LayoutOrder = order
     })
     
+    -- Add corner radius
     local buttonCorner = Create("UICorner")({
         Parent = button,
         CornerRadius = UDim.new(0, 6)
     })
     
+    -- Add selection indicator
     local indicator = Create("Frame")({
         Name = "Indicator",
         Parent = button,
         BackgroundColor3 = colors.accent,
         BorderSizePixel = 0,
-        Position = UDim2.new(0, -2, 0.5, -12),
-        Size = UDim2.new(0, 3, 0, 24),
-        Visible = false,
-        ZIndex = 2
+        Position = UDim2.new(0, -2, 0.5, -10),
+        Size = UDim2.new(0, 3, 0, 20),
+        Visible = false
     })
     
-    local indicatorCorner = Create("UICorner")({
+    -- Round the indicator corners
+    Create("UICorner")({
         Parent = indicator,
         CornerRadius = UDim.new(0, 2)
     })
     
-    local buttonGlow = Create("ImageLabel")({
+    -- Add glow effect
+    local glow = Create("ImageLabel")({
         Name = "Glow",
         Parent = button,
         BackgroundTransparency = 1,
@@ -655,28 +531,26 @@ local function CreateTabButton(name, icon, tooltip, order)
         ZIndex = 0
     })
     
-    -- Hover animations
+    -- Hover and click effects
     button.MouseEnter:Connect(function()
-        if not indicator.Visible then
-            TweenService:Create(button, TweenInfo.new(0.3), {
-                BackgroundTransparency = 0.6,
-                ImageColor3 = colors.text
-            }):Play()
-            
-            TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
-                ImageTransparency = 0.7
-            }):Play()
-        end
+        TweenService:Create(button, TweenInfo.new(config.animSpeedFast), {
+            BackgroundTransparency = 0.6,
+            ImageColor3 = colors.text
+        }):Play()
+        
+        TweenService:Create(glow, TweenInfo.new(config.animSpeedFast), {
+            ImageTransparency = 0.7
+        }):Play()
     end)
     
     button.MouseLeave:Connect(function()
         if not indicator.Visible then
-            TweenService:Create(button, TweenInfo.new(0.3), {
+            TweenService:Create(button, TweenInfo.new(config.animSpeedFast), {
                 BackgroundTransparency = 0.8,
                 ImageColor3 = colors.textDim
             }):Play()
             
-            TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+            TweenService:Create(glow, TweenInfo.new(config.animSpeedFast), {
                 ImageTransparency = 1
             }):Play()
         end
@@ -686,17 +560,17 @@ local function CreateTabButton(name, icon, tooltip, order)
 end
 
 -- Function to create a section header
-local function CreateSectionHeader(parent, text, order)
+local function CreateHeader(parent, text, order)
     local headerFrame = Create("Frame")({
         Name = text .. "Header",
         Parent = parent,
         BackgroundTransparency = 1,
         Size = UDim2.new(1, -40, 0, 40),
-        LayoutOrder = order or 0
+        LayoutOrder = order
     })
     
     local headerText = Create("TextLabel")({
-        Name = "Text",
+        Name = "HeaderText",
         Parent = headerFrame,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 0, 0, 0),
@@ -704,7 +578,7 @@ local function CreateSectionHeader(parent, text, order)
         Font = Enum.Font.GothamBold,
         Text = text,
         TextColor3 = colors.text,
-        TextSize = 18,
+        TextSize = 20,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
@@ -726,9 +600,9 @@ local function CreateSectionHeader(parent, text, order)
         Size = UDim2.new(0, 0, 0, 2)
     })
     
-    -- Animate the accent line growing
-    TweenService:Create(headerAccent, TweenInfo.new(0.8, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0.4, 0, 0, 2)
+    -- Animate the accent line
+    TweenService:Create(headerAccent, TweenInfo.new(config.animSpeedSlow, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0.3, 0, 0, 2)
     }):Play()
     
     return headerFrame
@@ -736,50 +610,69 @@ end
 
 -- Function to create a card container
 local function CreateCard(parent, title, description, order)
-    local cardFrame = Create("Frame")({
+    local card = Create("Frame")({
         Name = title .. "Card",
         Parent = parent,
-        BackgroundColor3 = colors.backgroundLight,
+        BackgroundColor3 = colors.backgroundAlt,
         BackgroundTransparency = 0.2,
         BorderSizePixel = 0,
-        Size = UDim2.new(1, -40, 0, 100), -- Will be adjusted based on content
-        LayoutOrder = order or 0
+        Size = UDim2.new(1, -40, 0, description and 120 or 80),
+        LayoutOrder = order
     })
     
+    -- Add corner radius
     local cardCorner = Create("UICorner")({
-        Parent = cardFrame,
+        Parent = card,
         CornerRadius = UDim.new(0, config.cornerRadius)
     })
     
+    -- Add glossy stroke
     local cardStroke = Create("UIStroke")({
-        Parent = cardFrame,
+        Parent = card,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
         Color = colors.accent,
-        Thickness = config.borderThickness,
+        Thickness = config.borderWidth,
         Transparency = 0.7
+    })
+    
+    -- Add subtle gradient for depth
+    local cardGradient = Create("UIGradient")({
+        Parent = card,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, colors.backgroundAlt),
+            ColorSequenceKeypoint.new(1, colors.backgroundAlt:Lerp(colors.background, 0.3))
+        }),
+        Rotation = 45
     })
     
     local cardTitle = Create("TextLabel")({
         Name = "Title",
-        Parent = cardFrame,
+        Parent = card,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 15, 0, 10),
-        Size = UDim2.new(1, -30, 0, 20),
+        Size = UDim2.new(1, -30, 0, 24),
         Font = Enum.Font.GothamBold,
         Text = title,
         TextColor3 = colors.accent,
-        TextSize = 16,
+        TextSize = 18,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
-    local cardDescription
+    local content = Create("Frame")({
+        Name = "Content",
+        Parent = card,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 15, 0, description and 65 or 40),
+        Size = UDim2.new(1, -30, 0, 0) -- Will be sized by content
+    })
+    
     if description then
-        cardDescription = Create("TextLabel")({
+        local cardDesc = Create("TextLabel")({
             Name = "Description",
-            Parent = cardFrame,
+            Parent = card,
             BackgroundTransparency = 1,
             Position = UDim2.new(0, 15, 0, 35),
-            Size = UDim2.new(1, -30, 0, 40),
+            Size = UDim2.new(1, -30, 0, 30),
             Font = Enum.Font.Gotham,
             Text = description,
             TextColor3 = colors.textDim,
@@ -789,51 +682,55 @@ local function CreateCard(parent, title, description, order)
         })
     end
     
-    local cardContent = Create("Frame")({
-        Name = "Content",
-        Parent = cardFrame,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 15, 0, description and 80 or 40),
-        Size = UDim2.new(1, -30, 0, 0) -- Will be adjusted based on content
-    })
-    
-    -- Hover effect
-    cardFrame.MouseEnter:Connect(function()
-        TweenService:Create(cardStroke, TweenInfo.new(0.3), {
+    -- Hover effects
+    card.MouseEnter:Connect(function()
+        TweenService:Create(cardStroke, TweenInfo.new(config.animSpeed), {
             Transparency = 0.4
         }):Play()
     end)
     
-    cardFrame.MouseLeave:Connect(function()
-        TweenService:Create(cardStroke, TweenInfo.new(0.3), {
+    card.MouseLeave:Connect(function()
+        TweenService:Create(cardStroke, TweenInfo.new(config.animSpeed), {
             Transparency = 0.7
         }):Play()
     end)
     
-    return cardFrame, cardContent
+    return card, content
 end
 
--- Function to create a button
+-- Function to create a modern button
 local function CreateButton(parent, text, callback, isAccent, position, size)
     local button = Create("TextButton")({
         Name = text .. "Button",
         Parent = parent,
-        BackgroundColor3 = isAccent and colors.accent or colors.button,
+        BackgroundColor3 = isAccent and colors.accent or colors.backgroundLight,
         BorderSizePixel = 0,
         Position = position or UDim2.new(0, 0, 0, 0),
         Size = size or UDim2.new(1, 0, 0, 36),
         Font = Enum.Font.GothamBold,
         Text = text,
-        TextColor3 = isAccent and colors.backgroundDark or colors.text,
+        TextColor3 = isAccent and colors.background or colors.text,
         TextSize = 14,
         AutoButtonColor = false
     })
     
+    -- Add corner radius
     local buttonCorner = Create("UICorner")({
         Parent = button,
         CornerRadius = UDim.new(0, config.cornerRadius)
     })
     
+    -- Add gradient for 3D effect
+    local buttonGradient = Create("UIGradient")({
+        Parent = button,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, isAccent and colors.accentBright or colors.backgroundLight:Lerp(colors.backgroundAlt, 0.3)),
+            ColorSequenceKeypoint.new(1, isAccent and colors.accentGradient or colors.backgroundLight)
+        }),
+        Rotation = 90
+    })
+    
+    -- Add glow effect
     local buttonGlow = Create("ImageLabel")({
         Name = "Glow",
         Parent = button,
@@ -841,54 +738,56 @@ local function CreateButton(parent, text, callback, isAccent, position, size)
         Position = UDim2.new(0, -5, 0, -5),
         Size = UDim2.new(1, 10, 1, 10),
         Image = "rbxassetid://5028857084", -- Glow texture
-        ImageColor3 = isAccent and colors.accent or colors.buttonHover,
+        ImageColor3 = isAccent and colors.accent or colors.backgroundLight,
         ImageTransparency = 0.8,
-        ZIndex = 0
+        ZIndex = -1
     })
     
     -- Hover effect
     button.MouseEnter:Connect(function()
-        local hoverColor = isAccent and 
-            colors.accent:Lerp(Color3.new(1,1,1), 0.2) or 
-            colors.button:Lerp(colors.accent, 0.2)
-            
-        TweenService:Create(button, TweenInfo.new(0.3), {
-            BackgroundColor3 = hoverColor,
-            Size = size * config.hoverExpandScale,
-            Position = position - (size * (config.hoverExpandScale - 1)) / 2
+        TweenService:Create(button, TweenInfo.new(config.animSpeedFast), {
+            Size = size * 1.02,
+            Position = position - (size * 0.02)/2
         }):Play()
         
-        TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+        TweenService:Create(buttonGlow, TweenInfo.new(config.animSpeedFast), {
             ImageTransparency = 0.6,
-            Size = UDim2.new(1, 20, 1, 20),
-            Position = UDim2.new(0, -10, 0, -10)
+            Size = UDim2.new(1, 15, 1, 15),
+            Position = UDim2.new(0, -7.5, 0, -7.5)
+        }):Play()
+        
+        TweenService:Create(buttonGradient, TweenInfo.new(config.animSpeedFast), {
+            Offset = Vector2.new(0, -0.1)
         }):Play()
     end)
     
     button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.3), {
-            BackgroundColor3 = isAccent and colors.accent or colors.button,
+        TweenService:Create(button, TweenInfo.new(config.animSpeedFast), {
             Size = size,
             Position = position
         }):Play()
         
-        TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+        TweenService:Create(buttonGlow, TweenInfo.new(config.animSpeedFast), {
             ImageTransparency = 0.8,
             Size = UDim2.new(1, 10, 1, 10),
             Position = UDim2.new(0, -5, 0, -5)
+        }):Play()
+        
+        TweenService:Create(buttonGradient, TweenInfo.new(config.animSpeedFast), {
+            Offset = Vector2.new(0, 0)
         }):Play()
     end)
     
     -- Click effect
     button.MouseButton1Down:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {
-            Size = size * 0.95,
-            Position = position + (size * 0.05) / 2
+        TweenService:Create(button, TweenInfo.new(config.animSpeedFast), {
+            Size = size * 0.96,
+            Position = position + (size * 0.04)/2
         }):Play()
     end)
     
     button.MouseButton1Up:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {
+        TweenService:Create(button, TweenInfo.new(config.animSpeedFast), {
             Size = size,
             Position = position
         }):Play()
@@ -907,7 +806,7 @@ local function CreateToggle(parent, text, description, default, callback)
         Name = text .. "Toggle",
         Parent = parent,
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 60),
+        Size = UDim2.new(1, 0, 0, 60)
     })
     
     local toggleTitle = Create("TextLabel")({
@@ -915,11 +814,11 @@ local function CreateToggle(parent, text, description, default, callback)
         Parent = toggleFrame,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, -60, 0, 20),
+        Size = UDim2.new(1, -70, 0, 20),
         Font = Enum.Font.GothamBold,
         Text = text,
         TextColor3 = colors.text,
-        TextSize = 14,
+        TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
@@ -928,11 +827,11 @@ local function CreateToggle(parent, text, description, default, callback)
         Parent = toggleFrame,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 0, 0, 25),
-        Size = UDim2.new(1, -60, 0, 30),
+        Size = UDim2.new(1, -70, 0, 30),
         Font = Enum.Font.Gotham,
         Text = description,
         TextColor3 = colors.textDim,
-        TextSize = 12,
+        TextSize = 14,
         TextWrapped = true,
         TextXAlignment = Enum.TextXAlignment.Left
     })
@@ -940,14 +839,15 @@ local function CreateToggle(parent, text, description, default, callback)
     local toggleButton = Create("TextButton")({
         Name = "ToggleButton",
         Parent = toggleFrame,
-        BackgroundColor3 = default and colors.accent or colors.button,
+        BackgroundColor3 = default and colors.accent or colors.backgroundLight,
         BorderSizePixel = 0,
-        Position = UDim2.new(1, -50, 0, 15),
-        Size = UDim2.new(0, 40, 0, 20),
+        Position = UDim2.new(1, -60, 0, 15),
+        Size = UDim2.new(0, 50, 0, 26),
         Text = "",
         AutoButtonColor = false
     })
     
+    -- Add corner radius
     local toggleCorner = Create("UICorner")({
         Parent = toggleButton,
         CornerRadius = UDim.new(1, 0)
@@ -958,26 +858,44 @@ local function CreateToggle(parent, text, description, default, callback)
         Parent = toggleButton,
         BackgroundColor3 = colors.text,
         BorderSizePixel = 0,
-        Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8),
-        Size = UDim2.new(0, 16, 0, 16)
+        Position = default and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 4, 0.5, -10),
+        Size = UDim2.new(0, 20, 0, 20),
+        ZIndex = 2
     })
     
+    -- Add corner radius to circle
     local circleCorner = Create("UICorner")({
         Parent = toggleCircle,
         CornerRadius = UDim.new(1, 0)
     })
     
-    -- Toggle functionality
+    -- Add subtle shadow to circle
+    local circleShadow = Create("ImageLabel")({
+        Name = "Shadow",
+        Parent = toggleCircle,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, -2, 0, -2),
+        Size = UDim2.new(1, 4, 1, 4),
+        Image = "rbxassetid://5028857084",
+        ImageColor3 = colors.shadow,
+        ImageTransparency = 0.6,
+        ZIndex = 1
+    })
+    
+    -- Track toggle state
     local enabled = default
+    
+    -- Toggle functionality
     toggleButton.MouseButton1Click:Connect(function()
         enabled = not enabled
         
-        TweenService:Create(toggleButton, TweenInfo.new(0.3), {
-            BackgroundColor3 = enabled and colors.accent or colors.button
+        -- Animate the toggle switch
+        TweenService:Create(toggleButton, TweenInfo.new(config.animSpeed), {
+            BackgroundColor3 = enabled and colors.accent or colors.backgroundLight
         }):Play()
         
-        TweenService:Create(toggleCircle, TweenInfo.new(0.3), {
-            Position = enabled and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+        TweenService:Create(toggleCircle, TweenInfo.new(config.animSpeed), {
+            Position = enabled and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 4, 0.5, -10)
         }):Play()
         
         if callback then callback(enabled) end
@@ -986,36 +904,279 @@ local function CreateToggle(parent, text, description, default, callback)
     return toggleFrame, enabled
 end
 
--- Function to create a game button
-local function CreateGameButton(parent, name, description, scriptUrl, gameName, order)
-    local btnFrame = Create("Frame")({
-        Name = gameName .. "Button",
+-- Function to create a modern dropdown
+local function CreateDropdown(parent, text, options, default, callback)
+    local dropFrame = Create("Frame")({
+        Name = text .. "Dropdown",
         Parent = parent,
-        BackgroundColor3 = colors.backgroundLight,
-        BackgroundTransparency = 0.2,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1, -40, 0, 70),
-        LayoutOrder = order or 0
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 70)
     })
     
-    local btnCorner = Create("UICorner")({
-        Parent = btnFrame,
+    local dropTitle = Create("TextLabel")({
+        Name = "Title",
+        Parent = dropFrame,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 25),
+        Font = Enum.Font.GothamBold,
+        Text = text,
+        TextColor3 = colors.text,
+        TextSize = 16,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    
+    local dropButton = Create("TextButton")({
+        Name = "Button",
+        Parent = dropFrame,
+        BackgroundColor3 = colors.backgroundLight,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 30),
+        Size = UDim2.new(1, 0, 0, 36),
+        Font = Enum.Font.Gotham,
+        Text = "  " .. (default or "Select option..."),
+        TextColor3 = colors.text,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        AutoButtonColor = false
+    })
+    
+    -- Add corner radius
+    local buttonCorner = Create("UICorner")({
+        Parent = dropButton,
         CornerRadius = UDim.new(0, config.cornerRadius)
     })
     
-    local btnStroke = Create("UIStroke")({
-        Parent = btnFrame,
+    -- Add gradient
+    local buttonGradient = Create("UIGradient")({
+        Parent = dropButton,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, colors.backgroundLight:Lerp(colors.backgroundAlt, 0.3)),
+            ColorSequenceKeypoint.new(1, colors.backgroundLight)
+        }),
+        Rotation = 90
+    })
+    
+    -- Add dropdown arrow
+    local dropArrow = Create("ImageLabel")({
+        Name = "Arrow",
+        Parent = dropButton,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -30, 0.5, -8),
+        Size = UDim2.new(0, 16, 0, 16),
+        Image = "rbxassetid://6031091004", -- Dropdown arrow
+        ImageColor3 = colors.text,
+        Rotation = 0
+    })
+    
+    -- Create dropdown list container
+    local dropList = Create("Frame")({
+        Name = "List",
+        Parent = dropFrame,
+        BackgroundColor3 = colors.backgroundLight,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 70),
+        Size = UDim2.new(1, 0, 0, 0), -- Start closed
+        ClipsDescendants = true,
+        Visible = false,
+        ZIndex = 10
+    })
+    
+    -- Add corner radius
+    local listCorner = Create("UICorner")({
+        Parent = dropList,
+        CornerRadius = UDim.new(0, config.cornerRadius)
+    })
+    
+    -- Add list layout
+    local listLayout = Create("UIListLayout")({
+        Parent = dropList,
+        FillDirection = Enum.FillDirection.Vertical,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 2)
+    })
+    
+    -- Track selected option and open state
+    local selectedOption = default
+    local isOpen = false
+    
+    -- Create option buttons
+    for i, option in ipairs(options) do
+        local optionButton = Create("TextButton")({
+            Name = option .. "Option",
+            Parent = dropList,
+            BackgroundColor3 = colors.backgroundAlt,
+            BorderSizePixel = 0,
+            Size = UDim2.new(1, 0, 0, 32),
+            Font = Enum.Font.Gotham,
+            Text = "  " .. option,
+            TextColor3 = colors.text,
+            TextSize = 14,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            LayoutOrder = i,
+            ZIndex = 11,
+            AutoButtonColor = false
+        })
+        
+        -- Add corner radius
+        Create("UICorner")({
+            Parent = optionButton,
+            CornerRadius = UDim.new(0, config.cornerRadius/2)
+        })
+        
+        -- Hover effect
+        optionButton.MouseEnter:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(config.animSpeedFast), {
+                BackgroundColor3 = colors.backgroundAlt:Lerp(colors.accent, 0.2)
+            }):Play()
+        end)
+        
+        optionButton.MouseLeave:Connect(function()
+            TweenService:Create(optionButton, TweenInfo.new(config.animSpeedFast), {
+                BackgroundColor3 = colors.backgroundAlt
+            }):Play()
+        end)
+        
+        -- Selection
+        optionButton.MouseButton1Click:Connect(function()
+            selectedOption = option
+            dropButton.Text = "  " .. option
+            
+            -- Close the dropdown
+            isOpen = false
+            TweenService:Create(dropList, TweenInfo.new(config.animSpeed), {
+                Size = UDim2.new(1, 0, 0, 0)
+            }):Play()
+            
+            TweenService:Create(dropArrow, TweenInfo.new(config.animSpeed), {
+                Rotation = 0
+            }):Play()
+            
+            wait(config.animSpeed)
+            dropList.Visible = false
+            
+            if callback then callback(option) end
+        end)
+    end
+    
+    -- Toggle dropdown
+    dropButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        
+        if isOpen then
+            -- Open the dropdown
+            dropList.Visible = true
+            local listSize = math.min(150, #options * 34) -- Cap the height
+            
+            TweenService:Create(dropList, TweenInfo.new(config.animSpeed), {
+                Size = UDim2.new(1, 0, 0, listSize)
+            }):Play()
+            
+            TweenService:Create(dropArrow, TweenInfo.new(config.animSpeed), {
+                Rotation = 180
+            }):Play()
+        else
+            -- Close the dropdown
+            TweenService:Create(dropList, TweenInfo.new(config.animSpeed), {
+                Size = UDim2.new(1, 0, 0, 0)
+            }):Play()
+            
+            TweenService:Create(dropArrow, TweenInfo.new(config.animSpeed), {
+                Rotation = 0
+            }):Play()
+            
+            wait(config.animSpeed)
+            dropList.Visible = false
+        end
+    end)
+    
+    -- Close when clicking elsewhere
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and isOpen then
+            local mousePos = UserInputService:GetMouseLocation()
+            local dropBounds = {
+                min = dropButton.AbsolutePosition,
+                max = dropButton.AbsolutePosition + dropButton.AbsoluteSize
+            }
+            
+            local listBounds = {
+                min = dropList.AbsolutePosition,
+                max = dropList.AbsolutePosition + dropList.AbsoluteSize
+            }
+            
+            -- Check if click is outside both the button and list
+            if not (
+                mousePos.X >= dropBounds.min.X and
+                mousePos.X <= dropBounds.max.X and
+                mousePos.Y >= dropBounds.min.Y and
+                mousePos.Y <= dropBounds.max.Y
+            ) and not (
+                mousePos.X >= listBounds.min.X and
+                mousePos.X <= listBounds.max.X and
+                mousePos.Y >= listBounds.min.Y and
+                mousePos.Y <= listBounds.max.Y
+            ) then
+                -- Close the dropdown
+                isOpen = false
+                TweenService:Create(dropList, TweenInfo.new(config.animSpeed), {
+                    Size = UDim2.new(1, 0, 0, 0)
+                }):Play()
+                
+                TweenService:Create(dropArrow, TweenInfo.new(config.animSpeed), {
+                    Rotation = 0
+                }):Play()
+                
+                wait(config.animSpeed)
+                dropList.Visible = false
+            end
+        end
+    end)
+    
+    return dropFrame, selectedOption
+end
+
+-- Function to create a game button
+local function CreateGameButton(parent, name, description, scriptUrl, gameName, order)
+    local button = Create("Frame")({
+        Name = gameName .. "Button",
+        Parent = parent,
+        BackgroundColor3 = colors.backgroundAlt,
+        BackgroundTransparency = 0.2,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, -40, 0, 80),
+        LayoutOrder = order
+    })
+    
+    -- Add corner radius
+    local buttonCorner = Create("UICorner")({
+        Parent = button,
+        CornerRadius = UDim.new(0, config.cornerRadius)
+    })
+    
+    -- Add glossy stroke
+    local buttonStroke = Create("UIStroke")({
+        Parent = button,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
         Color = colors.accent,
-        Thickness = config.borderThickness,
+        Thickness = config.borderWidth,
         Transparency = 0.8
+    })
+    
+    -- Add subtle gradient
+    local buttonGradient = Create("UIGradient")({
+        Parent = button,
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, colors.backgroundAlt),
+            ColorSequenceKeypoint.new(1, colors.backgroundAlt:Lerp(colors.background, 0.3))
+        }),
+        Rotation = 45
     })
     
     local gameIcon = Create("ImageLabel")({
         Name = "Icon",
-        Parent = btnFrame,
+        Parent = button,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0.5, -15),
+        Position = UDim2.new(0, 15, 0.5, -15),
         Size = UDim2.new(0, 30, 0, 30),
         Image = "rbxassetid://7743878966", -- Game controller icon
         ImageColor3 = colors.accent
@@ -1023,33 +1184,33 @@ local function CreateGameButton(parent, name, description, scriptUrl, gameName, 
     
     local gameTitle = Create("TextLabel")({
         Name = "Title",
-        Parent = btnFrame,
+        Parent = button,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 50, 0, 10),
-        Size = UDim2.new(1, -160, 0, 20),
+        Position = UDim2.new(0, 55, 0, 15),
+        Size = UDim2.new(1, -170, 0, 20),
         Font = Enum.Font.GothamBold,
         Text = name,
         TextColor3 = colors.text,
-        TextSize = 14,
+        TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
     local gameDesc = Create("TextLabel")({
         Name = "Description",
-        Parent = btnFrame,
+        Parent = button,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 50, 0, 35),
-        Size = UDim2.new(1, -160, 0, 30),
+        Position = UDim2.new(0, 55, 0, 40),
+        Size = UDim2.new(1, -170, 0, 30),
         Font = Enum.Font.Gotham,
         Text = description or "Script for " .. gameName,
         TextColor3 = colors.textDim,
-        TextSize = 12,
+        TextSize = 14,
         TextWrapped = true,
         TextXAlignment = Enum.TextXAlignment.Left
     })
     
     local executeBtn = CreateButton(
-        btnFrame,
+        button,
         "EXECUTE",
         function()
             pcall(function()
@@ -1059,93 +1220,192 @@ local function CreateGameButton(parent, name, description, scriptUrl, gameName, 
             Notify(gameName, "Script loaded successfully!", 3, "success")
         end,
         true,
-        UDim2.new(1, -110, 0.5, -15),
-        UDim2.new(0, 100, 0, 30)
+        UDim2.new(1, -110, 0.5, -18),
+        UDim2.new(0, 100, 0, 36)
     )
     
-    -- Hover effect
-    btnFrame.MouseEnter:Connect(function()
-        TweenService:Create(btnStroke, TweenInfo.new(0.3), {
+    -- Add hover effects
+    button.MouseEnter:Connect(function()
+        TweenService:Create(buttonStroke, TweenInfo.new(config.animSpeed), {
             Transparency = 0.5
         }):Play()
         
-        TweenService:Create(gameTitle, TweenInfo.new(0.3), {
-            Position = UDim2.new(0, 55, 0, 10)
+        TweenService:Create(gameTitle, TweenInfo.new(config.animSpeed), {
+            Position = UDim2.new(0, 60, 0, 15)
         }):Play()
     end)
     
-    btnFrame.MouseLeave:Connect(function()
-        TweenService:Create(btnStroke, TweenInfo.new(0.3), {
+    button.MouseLeave:Connect(function()
+        TweenService:Create(buttonStroke, TweenInfo.new(config.animSpeed), {
             Transparency = 0.8
         }):Play()
         
-        TweenService:Create(gameTitle, TweenInfo.new(0.3), {
-            Position = UDim2.new(0, 50, 0, 10)
+        TweenService:Create(gameTitle, TweenInfo.new(config.animSpeed), {
+            Position = UDim2.new(0, 55, 0, 15)
         }):Play()
     end)
     
-    return btnFrame
+    return button
 end
+
+-- Minimized button (shown when UI is minimized)
+local MinimizedButton = Create("Frame")({
+    Name = "MinimizedButton",
+    Parent = LAJHub,
+    BackgroundColor3 = colors.background,
+    BorderSizePixel = 0,
+    Position = UDim2.new(0, 20, 0, 20),
+    Size = UDim2.new(0, 150, 0, 40),
+    Visible = false,
+    ZIndex = 10,
+    Active = true,
+    Draggable = true
+})
+
+-- Add corner radius
+local MinimizedCorner = Create("UICorner")({
+    Parent = MinimizedButton,
+    CornerRadius = UDim.new(0, config.cornerRadius)
+})
+
+-- Add glossy stroke
+local MinimizedStroke = Create("UIStroke")({
+    Parent = MinimizedButton,
+    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+    Color = colors.accent,
+    Thickness = config.borderWidth,
+    Transparency = 0.3
+})
+
+-- Add glow effect
+local MinimizedGlow = Create("ImageLabel")({
+    Name = "Glow",
+    Parent = MinimizedButton,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, -10, 0, -10),
+    Size = UDim2.new(1, 20, 1, 20),
+    Image = "rbxassetid://5028857084", -- Glow texture
+    ImageColor3 = colors.accent,
+    ImageTransparency = 0.7,
+    ZIndex = 9
+})
+
+local MinimizedIcon = Create("ImageLabel")({
+    Name = "Icon",
+    Parent = MinimizedButton,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 10, 0.5, -10),
+    Size = UDim2.new(0, 20, 0, 20),
+    Image = "rbxassetid://7743878358", -- Logo
+    ImageColor3 = colors.accent,
+    ZIndex = 12
+})
+
+local MinimizedLabel = Create("TextLabel")({
+    Name = "Label",
+    Parent = MinimizedButton,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 40, 0, 0),
+    Size = UDim2.new(1, -50, 1, 0),
+    Font = Enum.Font.GothamBold,
+    Text = "LAJ HUB",
+    TextColor3 = colors.accent,
+    TextSize = 16,
+    ZIndex = 12
+})
+
+-- Add pulsing animation to minimized button
+spawn(function()
+    while MinimizedButton and MinimizedButton.Parent do
+        TweenService:Create(MinimizedGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            ImageTransparency = 0.5,
+            Size = UDim2.new(1, 30, 1, 30),
+            Position = UDim2.new(0, -15, 0, -15)
+        }):Play()
+        
+        wait(1.5)
+        
+        if not MinimizedButton or not MinimizedButton.Parent then break end
+        
+        TweenService:Create(MinimizedGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            ImageTransparency = 0.7,
+            Size = UDim2.new(1, 20, 1, 20),
+            Position = UDim2.new(0, -10, 0, -10)
+        }):Play()
+        
+        wait(1.5)
+    end
+end)
 
 -- Function to create a notification
 local function Notify(title, message, duration, notifType)
-    -- Set color based on notification type
     local notifColors = {
         success = colors.success,
         error = colors.error,
         warning = colors.warning,
-        info = colors.secondaryAccent,
+        info = colors.accentSecondary,
         default = colors.accent
     }
     
     local color = notifColors[notifType] or notifColors.default
     
-    -- Create notification frame
     local notification = Create("Frame")({
         Name = "Notification",
         Parent = LAJHub,
-        BackgroundColor3 = colors.backgroundDark,
+        BackgroundColor3 = colors.backgroundAlt,
         BorderSizePixel = 0,
-        Position = UDim2.new(1, 10, 0.5, -40),
-        Size = UDim2.new(0, 250, 0, 80),
+        Position = UDim2.new(1, 10, 0.75, -40),
+        Size = UDim2.new(0, 260, 0, 80),
         ZIndex = 100
     })
     
+    -- Add corner radius
     local notifCorner = Create("UICorner")({
         Parent = notification,
         CornerRadius = UDim.new(0, config.cornerRadius)
     })
     
+    -- Add glossy stroke
     local notifStroke = Create("UIStroke")({
         Parent = notification,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
         Color = color,
-        Thickness = config.borderThickness,
+        Thickness = config.borderWidth,
         Transparency = 0.3
     })
     
-    local notifTitle = Create("TextLabel")({
-        Name = "Title",
+    -- Add glow effect
+    local notifGlow = Create("ImageLabel")({
+        Name = "Glow",
+        Parent = notification,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, -8, 0, -8),
+        Size = UDim2.new(1, 16, 1, 16),
+        Image = "rbxassetid://5028857084", -- Glow texture
+        ImageColor3 = color,
+        ImageTransparency = 0.8,
+        ZIndex = 99
+    })
+    
+    local notifHeader = Create("Frame")({
+        Name = "Header",
         Parent = notification,
         BackgroundColor3 = color,
         BorderSizePixel = 0,
-        Size = UDim2.new(1, 0, 0, 25),
-        Font = Enum.Font.GothamBold,
-        Text = "  " .. title,
-        TextColor3 = colors.text,
-        TextSize = 14,
-        TextXAlignment = Enum.TextXAlignment.Left,
+        Size = UDim2.new(1, 0, 0, 28),
         ZIndex = 101
     })
     
-    local titleCorner = Create("UICorner")({
-        Parent = notifTitle,
+    -- Add corner radius to header
+    local headerCorner = Create("UICorner")({
+        Parent = notifHeader,
         CornerRadius = UDim.new(0, config.cornerRadius)
     })
     
-    -- Fix the bottom corners of the title
-    local titleFix = Create("Frame")({
-        Parent = notifTitle,
+    -- Fix corners at bottom of header
+    local headerFix = Create("Frame")({
+        Name = "Fix",
+        Parent = notifHeader,
         BackgroundColor3 = color,
         BorderSizePixel = 0,
         Position = UDim2.new(0, 0, 0.5, 0),
@@ -1153,12 +1413,25 @@ local function Notify(title, message, duration, notifType)
         ZIndex = 101
     })
     
+    local headerTitle = Create("TextLabel")({
+        Name = "Title",
+        Parent = notifHeader,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0, 0),
+        Size = UDim2.new(1, -20, 1, 0),
+        Font = Enum.Font.GothamBold,
+        Text = title,
+        TextColor3 = colors.text,
+        TextSize = 14,
+        ZIndex = 102
+    })
+    
     local notifMessage = Create("TextLabel")({
         Name = "Message",
         Parent = notification,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 30),
-        Size = UDim2.new(1, -20, 0, 40),
+        Position = UDim2.new(0, 10, 0, 34),
+        Size = UDim2.new(1, -20, 0, 36),
         Font = Enum.Font.Gotham,
         Text = message,
         TextColor3 = colors.text,
@@ -1167,6 +1440,7 @@ local function Notify(title, message, duration, notifType)
         ZIndex = 101
     })
     
+    -- Add progress bar
     local progressBar = Create("Frame")({
         Name = "ProgressBar",
         Parent = notification,
@@ -1177,7 +1451,8 @@ local function Notify(title, message, duration, notifType)
         ZIndex = 101
     })
     
-    local progressBarCorner = Create("UICorner")({
+    -- Add corner radius to progress bar
+    local progressCorner = Create("UICorner")({
         Parent = progressBar,
         CornerRadius = UDim.new(1, 0)
     })
@@ -1191,34 +1466,34 @@ local function Notify(title, message, duration, notifType)
         ZIndex = 102
     })
     
+    -- Add corner radius to fill
     local fillCorner = Create("UICorner")({
         Parent = progressFill,
         CornerRadius = UDim.new(1, 0)
     })
     
-    local notifGlow = Create("ImageLabel")({
-        Name = "Glow",
-        Parent = notification,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, -10, 0, -10),
-        Size = UDim2.new(1, 20, 1, 20),
-        Image = "rbxassetid://5028857084", -- Glow texture
-        ImageColor3 = color,
-        ImageTransparency = 0.7,
-        ZIndex = 99
-    })
+    -- Slide in animation
+    notification:TweenPosition(UDim2.new(1, -280, 0.75, -40), "Out", "Quart", 0.5, true)
     
-    -- Animate in
-    notification:TweenPosition(UDim2.new(1, -270, 0.5, -40), "Out", "Back", 0.5, true)
-    
-    -- Animate progress bar
+    -- Progress bar animation
     TweenService:Create(progressFill, TweenInfo.new(duration or 3, Enum.EasingStyle.Linear), {
         Size = UDim2.new(0, 0, 1, 0)
     }):Play()
     
+    -- Enhance glow on enter
+    TweenService:Create(notifGlow, TweenInfo.new(0.5), {
+        ImageTransparency = 0.6
+    }):Play()
+    
     -- Auto close
     delay(duration or 3, function()
-        notification:TweenPosition(UDim2.new(1, 10, 0.5, -40), "In", "Back", 0.5, true, function()
+        -- Fade out glow
+        TweenService:Create(notifGlow, TweenInfo.new(0.5), {
+            ImageTransparency = 0.8
+        }):Play()
+        
+        -- Slide out animation
+        notification:TweenPosition(UDim2.new(1, 10, 0.75, -40), "In", "Quart", 0.5, true, function()
             notification:Destroy()
         end)
     end)
@@ -1226,10 +1501,10 @@ local function Notify(title, message, duration, notifType)
     return notification
 end
 
--- FILL THE UI WITH CONTENT
+-- POPULATE UI CONTENT
 
--- Create tab buttons
-local homeBtn, homeIndicator = CreateTabButton(
+-- Create navigation buttons
+local homeBtn, homeIndicator = CreateNavButton(
     "Home", 
     "rbxassetid://7733960981", -- Home icon
     "Home", 
@@ -1239,59 +1514,34 @@ homeIndicator.Visible = true
 homeBtn.ImageColor3 = colors.text
 homeBtn.BackgroundTransparency = 0.6
 
-local gamesBtn, gamesIndicator = CreateTabButton(
+local gamesBtn, gamesIndicator = CreateNavButton(
     "Games", 
     "rbxassetid://7734042071", -- Game controller icon
     "Game Scripts", 
     2
 )
 
-local creditsBtn, creditsIndicator = CreateTabButton(
+local creditsBtn, creditsIndicator = CreateNavButton(
     "Credits", 
     "rbxassetid://7734110748", -- Info icon
     "Credits", 
     3
 )
 
-local settingsBtn, settingsIndicator = CreateTabButton(
+local settingsBtn, settingsIndicator = CreateNavButton(
     "Settings", 
     "rbxassetid://7734053495", -- Settings icon
     "Settings", 
     4
 )
 
--- Add layouts to enforce proper spacing
-local homePadding = Create("UIPadding")({
-    Parent = HomeTab,
-    PaddingTop = UDim.new(0, 20),
-    PaddingBottom = UDim.new(0, 20)
-})
-
-local gamesPadding = Create("UIPadding")({
-    Parent = GamesTab,
-    PaddingTop = UDim.new(0, 20),
-    PaddingBottom = UDim.new(0, 20)
-})
-
-local creditsPadding = Create("UIPadding")({
-    Parent = CreditsTab,
-    PaddingTop = UDim.new(0, 20),
-    PaddingBottom = UDim.new(0, 20)
-})
-
-local settingsPadding = Create("UIPadding")({
-    Parent = SettingsTab,
-    PaddingTop = UDim.new(0, 20),
-    PaddingBottom = UDim.new(0, 20)
-})
-
 -- HOME TAB CONTENT
-local welcomeHeader = CreateSectionHeader(HomeTab, "Welcome", 1)
+local welcomeHeader = CreateHeader(HomeTab, "Welcome", 1)
 
-local welcomeCard, welcomeContent = CreateCard(HomeTab, "LAJ HUB Premium", "The premium script hub for Roblox games. Select a script from the Games tab to get started.", 2)
-welcomeCard.Size = UDim2.new(1, -40, 0, 100)
+local welcomeCard, welcomeContent = CreateCard(HomeTab, "LAJ HUB", "The premium script hub for Roblox games. Select a script from the Games tab to get started.", 2)
+welcomeCard.Size = UDim2.new(1, -40, 0, 120)
 
--- Create a logo display for the welcome card
+-- Create logo display
 local logoDisplay = Create("ImageLabel")({
     Name = "LogoDisplay",
     Parent = welcomeContent,
@@ -1302,7 +1552,7 @@ local logoDisplay = Create("ImageLabel")({
     ImageColor3 = colors.accent
 })
 
--- Add glow to the logo
+-- Add glow to logo
 local logoGlow = Create("ImageLabel")({
     Name = "LogoGlow",
     Parent = logoDisplay,
@@ -1312,10 +1562,10 @@ local logoGlow = Create("ImageLabel")({
     Image = "rbxassetid://5028857084", -- Glow texture
     ImageColor3 = colors.accent,
     ImageTransparency = 0.6,
-    ZIndex = -1
+    ZIndex = 0
 })
 
--- Add floating animation to logo
+-- Add float animation to logo
 spawn(function()
     while logoDisplay and logoDisplay.Parent do
         TweenService:Create(logoDisplay, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
@@ -1335,11 +1585,12 @@ spawn(function()
 end)
 
 -- Quick access section
-local quickAccessHeader = CreateSectionHeader(HomeTab, "Quick Access", 3)
+local quickAccessHeader = CreateHeader(HomeTab, "Quick Access", 3)
 
 local quickAccessCard, quickContent = CreateCard(HomeTab, "Popular Scripts", nil, 4)
 quickAccessCard.Size = UDim2.new(1, -40, 0, 100)
 
+-- Create quick access buttons
 local bloxFruitsBtn = CreateButton(
     quickContent,
     "Blox Fruits",
@@ -1384,7 +1635,7 @@ local muscleLegendsBtn = CreateButton(
         Notify("Muscle Legends", "Script loaded successfully!", 3, "success")
     end,
     true,
-    UDim2.new(0, 0, 0, 45),
+    UDim2.new(0, 0, 0, 46),
     UDim2.new(0.48, 0, 0, 36)
 )
 
@@ -1400,14 +1651,15 @@ local animeVanguardsBtn = CreateButton(
         Notify("Anime Vanguards", "Script loaded successfully!", 3, "success")
     end,
     false,
-    UDim2.new(0.52, 0, 0, 45),
+    UDim2.new(0.52, 0, 0, 46),
     UDim2.new(0.48, 0, 0, 36)
 )
 
 -- Status section
 local statusCard, statusContent = CreateCard(HomeTab, "Status", nil, 5)
-statusCard.Size = UDim2.new(1, -40, 0, 70)
+statusCard.Size = UDim2.new(1, -40, 0, 80)
 
+-- Add status indicator
 local statusIcon = Create("Frame")({
     Name = "StatusIcon",
     Parent = statusContent,
@@ -1417,11 +1669,13 @@ local statusIcon = Create("Frame")({
     Size = UDim2.new(0, 15, 0, 15)
 })
 
-local statusCorner = Create("UICorner")({
+-- Add corner radius to status icon
+Create("UICorner")({
     Parent = statusIcon,
     CornerRadius = UDim.new(1, 0)
 })
 
+-- Add status text
 local statusText = Create("TextLabel")({
     Name = "StatusText",
     Parent = statusContent,
@@ -1431,10 +1685,11 @@ local statusText = Create("TextLabel")({
     Font = Enum.Font.GothamBold,
     Text = "Ready to use",
     TextColor3 = colors.text,
-    TextSize = 14,
+    TextSize = 16,
     TextXAlignment = Enum.TextXAlignment.Left
 })
 
+-- Add version info
 local versionText = Create("TextLabel")({
     Name = "VersionText",
     Parent = statusContent,
@@ -1442,7 +1697,7 @@ local versionText = Create("TextLabel")({
     Position = UDim2.new(0, 0, 0, 30),
     Size = UDim2.new(1, 0, 0, 20),
     Font = Enum.Font.Gotham,
-    Text = "Version: 2.0 Premium",
+    Text = "Version: 2.0 | discord.gg/lajhub",
     TextColor3 = colors.textDim,
     TextSize = 14,
     TextXAlignment = Enum.TextXAlignment.Left
@@ -1451,7 +1706,7 @@ local versionText = Create("TextLabel")({
 -- Add pulse animation to status icon
 spawn(function()
     while statusIcon and statusIcon.Parent do
-        TweenService:Create(statusIcon, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+        TweenService:Create(statusIcon, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
             Size = UDim2.new(0, 12, 0, 12),
             Position = UDim2.new(0, 1.5, 0, 6.5)
         }):Play()
@@ -1460,7 +1715,7 @@ spawn(function()
         
         if not statusIcon or not statusIcon.Parent then break end
         
-        TweenService:Create(statusIcon, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+        TweenService:Create(statusIcon, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
             Size = UDim2.new(0, 15, 0, 15),
             Position = UDim2.new(0, 0, 0, 5)
         }):Play()
@@ -1470,32 +1725,36 @@ spawn(function()
 end)
 
 -- GAMES TAB CONTENT
-local gamesHeader = CreateSectionHeader(GamesTab, "Game Scripts", 1)
+local gamesHeader = CreateHeader(GamesTab, "Game Scripts", 1)
 
 -- Search bar
 local searchCard, searchContent = CreateCard(GamesTab, "Search", nil, 2)
 searchCard.Size = UDim2.new(1, -40, 0, 80)
 
+-- Add search bar
 local searchBar = Create("TextBox")({
     Name = "SearchBar",
     Parent = searchContent,
-    BackgroundColor3 = colors.backgroundDark,
+    BackgroundColor3 = colors.backgroundLight,
     BorderSizePixel = 0,
     ClearTextOnFocus = false,
-    Position = UDim2.new(0, 0, 0, 0),
-    Size = UDim2.new(1, 0, 0, 36),
+    Position = UDim2.new(0, 0, 0, 5),
+    Size = UDim2.new(1, 0, 0, 40),
     Font = Enum.Font.Gotham,
     PlaceholderText = "Search games...",
     Text = "",
     TextColor3 = colors.text,
-    TextSize = 14
+    TextSize = 16,
+    TextXAlignment = Enum.TextXAlignment.Left
 })
 
-local searchCorner = Create("UICorner")({
+-- Add corner radius to search bar
+Create("UICorner")({
     Parent = searchBar,
     CornerRadius = UDim.new(0, config.cornerRadius)
 })
 
+-- Add search icon
 local searchIcon = Create("ImageLabel")({
     Name = "SearchIcon",
     Parent = searchBar,
@@ -1506,14 +1765,14 @@ local searchIcon = Create("ImageLabel")({
     ImageColor3 = colors.textDim
 })
 
--- Add padding for the text
-local searchPadding = Create("UIPadding")({
+-- Add padding to search text
+Create("UIPadding")({
     Parent = searchBar,
     PaddingLeft = UDim.new(0, 36)
 })
 
 -- Game scripts section
-local scriptsHeader = CreateSectionHeader(GamesTab, "Available Scripts", 3)
+local scriptsHeader = CreateHeader(GamesTab, "Available Scripts", 3)
 
 -- Game scripts data
 local gameScripts = {
@@ -1575,22 +1834,17 @@ local gameScripts = {
 
 -- Create game buttons
 for i, script in ipairs(gameScripts) do
-    CreateGameButton(
-        GamesTab,
-        script.name,
-        script.description,
-        script.url,
-        script.game,
-        i + 3 -- Order starts after headers
-    )
+    CreateGameButton(GamesTab, script.name, script.description, script.url, script.game, i + 3)
 end
 
 -- CREDITS TAB CONTENT
-local creditsHeader = CreateSectionHeader(CreditsTab, "Credits", 1)
+local creditsHeader = CreateHeader(CreditsTab, "Credits", 1)
 
+-- Developer info
 local developerCard, developerContent = CreateCard(CreditsTab, "Developer", "Information about the developer of LAJ HUB.", 2)
 developerCard.Size = UDim2.new(1, -40, 0, 120)
 
+-- Add developer info
 local developerName = Create("TextLabel")({
     Name = "DeveloperName",
     Parent = developerContent,
@@ -1618,9 +1872,11 @@ local developerText = Create("TextLabel")({
     TextXAlignment = Enum.TextXAlignment.Left
 })
 
+-- Discord info
 local discordCard, discordContent = CreateCard(CreditsTab, "Discord", "Join our Discord server for updates and support.", 3)
 discordCard.Size = UDim2.new(1, -40, 0, 130)
 
+-- Add discord info
 local discordLink = Create("TextLabel")({
     Name = "DiscordLink",
     Parent = discordContent,
@@ -1648,6 +1904,7 @@ local discordText = Create("TextLabel")({
     TextXAlignment = Enum.TextXAlignment.Left
 })
 
+-- Add copy discord button
 local copyDiscordBtn = CreateButton(
     discordContent,
     "Copy Discord Link",
@@ -1664,26 +1921,11 @@ local copyDiscordBtn = CreateButton(
     UDim2.new(1, 0, 0, 36)
 )
 
-local specialThanksCard, thanksContent = CreateCard(CreditsTab, "Special Thanks", "Special thanks to those who contributed to LAJ HUB.", 4)
-specialThanksCard.Size = UDim2.new(1, -40, 0, 120)
-
-local thanksText = Create("TextLabel")({
-    Name = "ThanksText",
-    Parent = thanksContent,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, 0, 0, 0),
-    Size = UDim2.new(1, 0, 0, 80),
-    Font = Enum.Font.Gotham,
-    Text = "Thanks to all our script providers, testers, and the LAJ HUB community for your continued support and feedback.",
-    TextColor3 = colors.textDim,
-    TextSize = 14,
-    TextWrapped = true,
-    TextXAlignment = Enum.TextXAlignment.Left
-})
-
-local versionCard, versionContent = CreateCard(CreditsTab, "Version", "Current version information.", 5)
+-- Version info
+local versionCard, versionContent = CreateCard(CreditsTab, "Version", "Current version information.", 4)
 versionCard.Size = UDim2.new(1, -40, 0, 100)
 
+-- Add version info
 local versionInfo = Create("TextLabel")({
     Name = "VersionInfo",
     Parent = versionContent,
@@ -1691,8 +1933,8 @@ local versionInfo = Create("TextLabel")({
     Position = UDim2.new(0, 0, 0, 0),
     Size = UDim2.new(1, 0, 0, 25),
     Font = Enum.Font.GothamBold,
-    Text = "LAJ HUB Premium v2.0",
-    TextColor3 = colors.text,
+    Text = "LAJ HUB v2.0",
+    TextColor3 = colors.accent,
     TextSize = 16,
     TextXAlignment = Enum.TextXAlignment.Left
 })
@@ -1711,59 +1953,56 @@ local updateInfo = Create("TextLabel")({
 })
 
 -- SETTINGS TAB CONTENT
-local settingsHeader = CreateSectionHeader(SettingsTab, "Settings", 1)
+local settingsHeader = CreateHeader(SettingsTab, "Settings", 1)
 
+-- UI Settings
 local uiSettingsCard, uiContent = CreateCard(SettingsTab, "UI Settings", "Customize the user interface.", 2)
 uiSettingsCard.Size = UDim2.new(1, -40, 0, 180)
 
--- Auto-Load toggle
+-- Add toggle for auto-load
 local autoLoadToggle, autoLoadEnabled = CreateToggle(
     uiContent,
     "Auto-Load Scripts",
     "Automatically load scripts when a compatible game is detected.",
     true,
     function(enabled)
-        -- Will be called when the toggle is changed
+        -- Auto-load scripts when enabled
     end
 )
 
--- Add padding between toggles
-autoLoadToggle.Position = UDim2.new(0, 0, 0, 0)
-
--- UI Always On Top toggle
+-- Add toggle for UI always on top
 local topmostToggle, topmostEnabled = CreateToggle(
     uiContent,
     "UI Always On Top",
     "Keep the UI visible at all times, even when clicking elsewhere in the game.",
     true,
     function(enabled)
-        -- Toggle DisplayOrder to keep UI on top
+        -- Keep UI on top when enabled
         LAJHub.DisplayOrder = enabled and 100 or 0
     end
 )
+topmostToggle.Position = UDim2.new(0, 0, 0, 70)
 
-topmostToggle.Position = UDim2.new(0, 0, 0, 65)
-
--- Reset button
+-- Add reset button
 local resetBtn = CreateButton(
     uiContent,
     "Reset All Settings",
     function()
-        -- Reset toggles to default
-        TweenService:Create(autoLoadToggle.ToggleButton, TweenInfo.new(0.3), {
+        -- Reset all settings to default
+        TweenService:Create(autoLoadToggle.ToggleButton, TweenInfo.new(config.animSpeed), {
             BackgroundColor3 = colors.accent
         }):Play()
         
-        TweenService:Create(autoLoadToggle.ToggleButton.Circle, TweenInfo.new(0.3), {
-            Position = UDim2.new(1, -18, 0.5, -8)
+        TweenService:Create(autoLoadToggle.ToggleButton.Circle, TweenInfo.new(config.animSpeed), {
+            Position = UDim2.new(1, -22, 0.5, -10)
         }):Play()
         
-        TweenService:Create(topmostToggle.ToggleButton, TweenInfo.new(0.3), {
+        TweenService:Create(topmostToggle.ToggleButton, TweenInfo.new(config.animSpeed), {
             BackgroundColor3 = colors.accent
         }):Play()
         
-        TweenService:Create(topmostToggle.ToggleButton.Circle, TweenInfo.new(0.3), {
-            Position = UDim2.new(1, -18, 0.5, -8)
+        TweenService:Create(topmostToggle.ToggleButton.Circle, TweenInfo.new(config.animSpeed), {
+            Position = UDim2.new(1, -22, 0.5, -10)
         }):Play()
         
         -- Keep UI on top
@@ -1772,165 +2011,110 @@ local resetBtn = CreateButton(
         Notify("Settings", "All settings have been reset to default values.", 3, "info")
     end,
     false,
-    UDim2.new(0, 0, 0, 130),
+    UDim2.new(0, 0, 0, 140),
     UDim2.new(1, 0, 0, 36)
 )
 
-local appearanceCard, appearanceContent = CreateCard(SettingsTab, "Appearance", "Change how the UI looks and feels.", 3)
-appearanceCard.Size = UDim2.new(1, -40, 0, 190)
+-- Appearance settings
+local appearanceCard, appearanceContent = CreateCard(SettingsTab, "Appearance", "Change how the UI looks.", 3)
+appearanceCard.Size = UDim2.new(1, -40, 0, 140)
 
--- Theme options
-local themeHeader = Create("TextLabel")({
-    Name = "ThemeHeader",
-    Parent = appearanceContent,
-    BackgroundTransparency = 1,
-    Position = UDim2.new(0, 0, 0, 0),
-    Size = UDim2.new(1, 0, 0, 20),
-    Font = Enum.Font.GothamBold,
-    Text = "Theme:",
-    TextColor3 = colors.text,
-    TextSize = 14,
-    TextXAlignment = Enum.TextXAlignment.Left
-})
-
--- Theme buttons
-local purpleBtn = CreateButton(
+-- Add theme selector
+local themeDropdown, selectedTheme = CreateDropdown(
     appearanceContent,
-    "Purple (Default)",
-    function()
-        -- Already using purple theme, no change needed
-        Notify("Theme", "Purple theme applied", 3, "success")
-    end,
-    true,
-    UDim2.new(0, 0, 0, 25),
-    UDim2.new(0.48, 0, 0, 36)
-)
-
-local cyanBtn = CreateButton(
-    appearanceContent,
-    "Cyan",
-    function()
-        -- Change to cyan theme
-        colors.accent = colors.secondaryAccent
-        colors.accentLight = Color3.fromRGB(50, 230, 255)
-        colors.accentDark = Color3.fromRGB(0, 190, 220)
-        
-        -- Update UI elements with new colors
-        local accentElements = {OuterStroke, LogoGlow, TitleIcon, TitleLabel, LogoDisplay, 
-                               homeIndicator, gamesIndicator, creditsIndicator, settingsIndicator}
-        
-        for _, element in ipairs(accentElements) do
-            if element.Visible ~= false then -- Only update visible indicators
-                TweenService:Create(element, TweenInfo.new(0.5), {
-                    Color = colors.accent,
-                    ImageColor3 = colors.accent,
-                    TextColor3 = colors.accent,
-                    BackgroundColor3 = colors.accent
+    "Theme",
+    {"Dark Purple (Default)", "Cyan Blue", "Hot Pink"},
+    "Dark Purple (Default)",
+    function(option)
+        -- Change theme based on selection
+        if option == "Cyan Blue" then
+            -- Update accent colors to cyan
+            local accentElements = {
+                NeonBorder, OuterGlow, TitleIcon, TitleLabel, IconGlow,
+                MinimizedStroke, MinimizedIcon, MinimizedLabel
+            }
+            
+            for _, element in ipairs(accentElements) do
+                TweenService:Create(element, TweenInfo.new(config.animSpeed), {
+                    Color = colors.accentSecondary,
+                    ImageColor3 = colors.accentSecondary,
+                    TextColor3 = colors.accentSecondary
                 }):Play()
             end
-        end
-        
-        Notify("Theme", "Cyan theme applied", 3, "success")
-    end,
-    false,
-    UDim2.new(0.52, 0, 0, 25),
-    UDim2.new(0.48, 0, 0, 36)
-)
-
-local pinkBtn = CreateButton(
-    appearanceContent,
-    "Pink",
-    function()
-        -- Change to pink theme
-        colors.accent = colors.tertiaryAccent
-        colors.accentLight = Color3.fromRGB(255, 100, 170)
-        colors.accentDark = Color3.fromRGB(220, 50, 110)
-        
-        -- Update UI elements with new colors
-        local accentElements = {OuterStroke, LogoGlow, TitleIcon, TitleLabel, LogoDisplay, 
-                               homeIndicator, gamesIndicator, creditsIndicator, settingsIndicator}
-        
-        for _, element in ipairs(accentElements) do
-            if element.Visible ~= false then -- Only update visible indicators
-                TweenService:Create(element, TweenInfo.new(0.5), {
-                    Color = colors.accent,
-                    ImageColor3 = colors.accent,
-                    TextColor3 = colors.accent,
-                    BackgroundColor3 = colors.accent
+            
+            Notify("Theme", "Cyan Blue theme applied", 3, "info")
+            
+        elseif option == "Hot Pink" then
+            -- Update accent colors to pink
+            local accentElements = {
+                NeonBorder, OuterGlow, TitleIcon, TitleLabel, IconGlow,
+                MinimizedStroke, MinimizedIcon, MinimizedLabel
+            }
+            
+            for _, element in ipairs(accentElements) do
+                TweenService:Create(element, TweenInfo.new(config.animSpeed), {
+                    Color = colors.accentTertiary,
+                    ImageColor3 = colors.accentTertiary,
+                    TextColor3 = colors.accentTertiary
                 }):Play()
             end
-        end
-        
-        Notify("Theme", "Pink theme applied", 3, "success")
-    end,
-    false,
-    UDim2.new(0, 0, 0, 70),
-    UDim2.new(0.48, 0, 0, 36)
-)
-
-local darkBtn = CreateButton(
-    appearanceContent,
-    "Dark Mode",
-    function()
-        -- Change to darker background
-        local darkBackground = Color3.fromRGB(15, 10, 20)
-        local darkBackgroundLight = Color3.fromRGB(25, 15, 30)
-        
-        -- Update UI elements with darker colors
-        TweenService:Create(MainFrame, TweenInfo.new(0.5), {
-            BackgroundColor3 = darkBackground
-        }):Play()
-        
-        TweenService:Create(TopBar, TweenInfo.new(0.5), {
-            BackgroundColor3 = darkBackground
-        }):Play()
-        
-        TweenService:Create(SidePanel, TweenInfo.new(0.5), {
-            BackgroundColor3 = darkBackground
-        }):Play()
-        
-        Notify("Theme", "Dark mode applied", 3, "success")
-    end,
-    false,
-    UDim2.new(0.52, 0, 0, 70),
-    UDim2.new(0.48, 0, 0, 36)
-)
-
--- Effects toggle
-local effectsToggle, effectsEnabled = CreateToggle(
-    appearanceContent,
-    "UI Effects & Animations",
-    "Enable visual effects and animations in the UI for a premium experience.",
-    true,
-    function(enabled)
-        -- Toggle animations and effects
-        if not enabled then
-            -- Disable animations by making them instant
-            config.animationSpeed = 0.01
-            -- Hide particles
-            if MainFrame:FindFirstChild("Particles") then
-                MainFrame.Particles.Visible = false
-            end
-            -- Reduce glow
-            GlowEffect.ImageTransparency = 0.95
+            
+            Notify("Theme", "Hot Pink theme applied", 3, "info")
+            
         else
-            -- Enable animations
-            config.animationSpeed = 0.3
-            -- Show particles
-            if MainFrame:FindFirstChild("Particles") then
-                MainFrame.Particles.Visible = true
+            -- Reset to default purple
+            local accentElements = {
+                NeonBorder, OuterGlow, TitleIcon, TitleLabel, IconGlow,
+                MinimizedStroke, MinimizedIcon, MinimizedLabel
+            }
+            
+            for _, element in ipairs(accentElements) do
+                TweenService:Create(element, TweenInfo.new(config.animSpeed), {
+                    Color = colors.accent,
+                    ImageColor3 = colors.accent,
+                    TextColor3 = colors.accent
+                }):Play()
             end
-            -- Restore glow
-            GlowEffect.ImageTransparency = 0.8
+            
+            Notify("Theme", "Dark Purple theme applied", 3, "info")
         end
     end
 )
 
-effectsToggle.Position = UDim2.new(0, 0, 0, 115)
+-- Add reset UI button
+local resetThemeBtn = CreateButton(
+    appearanceContent,
+    "Reset Appearance",
+    function()
+        -- Reset theme to default
+        local accentElements = {
+            NeonBorder, OuterGlow, TitleIcon, TitleLabel, IconGlow,
+            MinimizedStroke, MinimizedIcon, MinimizedLabel
+        }
+        
+        for _, element in ipairs(accentElements) do
+            TweenService:Create(element, TweenInfo.new(config.animSpeed), {
+                Color = colors.accent,
+                ImageColor3 = colors.accent,
+                TextColor3 = colors.accent
+            }):Play()
+        end
+        
+        -- Update dropdown text
+        themeDropdown.Button.Text = "  Dark Purple (Default)"
+        
+        Notify("Appearance", "Appearance reset to default", 3, "info")
+    end,
+    false,
+    UDim2.new(0, 0, 0, 96),
+    UDim2.new(1, 0, 0, 36)
+)
 
-local aboutCard, aboutContent = CreateCard(SettingsTab, "About", "Information about LAJ HUB Premium.", 4)
+-- About section
+local aboutCard, aboutContent = CreateCard(SettingsTab, "About", "Information about LAJ HUB.", 4)
 aboutCard.Size = UDim2.new(1, -40, 0, 120)
 
+-- Add about text
 local aboutText = Create("TextLabel")({
     Name = "AboutText",
     Parent = aboutContent,
@@ -1938,12 +2122,13 @@ local aboutText = Create("TextLabel")({
     Position = UDim2.new(0, 0, 0, 0),
     Size = UDim2.new(1, 0, 0, 60),
     Font = Enum.Font.Gotham,
-    Text = "LAJ HUB Premium v2.0\nDeveloped by LAJ HUB Team\n© 2023 All Rights Reserved",
+    Text = "LAJ HUB v2.0\nDeveloped by LAJ HUB Team\n© 2023 All Rights Reserved",
     TextColor3 = colors.textDim,
     TextSize = 14,
     TextXAlignment = Enum.TextXAlignment.Left
 })
 
+-- Add discord button
 local discordJoinBtn = CreateButton(
     aboutContent,
     "Join Discord",
@@ -1992,14 +2177,14 @@ local function SwitchTab(tabName)
         
         -- Reset button appearance
         if name ~= tabName then
-            TweenService:Create(tab.button, TweenInfo.new(0.3), {
+            TweenService:Create(tab.button, TweenInfo.new(config.animSpeed), {
                 BackgroundTransparency = 0.8,
                 ImageColor3 = colors.textDim
             }):Play()
             
             local buttonGlow = tab.button:FindFirstChild("Glow")
             if buttonGlow then
-                TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+                TweenService:Create(buttonGlow, TweenInfo.new(config.animSpeed), {
                     ImageTransparency = 1
                 }):Play()
             end
@@ -2011,14 +2196,14 @@ local function SwitchTab(tabName)
     tabs[tabName].indicator.Visible = true
     
     -- Highlight selected button
-    TweenService:Create(tabs[tabName].button, TweenInfo.new(0.3), {
+    TweenService:Create(tabs[tabName].button, TweenInfo.new(config.animSpeed), {
         BackgroundTransparency = 0.6,
         ImageColor3 = colors.text
     }):Play()
     
     local selectedGlow = tabs[tabName].button:FindFirstChild("Glow")
     if selectedGlow then
-        TweenService:Create(selectedGlow, TweenInfo.new(0.3), {
+        TweenService:Create(selectedGlow, TweenInfo.new(config.animSpeed), {
             ImageTransparency = 0.7
         }):Play()
     end
@@ -2073,35 +2258,41 @@ end)
 
 -- Minimize/maximize functionality
 MinimizeButton.MouseButton1Click:Connect(function()
-    -- Hide main frame
+    -- Hide main frame with animation
     TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-        Size = UDim2.new(0, 0, 0, 0),
-        Position = UDim2.new(0.5, 0, 0.5, 0)
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, 0, 0, 0)
     }):Play()
     
-    -- Show minimized button
     wait(0.5)
     MainFrame.Visible = false
-    MinimizedButton.Visible = true
     
-    -- Animate minimized button appearing
+    -- Show minimized button with animation
+    MinimizedButton.Visible = true
     MinimizedButton.Position = UDim2.new(0, -150, 0, 20)
+    MinimizedButton.Size = UDim2.new(0, 150, 0, 40)
+    
     TweenService:Create(MinimizedButton, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Position = UDim2.new(0, 20, 0, 20)
     }):Play()
     
-    -- Animate the glow
+    -- Enhance the glow
     TweenService:Create(MinimizedGlow, TweenInfo.new(0.5), {
-        ImageTransparency = 0.5
+        ImageTransparency = 0.6
     }):Play()
-end)
+})
 
 -- Make Minimized button click restore UI
 MinimizedButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        -- Hide minimized button
-        TweenService:Create(MinimizedButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            Position = UDim2.new(0, -150, 0, 20)
+        -- Fade out minimized button
+        TweenService:Create(MinimizedButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Position = UDim2.new(0, -150, 0, 20),
+            ImageTransparency = 1
+        }):Play()
+        
+        TweenService:Create(MinimizedGlow, TweenInfo.new(0.3), {
+            ImageTransparency = 1
         }):Play()
         
         wait(0.3)
@@ -2113,15 +2304,14 @@ MinimizedButton.InputBegan:Connect(function(input)
         MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
         
         TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, config.mainFrameWidth, 0, config.mainFrameHeight),
-            Position = UDim2.new(0.5, -config.mainFrameWidth/2, 0.5, -config.mainFrameHeight/2)
+            Size = UDim2.new(0, config.frameWidth, 0, config.frameHeight),
+            Position = UDim2.new(0.5, -config.frameWidth/2, 0.5, -config.frameHeight/2)
         }):Play()
     end
 end)
 
 -- Make minimized button draggable
-local dragStart
-local startPos
+local dragStart, startPos
 local dragging = false
 
 MinimizedButton.InputBegan:Connect(function(input)
@@ -2152,7 +2342,7 @@ end)
 
 -- Close button functionality
 CloseButton.MouseButton1Click:Connect(function()
-    -- Fade out animation
+    -- Fade out with animation
     TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
         Size = UDim2.new(0, 0, 0, 0),
         Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -2162,6 +2352,12 @@ CloseButton.MouseButton1Click:Connect(function()
     LAJHub:Destroy()
 end)
 
+-- Initialize UI
+UpdateCanvasSizes()
+
+-- Show welcome notification
+Notify("LAJ HUB", "Welcome to LAJ HUB Modern! Select a script to begin.", 4, "default")
+
 -- Auto-detect game on load
 local function AutoDetectGame()
     local gameId = game.PlaceId
@@ -2170,12 +2366,11 @@ local function AutoDetectGame()
     for _, script in ipairs(gameScripts) do
         local lowerName = string.lower(script.game)
         if string.find(gameName, lowerName) then
-            -- Update status
+            -- Update status text
             statusText.Text = "Detected: " .. script.game
             
             -- Auto-load if enabled
             if autoLoadEnabled then
-                -- Execute script with delay
                 delay(1, function()
                     pcall(function()
                         loadstring(game:HttpGet(script.url, true))()
@@ -2194,36 +2389,10 @@ local function AutoDetectGame()
     return false
 }
 
--- Initialize UI
-UpdateCanvasSizes()
-
--- Show welcome notification
-Notify("LAJ HUB Premium", "Welcome to LAJ HUB Premium! UI will stay persistent even when clicking elsewhere.", 4, "info")
-
 -- Try to auto-detect game
 if not AutoDetectGame() then
     statusText.Text = "Ready to use"
 end
 
--- Add pulsing animation to the glow effect
-spawn(function()
-    while GlowEffect and GlowEffect.Parent do
-        TweenService:Create(GlowEffect, TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-            ImageTransparency = 0.7,
-            Size = UDim2.new(1, 50, 1, 50)
-        }):Play()
-        
-        wait(3)
-        
-        if not GlowEffect or not GlowEffect.Parent then break end
-        
-        TweenService:Create(GlowEffect, TweenInfo.new(3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-            ImageTransparency = 0.8,
-            Size = UDim2.new(1, 40, 1, 40)
-        }):Play()
-        
-        wait(3)
-    end
-end)
-
+-- Return the hub for later reference
 return LAJHub
