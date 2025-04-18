@@ -1,4 +1,4 @@
--- LAJ HUB Blox Fruits Script
+-- LAJ HUB Blox Fruits Scripts
 -- Optimized for Mobile and PC Users
 
 repeat task.wait() until game:IsLoaded()
@@ -866,10 +866,148 @@ local SkillVToggle = MainTab:CreateToggle({
     end
 })
 
+-- Items Tab
+local ItemsTab = Window:CreateTab("Items", 4809772520)
+
+-- Materials Section
+ItemsTab:CreateSection("Materials Farming")
+
+-- Initialize materials settings
+_G.Settings.Materials = {
+    AutoFarmMaterial = false,
+    SelectedMaterial = ""
+}
+
+-- Materials List
+local Materials = {
+    "Leather",
+    "Scrap Metal",
+    "Angel Wings",
+    "Fish Tail",
+    "Magma Ore",
+    "Vampire Fang",
+    "Mystic Droplet",
+    "Radioactive Material",
+    "Demonic Wisp",
+    "Gunpowder",
+    "Dragon Scale",
+    "Conjured Cocoa",
+    "Ectoplasm",
+    "Dark Fragment",
+    "Refined Uranium"
+}
+
+local MaterialDropdown = ItemsTab:CreateDropdown({
+    Name = "Select Material",
+    Options = Materials,
+    CurrentOption = "",
+    Flag = "SelectedMaterial",
+    Callback = function(Value)
+        _G.Settings.Materials.SelectedMaterial = Value
+    end
+})
+
+local AutoFarmMaterialToggle = ItemsTab:CreateToggle({
+    Name = "Auto Farm Material",
+    CurrentValue = false,
+    Flag = "AutoFarmMaterial",
+    Callback = function(Value)
+        _G.Settings.Materials.AutoFarmMaterial = Value
+    end
+})
+
+-- Chest Section
+ItemsTab:CreateSection("Chest Farming")
+
+-- Initialize chest settings
+_G.Settings.Chests = {
+    AutoFarmChest = false,
+    AutoCollectChests = false
+}
+
+local AutoFarmChestToggle = ItemsTab:CreateToggle({
+    Name = "Auto Farm Nearby Chests",
+    CurrentValue = false,
+    Flag = "AutoFarmChest",
+    Callback = function(Value)
+        _G.Settings.Chests.AutoFarmChest = Value
+    end
+})
+
+local AutoCollectChestsToggle = ItemsTab:CreateToggle({
+    Name = "Auto Collect All Chests",
+    CurrentValue = false,
+    Flag = "AutoCollectChests",
+    Callback = function(Value)
+        _G.Settings.Chests.AutoCollectChests = Value
+    end
+})
+
+-- Auto Farm Items functionality
+task.spawn(function()
+    while wait(1) do
+        if _G.Settings.Materials.AutoFarmMaterial and _G.Settings.Materials.SelectedMaterial ~= "" then
+            pcall(function()
+                -- Look for material spawns based on selected material
+                local materialFound = false
+                
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v.Name:find(_G.Settings.Materials.SelectedMaterial) then
+                        materialFound = true
+                        -- Teleport to material
+                        TeleportTo(v.Position)
+                        wait(1) -- Wait to collect
+                        break
+                    end
+                end
+                
+                if not materialFound then
+                    -- Material not found, try to find spawns
+                    -- Different locations based on the material
+                    if _G.Settings.Materials.SelectedMaterial == "Leather" then
+                        TeleportTo(Vector3.new(1000, 40, 1000)) -- Example position
+                    elseif _G.Settings.Materials.SelectedMaterial == "Magma Ore" then
+                        TeleportTo(Vector3.new(-5500, 40, 8500)) -- Example position
+                    end
+                    -- Add more material locations as needed
+                end
+            end)
+        end
+        
+        if _G.Settings.Chests.AutoFarmChest then
+            pcall(function()
+                -- Look for nearby chests
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v.Name:find("Chest") and v:IsA("BasePart") then
+                        local distance = (Player.Character.HumanoidRootPart.Position - v.Position).Magnitude
+                        if distance < 150 then
+                            TeleportTo(v.Position)
+                            wait(1) -- Wait to collect
+                            break
+                        end
+                    end
+                end
+            end)
+        end
+        
+        if _G.Settings.Chests.AutoCollectChests then
+            pcall(function()
+                -- Collect all chests on the map
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v.Name:find("Chest") and v:IsA("BasePart") then
+                        TeleportTo(v.Position)
+                        wait(1) -- Wait to collect
+                    end
+                end
+            end)
+        end
+    end
+end)
+
 -- Boss Farm Tab
 local BossTab = Window:CreateTab("Boss", 7733911488)
 
--- Boss Section
+-- Boss Farm Section
 BossTab:CreateSection("Boss Farm")
 
 -- Get current sea boss list
@@ -898,6 +1036,28 @@ local AutoFarmBossToggle = BossTab:CreateToggle({
     Flag = "AutoFarmBoss",
     Callback = function(Value)
         _G.Settings.AutoFarmBoss = Value
+    end
+})
+
+-- Boss Settings Section
+BossTab:CreateSection("Boss Settings")
+
+-- Add more boss options
+BossTab:CreateToggle({
+    Name = "Auto Retry Boss",
+    CurrentValue = false,
+    Flag = "AutoRetryBoss",
+    Callback = function(Value)
+        _G.Settings.AutoRetryBoss = Value
+    end
+})
+
+BossTab:CreateToggle({
+    Name = "Farm All Bosses",
+    CurrentValue = false,
+    Flag = "FarmAllBosses",
+    Callback = function(Value)
+        _G.Settings.FarmAllBosses = Value
     end
 })
 
@@ -946,8 +1106,8 @@ local FlowerESPToggle = ESPTab:CreateToggle({
 -- Fruit Tab
 local FruitTab = Window:CreateTab("Fruit", 7733674128)
 
--- Fruit Section
-FruitTab:CreateSection("Fruit Options")
+-- Fruit Collection Section
+FruitTab:CreateSection("Fruit Collection")
 
 local AutoCollectFruitToggle = FruitTab:CreateToggle({
     Name = "Auto Collect Fruit",
@@ -966,6 +1126,104 @@ local AutoStoreFruitToggle = FruitTab:CreateToggle({
         _G.Settings.AutoStoreFruit = Value
     end
 })
+
+-- Fruit Shop Section
+FruitTab:CreateSection("Fruit Shop")
+
+-- Initialize fruit shop settings
+_G.Settings.FruitShop = {
+    AutoBuyFruit = false,
+    SelectedFruit = ""
+}
+
+-- List of fruits to buy
+local ShopFruits = {
+    "Bomb-Bomb",
+    "Spike-Spike",
+    "Chop-Chop",
+    "Spring-Spring",
+    "Kilo-Kilo",
+    "Smoke-Smoke",
+    "Spin-Spin",
+    "Flame-Flame",
+    "Bird-Bird: Falcon",
+    "Ice-Ice",
+    "Sand-Sand",
+    "Dark-Dark",
+    "Revive-Revive",
+    "Diamond-Diamond",
+    "Light-Light",
+    "Love-Love",
+    "Rubber-Rubber",
+    "Barrier-Barrier",
+    "Magma-Magma",
+    "Door-Door",
+    "Quake-Quake",
+    "Buddha-Buddha",
+    "String-String",
+    "Phoenix-Phoenix",
+    "Rumble-Rumble",
+    "Paw-Paw",
+    "Gravity-Gravity",
+    "Dough-Dough",
+    "Shadow-Shadow",
+    "Venom-Venom",
+    "Control-Control",
+    "Soul-Soul",
+    "Dragon-Dragon"
+}
+
+local FruitShopDropdown = FruitTab:CreateDropdown({
+    Name = "Select Fruit to Buy",
+    Options = ShopFruits,
+    CurrentOption = "",
+    Flag = "SelectedShopFruit",
+    Callback = function(Value)
+        _G.Settings.FruitShop.SelectedFruit = Value
+    end
+})
+
+local AutoBuyFruitToggle = FruitTab:CreateToggle({
+    Name = "Auto Buy Fruit",
+    CurrentValue = false,
+    Flag = "AutoBuyFruit",
+    Callback = function(Value)
+        _G.Settings.FruitShop.AutoBuyFruit = Value
+    end
+})
+
+FruitTab:CreateButton({
+    Name = "Buy Selected Fruit",
+    Callback = function()
+        if _G.Settings.FruitShop.SelectedFruit ~= "" then
+            FireRemote("BuyFruitFromDealer", _G.Settings.FruitShop.SelectedFruit)
+            Rayfield:Notify({
+                Title = "Fruit Purchase",
+                Content = "Attempted to buy " .. _G.Settings.FruitShop.SelectedFruit,
+                Duration = 3,
+                Image = 4483345998
+            })
+        else
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Please select a fruit first!",
+                Duration = 3,
+                Image = 4483345998
+            })
+        end
+    end
+})
+
+-- Auto buy fruit functionality
+task.spawn(function()
+    while wait(5) do
+        if _G.Settings.FruitShop.AutoBuyFruit and _G.Settings.FruitShop.SelectedFruit ~= "" then
+            pcall(function()
+                FireRemote("BuyFruitFromDealer", _G.Settings.FruitShop.SelectedFruit)
+            end)
+        end
+    end
+end)
 
 -- Misc Tab
 local MiscTab = Window:CreateTab("Misc", 7044233235)
