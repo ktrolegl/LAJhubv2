@@ -60,24 +60,29 @@ local AutoLoadLabel = Instance.new("TextLabel")
 local AutoLoadToggle = Instance.new("TextButton")
 local AutoLoadStatus = Instance.new("TextLabel")
 
--- Enhanced Colors for Modern UI
+-- Ultra Premium Modern UI Colors
 local colors = {
-    background = Color3.fromRGB(18, 10, 32), -- Deeper dark purple-black
-    sideBar = Color3.fromRGB(15, 8, 28),     -- Even darker purple-black for side
-    topBar = Color3.fromRGB(24, 14, 36),     -- Slightly lighter bar color
-    accent = Color3.fromRGB(143, 64, 233),   -- Brighter vibrant purple
-    accentLight = Color3.fromRGB(176, 92, 255), -- Lighter accent for highlights
-    accentDark = Color3.fromRGB(110, 40, 190), -- Darker accent for depth
-    text = Color3.fromRGB(240, 240, 255),    -- Softer white
-    subText = Color3.fromRGB(180, 180, 200), -- Slightly purplish gray
-    button = Color3.fromRGB(35, 20, 60),     -- Richer mid purple
-    buttonHover = Color3.fromRGB(55, 30, 90), -- Richer light purple
-    buttonActive = Color3.fromRGB(70, 40, 110), -- Active state for buttons
-    success = Color3.fromRGB(46, 213, 115),  -- Vibrant green
-    warning = Color3.fromRGB(255, 184, 48),  -- Brighter yellow
-    error = Color3.fromRGB(239, 68, 68),     -- Brighter red
-    shadow = Color3.fromRGB(0, 0, 0),        -- Shadow color
-    glow = Color3.fromRGB(140, 64, 233)      -- Glow effect color
+    background = Color3.fromRGB(12, 6, 24),       -- Ultra dark background
+    sideBar = Color3.fromRGB(10, 4, 20),          -- Nearly black sidebar
+    topBar = Color3.fromRGB(18, 10, 32),          -- Slightly lighter top bar
+    accent = Color3.fromRGB(170, 60, 255),        -- Vibrant neon purple
+    accentLight = Color3.fromRGB(200, 120, 255),  -- Light purple for highlights
+    accentDark = Color3.fromRGB(110, 40, 190),    -- Deep purple for depth
+    accentSecondary = Color3.fromRGB(0, 210, 255),-- Cyan accent for contrast
+    accentTertiary = Color3.fromRGB(255, 60, 120),-- Pink accent for special elements
+    text = Color3.fromRGB(250, 250, 255),         -- Crisp white text
+    subText = Color3.fromRGB(190, 190, 220),      -- Soft purplish gray
+    button = Color3.fromRGB(24, 12, 45),          -- Deep button background
+    buttonHover = Color3.fromRGB(45, 22, 80),     -- Lighter button hover
+    buttonActive = Color3.fromRGB(70, 35, 120),   -- Bright active state
+    buttonGradientTop = Color3.fromRGB(40, 20, 70),-- Button gradient top
+    buttonGradientBottom = Color3.fromRGB(25, 10, 50),-- Button gradient bottom
+    success = Color3.fromRGB(20, 230, 120),       -- Neon green
+    warning = Color3.fromRGB(255, 200, 40),       -- Bright yellow
+    error = Color3.fromRGB(255, 50, 50),          -- Bright red
+    shadow = Color3.fromRGB(0, 0, 0),             -- Shadow color
+    glow = Color3.fromRGB(170, 70, 255),          -- Glow effect color
+    glowIntense = Color3.fromRGB(190, 90, 255)    -- Intense glow for highlights
 }
 
 -- Set properties
@@ -86,6 +91,7 @@ LAJHub.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 pcall(function() LAJHub.Parent = game:GetService("CoreGui") end)
 if not LAJHub.Parent then LAJHub.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end
 
+-- Main Frame with special effects
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = LAJHub
 MainFrame.BackgroundColor3 = colors.background
@@ -95,6 +101,15 @@ MainFrame.Size = UDim2.new(0, 500, 0, 350)
 MainFrame.ClipsDescendants = true
 MainFrame.Active = true
 MainFrame.Draggable = true
+
+-- Add main frame background gradient
+local MainFrameGradient = Instance.new("UIGradient")
+MainFrameGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, colors.background),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 3, 18))
+})
+MainFrameGradient.Rotation = 45
+MainFrameGradient.Parent = MainFrame
 
 TopBar.Name = "TopBar"
 TopBar.Parent = MainFrame
