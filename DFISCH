@@ -1,265 +1,202 @@
 --[[
-    LAJHUBv2.lua - Premium Roblox Exploitation Tool
-    
-    A collection of game hacks, exploits and scripts for Roblox
-    Built for mobile performance with Delta, Hydrogen, and other platforms
+    Speed Hub X Script Loader
+    A simple script loader that directly executes Speed Hub X scripts for various games
 ]]
 
--- Load Rayfield UI library directly from the source
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Create a simple GUI
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+local CloseButton = Instance.new("TextButton")
 
--- Create the main window
-local Window = Rayfield:CreateWindow({
-    Name = "▶ LAJHUBv2 EXPLOIT ◀",
-    LoadingTitle = "Loading...",
-    LoadingSubtitle = "by LAJ HUB",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "LAJHUBv2",
-        FileName = "config"
-    },
-})
+-- Properties
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Create tabs
-local HomeTab = Window:CreateTab("Home")
-local ScriptsTab = Window:CreateTab("Scripts")
-local SettingsTab = Window:CreateTab("Settings")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
--- Home Tab Content
-local WelcomeSection = HomeTab:CreateSection("Welcome to LAJHUBv2")
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Title.BorderSizePixel = 0
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "LAJ HUB - Speed Hub X Loader"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16.000
 
-HomeTab:CreateParagraph({
-    Title = "LAJHUBv2 Premium Exploit",
-    Content = "Welcome to LAJHUBv2, the premium Roblox exploit with advanced features. This UI is designed for optimal performance on mobile platforms."
-})
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = Title
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.BorderSizePixel = 0
+CloseButton.Position = UDim2.new(1, -25, 0, 5)
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 14.000
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
 
-HomeTab:CreateButton({
-    Name = "Join Discord",
-    Callback = function()
-        if setclipboard then
-            setclipboard("https://discord.gg/lajhub")
-            Rayfield:Notify({
-                Title = "Discord",
-                Content = "Discord invite copied to clipboard!",
-                Duration = 3,
-            })
-        else
-            Rayfield:Notify({
-                Title = "Discord",
-                Content = "Unable to copy to clipboard",
-                Duration = 3,
-            })
-        end
-    end,
-})
+ScrollingFrame.Name = "ScrollingFrame"
+ScrollingFrame.Parent = MainFrame
+ScrollingFrame.Active = true
+ScrollingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.Position = UDim2.new(0, 0, 0, 30)
+ScrollingFrame.Size = UDim2.new(1, 0, 1, -30)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.ScrollBarThickness = 6
 
-HomeTab:CreateButton({
-    Name = "Check for Updates",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Update Check",
-            Content = "Your version is up to date!",
-            Duration = 3,
-        })
-    end,
-})
+UIListLayout.Parent = ScrollingFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
 
--- Scripts Tab Content
-local PopularSection = ScriptsTab:CreateSection("Popular Scripts")
-
-ScriptsTab:CreateButton({
-    Name = "Infinite Yield",
-    Callback = function()
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-        Rayfield:Notify({
-            Title = "Infinite Yield",
-            Content = "Loading Infinite Yield...",
-            Duration = 3,
-        })
-    end,
-})
-
-ScriptsTab:CreateButton({
-    Name = "Dex Explorer",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/peyton2465/Dex/master/out.lua"))()
-        Rayfield:Notify({
-            Title = "Dex Explorer",
-            Content = "Loading Dex Explorer...",
-            Duration = 3,
-        })
-    end,
-})
-
--- Function to load script based on game selection
-local function LoadGameScript(gameName)
-    if gameName == "Blox Fruits" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Blox Fruits...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "Dead Rails" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Dead Rails...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "Muscle Legends" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Muscle Legends...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "Fisch" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Fisch...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "The Strongest Battlegrounds" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for The Strongest Battlegrounds...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "Arise Crossover" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Arise Crossover...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "Bubble Gum Simulator" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Bubble Gum Simulator INFINITY...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "Anime Reborn" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Reborn.lua"))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Anime Reborn...",
-            Duration = 3,
-        })
-        
-    elseif gameName == "Anime Vanguards" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Vanguards.lua"))()
-        Rayfield:Notify({
-            Title = "Speed Hub X",
-            Content = "Loading Speed Hub X for Anime Vanguards...",
-            Duration = 3,
-        })
-        
-    else
-        Rayfield:Notify({
-            Title = "Script Not Found",
-            Content = "No script available for " .. gameName,
-            Duration = 3,
-        })
-    end
+-- Function to create a button
+local function CreateButton(text, callback)
+    local Button = Instance.new("TextButton")
+    Button.Name = text
+    Button.Parent = ScrollingFrame
+    Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Button.BorderSizePixel = 0
+    Button.Size = UDim2.new(1, -10, 0, 40)
+    Button.Position = UDim2.new(0, 5, 0, 0)
+    Button.Font = Enum.Font.Gotham
+    Button.Text = text
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.TextSize = 14.000
+    Button.MouseButton1Click:Connect(callback)
+    
+    return Button
 end
 
--- Game Scripts Section
-local SpeedHubSection = ScriptsTab:CreateSection("Speed Hub X Scripts")
+-- Function to create a notification
+local function Notify(title, text, duration)
+    local NotifGui = Instance.new("ScreenGui")
+    local NotifFrame = Instance.new("Frame")
+    local NotifTitle = Instance.new("TextLabel")
+    local NotifText = Instance.new("TextLabel")
+    
+    NotifGui.Parent = game:GetService("CoreGui")
+    NotifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    NotifFrame.Name = "NotifFrame"
+    NotifFrame.Parent = NotifGui
+    NotifFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    NotifFrame.BorderSizePixel = 0
+    NotifFrame.Position = UDim2.new(1, -250, 0, 20)
+    NotifFrame.Size = UDim2.new(0, 230, 0, 80)
+    
+    NotifTitle.Name = "NotifTitle"
+    NotifTitle.Parent = NotifFrame
+    NotifTitle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    NotifTitle.BorderSizePixel = 0
+    NotifTitle.Size = UDim2.new(1, 0, 0, 25)
+    NotifTitle.Font = Enum.Font.GothamBold
+    NotifTitle.Text = "  " .. title
+    NotifTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NotifTitle.TextSize = 14.000
+    NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
+    
+    NotifText.Name = "NotifText"
+    NotifText.Parent = NotifFrame
+    NotifText.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    NotifText.BorderSizePixel = 0
+    NotifText.Position = UDim2.new(0, 0, 0, 25)
+    NotifText.Size = UDim2.new(1, 0, 1, -25)
+    NotifText.Font = Enum.Font.Gotham
+    NotifText.Text = "  " .. text
+    NotifText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NotifText.TextSize = 14.000
+    NotifText.TextXAlignment = Enum.TextXAlignment.Left
+    NotifText.TextYAlignment = Enum.TextYAlignment.Top
+    
+    -- Tween in
+    NotifFrame:TweenPosition(UDim2.new(1, -250, 0, 20), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.5)
+    
+    task.delay(duration, function()
+        -- Tween out
+        NotifFrame:TweenPosition(UDim2.new(1, 20, 0, 20), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.5, false, function()
+            NotifGui:Destroy()
+        end)
+    end)
+end
 
--- Update available games in dropdown that auto-loads scripts
-ScriptsTab:CreateDropdown({
-    Name = "Select Game to Auto-Load Script",
-    Options = {
-        "Blox Fruits", 
-        "Dead Rails", 
-        "Muscle Legends", 
-        "Fisch", 
-        "The Strongest Battlegrounds", 
-        "Arise Crossover", 
-        "Bubble Gum Simulator", 
-        "Anime Reborn", 
-        "Anime Vanguards"
-    },
-    CurrentOption = "",
-    Flag = "GameDropdown",
-    Callback = function(Option)
-        -- Automatically load the script for the selected game
-        LoadGameScript(Option)
-    end,
-})
+-- Load Speed Hub X scripts
+local function LoadBloxFruits()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Blox Fruits...", 3)
+end
 
--- Settings Tab Content
-local UISection = SettingsTab:CreateSection("UI Settings")
+local function LoadDeadRails()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Dead Rails...", 3)
+end
 
-SettingsTab:CreateToggle({
-    Name = "Save Configuration",
-    CurrentValue = true,
-    Flag = "SaveConfig",
-    Callback = function(Value)
-        Rayfield:Notify({
-            Title = "Configuration",
-            Content = Value and "Configuration saving enabled" or "Configuration saving disabled",
-            Duration = 3,
-        })
-    end,
-})
+local function LoadMuscleLegeneds()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Muscle Legends...", 3)
+end
 
-local ThemeColorPicker = SettingsTab:CreateColorPicker({
-    Name = "UI Theme Color",
-    Color = Color3.fromRGB(89, 150, 255),
-    Flag = "UIColor",
-    Callback = function(Color)
-        Rayfield:Notify({
-            Title = "Theme Color",
-            Content = "Theme color updated!",
-            Duration = 3,
-        })
-    end,
-})
+local function LoadFisch()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Fisch...", 3)
+end
 
-local PerformanceSection = SettingsTab:CreateSection("Performance")
+local function LoadStrongestBattlegrounds()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+    Notify("LAJ HUB", "Loading Speed Hub X for The Strongest Battlegrounds...", 3)
+end
 
-SettingsTab:CreateSlider({
-    Name = "Animation Smoothness",
-    Range = {0, 100},
-    Increment = 5,
-    CurrentValue = 75,
-    Flag = "AnimationSmoothnessSlider",
-    Callback = function(Value)
-        -- Animation smoothness value stored
-    end,
-})
+local function LoadAriseCrossover()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Arise Crossover...", 3)
+end
 
-SettingsTab:CreateToggle({
-    Name = "Mobile Optimization",
-    CurrentValue = true,
-    Flag = "MobileOptimization",
-    Callback = function(Value)
-        Rayfield:Notify({
-            Title = "Mobile Optimization",
-            Content = Value and "Mobile optimization enabled" or "Mobile optimization disabled",
-            Duration = 3,
-        })
-    end,
-})
+local function LoadBubbleGumSimulator()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Bubble Gum Simulator INFINITY...", 3)
+end
 
--- Show notification on load
-Rayfield:Notify({
-    Title = "LAJHUBv2 EXPLOIT",
-    Content = "Successfully loaded the exploit UI!",
-    Duration = 5,
-})
+local function LoadAnimeReborn()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Reborn.lua"))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Anime Reborn...", 3)
+end
 
--- Return the window for other scripts to access
-return Window
+local function LoadAnimeVanguards()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Vanguards.lua"))()
+    Notify("LAJ HUB", "Loading Speed Hub X for Anime Vanguards...", 3)
+end
+
+-- Create buttons
+CreateButton("Speed Hub X - Blox Fruits", LoadBloxFruits)
+CreateButton("Speed Hub X - Dead Rails", LoadDeadRails)
+CreateButton("Speed Hub X - Muscle Legends", LoadMuscleLegeneds)
+CreateButton("Speed Hub X - Fisch", LoadFisch)
+CreateButton("Speed Hub X - The Strongest Battlegrounds", LoadStrongestBattlegrounds)
+CreateButton("Speed Hub X - Arise Crossover", LoadAriseCrossover)
+CreateButton("Speed Hub X - Bubble Gum Simulator", LoadBubbleGumSimulator)
+CreateButton("Speed Hub X - Anime Reborn", LoadAnimeReborn)
+CreateButton("Speed Hub X - Anime Vanguards", LoadAnimeVanguards)
+
+-- Update canvas size
+local function UpdateCanvasSize()
+    local contentSize = UIListLayout.AbsoluteContentSize
+    ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 10)
+end
+
+UpdateCanvasSize()
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvasSize)
+
+-- Notification on load
+Notify("LAJ HUB", "Speed Hub X Loader has been loaded!", 3)
