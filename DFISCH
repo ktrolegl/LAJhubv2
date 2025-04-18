@@ -1,1005 +1,1103 @@
----datesss
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
- 
-local Window = Rayfield:CreateWindow({
-    Name = "LAJ HUBs | Dead Rails [BETA] ",
-    LoadingTitle = "LAJ HUB | Loading...",
-    LoadingSubtitle = "Please wait...",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = nil,
-        FileName = "UnityNexus_Config"
-    }
-})
- 
--- 🛡️ Stealth Anti-Ban & Anti-Detection System
--- Next-Generation Military-Grade Anti-Detection System
-local function SuperiorAntiCheat()
-    local success, err = pcall(function()
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-        local RunService = game:GetService("RunService")
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        
-        -- Create a protection namespace with more sophisticated tracking
-        _G.LAJProtection = {
-            Active = true,
-            BlockedRemotes = {},
-            BlockCount = 0,
-            DetectedAntiCheats = {},
-            OriginalFunctions = {},
-            Settings = {
-                ProtectionLevel = 5, -- Maximum protection
-                ScanInterval = 0.5,
-                MinimizeLogs = true,
-                StealthMode = true
-            }
-        }
-        
-        -- 1. Create a protection system that's more sophisticated than their anti-cheat
-        -- Layer 1: Hook everything at the lowest level possible
-        
-        -- Store original functions to prevent detection
-        local oldGetGc = getgc
-        local oldHookFunction = hookfunction
-        local oldNewCClosure = newcclosure
-        local oldGetFenv = getfenv
-        local oldSetFenv = setfenv
-        local oldRawGet = rawget
-        local oldRawSet = rawset
-        
-        _G.LAJProtection.OriginalFunctions = {
-            getgc = oldGetGc,
-            hookfunction = oldHookFunction,
-            newcclosure = oldNewCClosure,
-            getfenv = oldGetFenv,
-            setfenv = oldSetFenv,
-            rawget = oldRawGet,
-            rawset = oldRawSet
-        }
-        
-        -- Top-level protection that runs before the game can even detect us
-        spawn(function()
-            while _G.LAJProtection.Active and wait(0.1) do
-                -- Scan for direct anti-cheat tables in global environment
-                for varName, varValue in pairs(_G) do
-                    if type(varValue) == "table" and varName ~= "LAJProtection" then
-                        local name = tostring(varName):lower()
-                        if name:find("cheat") or name:find("detect") or 
-                           name:find("ban") or name:find("kick") or 
-                           name:find("report") or name:find("check") then
-                            
-                            -- Found an anti-cheat global - safely neutralize it
-                            _G[varName] = setmetatable({}, {
-                                __index = function(_, key)
-                                    -- Return expected values for common checks
-                                    if key == "IsEnabled" or key == "enabled" or key:lower():find("enable") then
-                                        return false
-                                    elseif key == "IsCheating" or key == "cheating" or key:lower():find("cheat") then
-                                        return false
-                                    elseif key == "Players" or key == "players" then
-                                        return {}
-                                    elseif key == "CheckPlayer" or key:lower():find("check") then
-                                        return function() return false end
-                                    end
-                                    return nil
-                                end,
-                                __newindex = function() return end,
-                                __metatable = "This metatable is locked"
-                            })
-                            
-                            if not _G.LAJProtection.DetectedAntiCheats[varName] then
-                                _G.LAJProtection.DetectedAntiCheats[varName] = true
-                                print("Neutralized anti-cheat system: " .. varName)
-                            end
-                        end
-                    end
-                end
-                
-                -- Clean suspicious flags from GC
-                for _, v in pairs(getgc(true)) do
-                    if type(v) == "table" then
-                        -- Scan for common anti-cheat flags
-                        for key, value in pairs(v) do
-                            if type(key) == "string" then
-                                local keyName = key:lower()
-                                if (keyName:find("cheat") or keyName:find("ban") or 
-                                    keyName:find("kick") or keyName:find("flag") or
-                                    keyName:find("detect") or keyName:find("report")) and
-                                   (type(value) == "boolean" or type(value) == "number") then
-                                    
-                                    -- Clear the flag without triggering __newindex
-                                    rawset(v, key, type(value) == "boolean" and false or 0)
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-        
-        -- 2. Surgical Metamethod Protection (Multi-layered)
-        local oldMetatable = getrawmetatable(game)
-        local oldIndex = oldMetatable.__index
-        local oldNamecall = oldMetatable.__namecall
-        local oldNewindex = oldMetatable.__newindex
+-- LAJ HUB Blox Fruits Script
+-- Optimized for Mobile and PC Users
 
-        setreadonly(oldMetatable, false)
-        
-        -- Layer 1: Block remote spying from their anti-cheat
-        oldMetatable.__namecall = newcclosure(function(self, ...)
-            local method = getnamecallmethod()
-            local args = {...}
-            
-            -- Block all anti-cheat related remote calls with extreme precision
-            if (method == "FireServer" or method == "InvokeServer") and 
-               typeof(self) == "Instance" then
-               
-                -- Check suspicious remote names
-                local remoteName = self.Name:lower()
-                if remoteName:find("cheat") or remoteName:find("ban") or 
-                   remoteName:find("kick") or remoteName:find("detect") or
-                   remoteName:find("check") or remoteName:find("secure") or
-                   remoteName:find("validate") or remoteName:find("warp") or
-                   remoteName:find("report") or remoteName:find("log") then
-                    
-                    -- Track this remote for blocking
-                    if not _G.LAJProtection.BlockedRemotes[self:GetFullName()] then
-                        _G.LAJProtection.BlockedRemotes[self:GetFullName()] = 0
-                    end
-                    _G.LAJProtection.BlockedRemotes[self:GetFullName()] = 
-                        _G.LAJProtection.BlockedRemotes[self:GetFullName()] + 1
-                    
-                    _G.LAJProtection.BlockCount = _G.LAJProtection.BlockCount + 1
-                    
-                    if not _G.LAJProtection.Settings.MinimizeLogs then
-                        print("Blocked anti-cheat remote: " .. self:GetFullName())
-                    end
-                    
-                    return nil -- Block completely
-                end
-                
-                -- Advanced: Block ANY remote that tries to send character position data
-                -- (common in anti-teleport checks)
-                if #args > 0 then
-                    for _, arg in pairs(args) do
-                        if typeof(arg) == "CFrame" or typeof(arg) == "Vector3" then
-                            local sourceName = ""
-                            pcall(function()
-                                sourceName = getcallingscript() and getcallingscript().Name or "Unknown"
-                            end)
-                            
-                            -- Allow only UI/Chat position remotes
-                            if sourceName:lower():find("chat") or 
-                               sourceName:lower():find("message") or
-                               sourceName:lower():find("gui") then
-                                return oldNamecall(self, ...)
-                            else
-                                _G.LAJProtection.BlockCount = _G.LAJProtection.BlockCount + 1
-                                return nil
-                            end
-                        end
-                    end
-                end
-            end
-            
-            -- Block kick/ban attempts with perfect imitation of success
-            if (self == LocalPlayer or self == game.Players) and 
-               (method == "Kick" or method == "kick" or method == "remove" or method == "Remove") then
-                print("Blocked kick attempt")
-                return wait(9e9)
-            end
-            
-            -- Let other calls through
-            return oldNamecall(self, ...)
-        end)
-        
-        -- Layer 2: Protect against server trying to modify our character
-        oldMetatable.__newindex = newcclosure(function(self, key, value)
-            -- Protect character parts from server resets
-            if typeof(self) == "Instance" and not checkcaller() and
-               LocalPlayer.Character and self:IsDescendantOf(LocalPlayer.Character) then
-                
-                -- Block position/CFrame resets (anti-teleport system)
-                if (key == "CFrame" or key == "Position") and
-                   (self.Name == "HumanoidRootPart" or self.Name:find("Torso")) then
-                    return -- Block server from resetting our position
-                end
-                
-                -- Block speed resets
-                if self:IsA("Humanoid") and (key == "WalkSpeed" or key == "JumpPower") then
-                    if _G.SpeedActive and _G.CurrentWalkSpeed and key == "WalkSpeed" then
-                        if value < _G.CurrentWalkSpeed then
-                            return -- Block server from resetting our speed
-                        end
-                    end
-                end
-            end
-            
-            -- Block anti-cheat scripts from being added
-            if key == "Parent" and typeof(value) == "Instance" and
-               value:IsDescendantOf(LocalPlayer.Character) and
-               (self:IsA("Script") or self:IsA("LocalScript")) then
-                
-                local scriptName = self.Name:lower()
-                if scriptName:find("cheat") or scriptName:find("ban") or 
-                   scriptName:find("kick") or scriptName:find("detect") then
-                    print("Blocked anti-cheat script: " .. self.Name)
-                    return -- Block anti-cheat script from being added
-                end
-            end
-            
-            return oldNewindex(self, key, value)
-        end)
-        
-        -- Layer 3: Spoof values that anti-cheat might check
-        oldMetatable.__index = newcclosure(function(self, key)
-            -- Spoof character stats for anti-cheat checks
-            if not checkcaller() and typeof(self) == "Instance" then
-                if self:IsA("Humanoid") and LocalPlayer.Character and
-                   self:IsDescendantOf(LocalPlayer.Character) then
-                    
-                    -- Always report normal values to anything checking us
-                    if key == "WalkSpeed" then
-                        return 16
-                    elseif key == "JumpPower" then
-                        return 50
-                    elseif key == "HipHeight" then
-                        return 0
-                    end
-                end
-                
-                -- Spoof script info to hide from checks
-                if (self:IsA("Script") or self:IsA("LocalScript")) and
-                   key:lower():find("cheat") or key:lower():find("hook") then
-                    return nil -- Hide any evidence of us
-                end
-                
-                -- Hide security properties
-                if key:lower():find("secure") or key:lower():find("filter") then
-                    return nil
-                end
-            end
-            
-            return oldIndex(self, key)
-        end)
-        
-        setreadonly(oldMetatable, true)
-        
-        -- 3. Hook Connection Protector
-        -- Protect our hooks from being detected or reversed
-        for _, signal in pairs({
-            RunService.RenderStepped, 
-            RunService.Stepped,
-            RunService.Heartbeat,
-            workspace.DescendantAdded,
-            LocalPlayer.Character and LocalPlayer.Character.ChildAdded or nil,
-            LocalPlayer.CharacterAdded
-        }) do
-            if signal then
-                -- Hide our connections from anti-cheat scan
-                local realConnections = {}
-                
-                -- Replace the real connection function with our protected version
-                local oldConnect = signal.Connect
-                signal.Connect = newcclosure(function(self, func)
-                    local conn = oldConnect(self, function(...)
-                        -- Protect our callback from errors or detection
-                        local success, result = pcall(func, ...)
-                        if not success then
-                            -- Error in callback - check if it's anti-cheat related
-                            local errorMsg = tostring(result):lower()
-                            if errorMsg:find("cheat") or errorMsg:find("kick") or
-                               errorMsg:find("ban") or errorMsg:find("exploit") then
-                                -- This is an anti-cheat error, suppress it
-                                return
-                            end
-                            -- Otherwise let the real error happen
-                            error(result)
-                        end
-                        return result
-                    end)
-                    
-                    -- Hide our connection
-                    table.insert(realConnections, conn)
-                    return conn
-                end)
-            end
-        end
-        
-        -- 4. Anti-Trace Protection System
-        -- Make our changes extremely hard to trace
-        spawn(function()
-            while _G.LAJProtection.Active and wait(3) do
-                -- Apply this repeatedly to ensure our protection stays active
-                
-                -- Hide from built-in checks (advanced anti-detection)
-                pcall(function()
-                    for _, v in pairs(getgc()) do
-                        if type(v) == "function" and islclosure(v) then
-                            local info = debug.getinfo(v)
-                            local script = info.source
-                            
-                            -- Find functions that might be anti-cheat related
-                            if script:find("Security") or script:find("AntiCheat") or
-                               script:find("Detection") or script:find("Ban") then
-                                
-                                -- Get the environment of the function
-                                local env = getfenv(v)
-                                
-                                -- Modify its environment to make it non-functional
-                                setfenv(v, setmetatable({}, {
-                                    __index = function(_, key)
-                                        if key == "Players" then
-                                            return {LocalPlayer = {}}
-                                        end
-                                        return nil
-                                    end
-                                }))
-                            end
-                        end
-                    end
-                end)
-                
-                -- Hide our modifications from GC scans
-                pcall(function()
-                    -- Find tables that might contain detections
-                    for _, v in pairs(getgc(true)) do
-                        if type(v) == "table" then
-                            -- Clear any player flags in these tables
-                            if rawget(v, "Players") or rawget(v, "playerFlagged") or
-                               rawget(v, "banned") or rawget(v, "reported") then
-                                
-                                for key, value in pairs(v) do
-                                    if type(value) == "table" and type(key) ~= "userdata" then
-                                        for playerKey, flagValue in pairs(value) do
-                                            if tostring(playerKey) == LocalPlayer.Name or 
-                                               tostring(playerKey) == tostring(LocalPlayer.UserId) then
-                                                -- Clear our flags
-                                                rawset(value, playerKey, nil)
-                                            end
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end)
-            end
-        end)
-        
-        -- 5. Protect Character from Anti-Cheat
-        LocalPlayer.CharacterAdded:Connect(function(character)
-            wait(1) -- Wait for anti-cheat to finish initial checks
-            
-            -- Apply protections to the new character
-            if character:FindFirstChild("Humanoid") then
-                -- Mark this character as ready
-                _G.CharacterReady = true
-                
-                -- Create a protective layer around the character
-                for _, v in pairs(character:GetDescendants()) do
-                    if v:IsA("BasePart") then
-                        -- Protect each part from anti-cheat inspection
-                        local oldChanged = v.Changed
-                        v.Changed = newcclosure(function(prop)
-                            -- If something is trying to modify our character parts
-                            if prop == "Position" or prop == "CFrame" or
-                               prop == "Size" or prop == "Transparency" then
-                                
-                                -- Check if the caller is likely an anti-cheat
-                                local caller = getcallingscript()
-                                if caller and (caller.Name:lower():find("cheat") or
-                                              caller.Name:lower():find("security") or
-                                              caller.Name:lower():find("check")) then
-                                    return -- Block the anti-cheat check
-                                end
-                            end
-                            
-                            -- Allow normal changes
-                            return oldChanged(prop)
-                        end)
-                    end
-                end
-                
-                -- Re-apply speed settings if needed
-                if _G.SpeedActive and _G.CurrentWalkSpeed then
-                    character.Humanoid.WalkSpeed = _G.CurrentWalkSpeed
-                end
-            end
-        end)
-        
-        -- 6. Anti-Cheat Debug Misdirection
-        -- This makes it harder for the anti-cheat to debug what we're doing
-        spawn(function()
-            while _G.LAJProtection.Active and wait(1) do
-                if _G.LAJProtection.BlockCount > 0 and not _G.LAJProtection.Settings.MinimizeLogs then
-                    print("LAJ Protection: Blocked " .. _G.LAJProtection.BlockCount .. " anti-cheat attempts")
-                    _G.LAJProtection.BlockCount = 0
-                end
-                
-                -- Create false signals to confuse anti-cheat
-                if LocalPlayer.Character then
-                    -- Trigger random harmless events to distract monitors
-                    pcall(function()
-                        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-                        if humanoid then
-                            -- Make subtle animations that seem legitimate
-                            humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, true)
-                            humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
-                            humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
-                            
-                            -- Fire harmless events that anti-cheat might be monitoring
-                            if math.random() < 0.3 then
-                                humanoid.StateChanged:Fire(humanoid:GetState(), humanoid:GetState())
-                            end
-                        end
-                    end)
-                end
-            end
-        end)
-    end)
-    
-    if not success then
-        warn("LAJ Superior Protection encountered an issue: " .. tostring(err))
-        -- Try to continue anyway
-        spawn(function()
-            wait(1)
-            print("Attempting recovery...")
-            _G.LAJProtection = {Active = true, BlockCount = 0}
-        end)
-    else
-        print("LAJ HUB Superior Anti-Detection System activated successfully")
+repeat task.wait() until game:IsLoaded()
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local VirtualUser = game:GetService("VirtualUser")
+
+local Player = Players.LocalPlayer
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 9e9)
+local CommF = Remotes:WaitForChild("CommF_", 9e9)
+local Enemies = workspace:WaitForChild("Enemies", 9e9)
+local Boats = workspace:WaitForChild("Boats", 9e9)
+
+-- Game Place ID check
+local Sea1 = game.PlaceId == 2753915549  -- First Sea
+local Sea2 = game.PlaceId == 4442272183  -- Second Sea
+local Sea3 = game.PlaceId == 7449423635  -- Third Sea
+
+-- UI Library
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local Window = OrionLib:MakeWindow({
+    Name = "LAJ HUB | Blox Fruits",
+    HidePremium = true,
+    SaveConfig = true,
+    ConfigFolder = "LAJHub",
+    IntroText = "LAJ HUB Loading...",
+    IntroIcon = "rbxassetid://10618928818",
+    Icon = "rbxassetid://10618928818"
+})
+
+-- Anti-AFK
+Players.LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+-- Initialize settings
+_G.Settings = {
+    AutoFarm = false,
+    FastAttack = true,
+    AutoQuest = true,
+    KillAura = false,
+    TweenSpeed = 350,
+    SeaBoatSpeed = 350,
+    ESP = {
+        Players = false,
+        Chests = false,
+        Fruits = false,
+        Flowers = false
+    },
+    AutoRaid = false,
+    AutoBuyHaki = false,
+    NoClip = true,
+    HideDamage = true,
+    HideUI = false,
+    SelectedBoss = "",
+    AutoFarmBoss = false,
+    WhiteScreen = false,
+    AutoCollectFruit = false,
+    AutoStoreFruit = false,
+    SelectWeapon = "",
+    SkillsConfig = {
+        Z = true,
+        X = true,
+        C = true,
+        V = true
+    }
+}
+
+-- Function to get fruit names
+local function GetFruitName(Fruit)
+    if Fruit == "Rocket Fruit" then return "Rocket-Rocket"
+    elseif Fruit == "Spin Fruit" then return "Spin-Spin"
+    elseif Fruit == "Chop Fruit" then return "Chop-Chop"
+    elseif Fruit == "Spring Fruit" then return "Spring-Spring"
+    elseif Fruit == "Bomb Fruit" then return "Bomb-Bomb"
+    elseif Fruit == "Smoke Fruit" then return "Smoke-Smoke"
+    elseif Fruit == "Spike Fruit" then return "Spike-Spike"
+    elseif Fruit == "Flame Fruit" then return "Flame-Flame"
+    elseif Fruit == "Falcon Fruit" then return "Falcon-Falcon"
+    elseif Fruit == "Ice Fruit" then return "Ice-Ice"
+    elseif Fruit == "Sand Fruit" then return "Sand-Sand"
+    elseif Fruit == "Dark Fruit" then return "Dark-Dark"
+    elseif Fruit == "Ghost Fruit" then return "Ghost-Ghost"
+    elseif Fruit == "Diamond Fruit" then return "Diamond-Diamond"
+    elseif Fruit == "Light Fruit" then return "Light-Light"
+    elseif Fruit == "Rubber Fruit" then return "Rubber-Rubber"
+    elseif Fruit == "Barrier Fruit" then return "Barrier-Barrier"
+    elseif Fruit == "Magma Fruit" then return "Magma-Magma"
+    elseif Fruit == "Quake Fruit" then return "Quake-Quake"
+    elseif Fruit == "Buddha Fruit" then return "Buddha-Buddha"
+    elseif Fruit == "Love Fruit" then return "Love-Love"
+    elseif Fruit == "Spider Fruit" then return "Spider-Spider"
+    elseif Fruit == "Sound Fruit" then return "Sound-Sound"
+    elseif Fruit == "Phoenix Fruit" then return "Phoenix-Phoenix"
+    elseif Fruit == "Portal Fruit" then return "Portal-Portal"
+    elseif Fruit == "Rumble Fruit" then return "Rumble-Rumble"
+    elseif Fruit == "Pain Fruit" then return "Pain-Pain"
+    elseif Fruit == "Blizzard Fruit" then return "Blizzard-Blizzard"
+    elseif Fruit == "Gravity Fruit" then return "Gravity-Gravity"
+    elseif Fruit == "Mammoth Fruit" then return "Mammoth-Mammoth"
+    elseif Fruit == "T-Rex Fruit" then return "T-Rex-T-Rex"
+    elseif Fruit == "Dough Fruit" then return "Dough-Dough"
+    elseif Fruit == "Shadow Fruit" then return "Shadow-Shadow"
+    elseif Fruit == "Venom Fruit" then return "Venom-Venom"
+    elseif Fruit == "Control Fruit" then return "Control-Control"
+    elseif Fruit == "Spirit Fruit" then return "Spirit-Spirit"
+    elseif Fruit == "Dragon Fruit" then return "Dragon-Dragon"
+    elseif Fruit == "Leopard Fruit" then return "Leopard-Leopard"
+    elseif Fruit == "Kitsune Fruit" then return "Kitsune-Kitsune"
+    end
+    return nil
+end
+
+-- Boss List for each sea
+local BossList = {
+    -- Sea 1 (First Sea)
+    Sea1 = {
+        -- Raid Bosses
+        "Greybeard",
+        "The Saw",
+        "Saber Expert",
+        -- Normal Bosses
+        "The Gorilla King",
+        "Bobby",
+        "Yeti",
+        "Vice Admiral",
+        "Warden",
+        "Chief Warden",
+        "Swan",
+        "Magma Admiral",
+        "Fishman Lord",
+        "Wysper",
+        "Thunder God",
+        "Cyborg"
+    },
+    -- Sea 2 (Second Sea)
+    Sea2 = {
+        -- Raid Bosses
+        "Darkbeard",
+        "Cursed Captain",
+        "Order",
+        "Don Swan",
+        -- Normal Bosses
+        "Diamond",
+        "Jeremy",
+        "Fajita",
+        "Smoke Admiral",
+        "Awakened Ice Admiral",
+        "Tide Keeper"
+    },
+    -- Sea 3 (Third Sea)
+    Sea3 = {
+        -- Raid Bosses
+        "Dough King",
+        "Cake Prince",
+        "rip_indra True Form",
+        "Soul Reaper",
+        -- Normal Bosses
+        "Stone",
+        "Island Empress",
+        "Kilo Admiral",
+        "Captain Elephant",
+        "Beautiful Pirate",
+        "Cake Queen",
+        "Longma"
+    }
+}
+
+-- Function to get boss quest information
+local function GetBossQuest(BossName)
+    -- Bosses Sea 1
+    if BossName == "The Gorilla King" then
+        return true, CFrame.new(-1128, 6, -451), "JungleQuest"
+    elseif BossName == "Bobby" then
+        return true, CFrame.new(-1131, 14, 4080), "BuggyQuest1"
+    elseif BossName == "Yeti" then
+        return true, CFrame.new(1185, 106, -1518), "SnowQuest"
+    elseif BossName == "Vice Admiral" then
+        return true, CFrame.new(-4807, 21, 4360), "MarineQuest2", 2
+    elseif BossName == "Swan" then
+        return true, CFrame.new(5230, 4, 749), "ImpelQuest"
+    elseif BossName == "Chief Warden" then
+        return true, CFrame.new(5230, 4, 749), "ImpelQuest", 2
+    elseif BossName == "Warden" then
+        return true, CFrame.new(5230, 4, 749), "ImpelQuest", 1
+    elseif BossName == "Magma Admiral" then
+        return true, CFrame.new(-5694, 18, 8735), "MagmaQuest"
+    elseif BossName == "Fishman Lord" then
+        return true, CFrame.new(61350, 31, 1095), "FishmanQuest"
+    elseif BossName == "Wysper" then
+        return true, CFrame.new(-7927, 5551, -637), "SkyExp1Quest"
+    elseif BossName == "Thunder God" then
+        return true, CFrame.new(-7751, 5607, -2315), "SkyExp2Quest"
+    elseif BossName == "Cyborg" then
+        return true, CFrame.new(6138, 10, 3939), "FountainQuest"
+    elseif BossName == "Saber Expert" then
+        return false, CFrame.new(-1461, 30, -51)
+    elseif BossName == "The Saw" then
+        return false, CFrame.new(-690, 15, 1583)
+    elseif BossName == "Greybeard" then
+        return false, CFrame.new(-4807, 21, 4360)
+    -- Bosses Sea 2
+    elseif BossName == "Diamond" then
+        return true, CFrame.new(-1569, 199, -31), "Area1Quest"
+    elseif BossName == "Jeremy" then
+        return true, CFrame.new(2316, 449, 787), "Area2Quest"
+    elseif BossName == "Fajita" then
+        return true, CFrame.new(-2086, 73, -4208), "MarineQuest3"
+    elseif BossName == "Smoke Admiral" then
+        return true, CFrame.new(-5078, 24, -5352), "IceSideQuest"
+    elseif BossName == "Awakened Ice Admiral" then
+        return true, CFrame.new(6473, 297, -6944), "FrostQuest"
+    elseif BossName == "Tide Keeper" then
+        return true, CFrame.new(-3711, 77, -11469), "ForgottenQuest"
+    elseif BossName == "Don Swan" then
+        return false, CFrame.new(2289, 15, 808)
+    elseif BossName == "Cursed Captain" then
+        return false, CFrame.new(912, 186, 33591)
+    elseif BossName == "Darkbeard" then
+        return false, CFrame.new(3695, 13, -3599)
+    -- Bosses Sea 3
+    elseif BossName == "Longma" then
+        return false, CFrame.new(-10218, 333, -9444)
+    elseif BossName == "Stone" then
+        return true, CFrame.new(-1049, 40, 6791), "PiratePortQuest"
+    elseif BossName == "Beautiful Pirate" then
+        return true, CFrame.new(5241, 23, 129), "DeepForestIsland2"
+    elseif BossName == "Island Empress" then
+        return true, CFrame.new(5730, 602, 199), "AmazonQuest2"
+    elseif BossName == "Kilo Admiral" then
+        return true, CFrame.new(2889, 424, -7233), "MarineTreeIsland"
+    elseif BossName == "Captain Elephant" then
+        return true, CFrame.new(-13393, 319, -8423), "DeepForestIsland"
+    elseif BossName == "Cake Queen" then
+        return true, CFrame.new(-710, 382, -11150), "IceCreamIslandQuest"
+    elseif BossName == "Dough King" or BossName == "Cake Prince" then
+        return false, CFrame.new(-2103, 70, -12165)
+    elseif BossName == "rip_indra True Form" then
+        return false, CFrame.new(-5333, 424, -2673)
     end
 end
 
--- Initialize protection system
-_G.SpeedActive = false
-_G.CurrentWalkSpeed = 16
-_G.CharacterReady = false
+-- Create player platform
+local block = Instance.new("Part", workspace)
+block.Size = Vector3.new(10, 1, 10)
+block.Name = "LAJHubPlayerPlatform"
+block.Anchored = true
+block.CanCollide = true
+block.Transparency = 0.5
+block.Material = Enum.Material.ForceField
 
-SuperiorAntiCheat()
- 
--- 📌 Player Tab
-local PlayerTab = Window:CreateTab("Player")  
-local PlayerSection = PlayerTab:CreateSection("Player Tab")  
- 
--- Store actual speed values globally
-_G.ActualWalkSpeed = 16
-_G.ActualJumpPower = 50
-
--- Stealthy Speed System
-PlayerTab:CreateSlider({
-    Name = "Stealth WalkSpeed",
-    Range = {16, 50}, -- Lower range to stay under detection threshold
-    Increment = 1,
-    Suffix = "Speed",
-    CurrentValue = 16,
-    Callback = function(value)
-        _G.CurrentWalkSpeed = value -- Store in global for character respawn
-        _G.SpeedActive = true -- Flag for our stealth system to apply speed
-        
-        -- Apply speed modestly to avoid detection
-        local player = game.Players.LocalPlayer
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            -- Apply the speed, but don't be too aggressive
-            player.Character.Humanoid.WalkSpeed = value
-        end
-    end
-})
-
--- Alternative speed system - uses velocity to move faster without changing WalkSpeed
-PlayerTab:CreateSlider({
-    Name = "Velocity Boost",
-    Range = {0, 20}, -- Controls how much extra velocity to add
-    Increment = 1,
-    Suffix = "Boost",
-    CurrentValue = 0,
-    Callback = function(value)
-        _G.VelocityBoost = value
-        
-        -- Use velocity to move faster without changing WalkSpeed
-        if value > 0 then
-            if not _G.BoostThread then
-                _G.BoostThread = true
-                spawn(function()
-                    while _G.BoostThread and wait() do
-                        local player = game.Players.LocalPlayer
-                        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                            local hrp = player.Character.HumanoidRootPart
-                            
-                            -- Only boost when moving
-                            if player.Character.Humanoid.MoveDirection.Magnitude > 0 then
-                                -- Calculate modest velocity boost in move direction
-                                local boost = player.Character.Humanoid.MoveDirection * _G.VelocityBoost
-                                
-                                -- Apply the boost gently - this is harder to detect than WalkSpeed
-                                hrp.Velocity = hrp.Velocity + Vector3.new(boost.X, 0, boost.Z)
-                            end
+-- Anti-falling platform system
+task.spawn(function()
+    while task.wait() do
+        pcall(function()
+            if _G.Settings.AutoFarm or _G.Settings.AutoFarmBoss or _G.Settings.AutoRaid or _G.Settings.NoClip then
+                if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                    block.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position.X, 
+                                            Player.Character.HumanoidRootPart.Position.Y - 4, 
+                                            Player.Character.HumanoidRootPart.Position.Z)
+                    
+                    -- Disable character collision
+                    for _, part in pairs(Player.Character:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
                         end
                     end
-                end)
+                    
+                    -- Reset stun state if stunned
+                    if Player.Character:FindFirstChild("Stun") and Player.Character.Stun.Value ~= 0 then
+                        Player.Character.Stun.Value = 0
+                    end
+                    
+                    -- Reset busy state if busy
+                    if Player.Character:FindFirstChild("Busy") and Player.Character.Busy.Value then
+                        Player.Character.Busy.Value = false
+                    end
+                end
+            else
+                block.CFrame = CFrame.new(0, -1000, 0) -- Hide platform when not needed
+            end
+        end)
+    end
+end)
+
+-- Current active quest information
+local Quest = {CFrame.new(), CFrame.new(), "", "", 1}
+
+-- Fire server remote function
+local function FireRemote(...)
+    return CommF:InvokeServer(...)
+end
+
+-- Kill Aura Function
+local function KillAura()
+    local function KillEnemy(_, Enemy)
+        local EnemyHumanoid = Enemy:FindFirstChild("Humanoid")
+        
+        if EnemyHumanoid and EnemyHumanoid.Health > 0 then
+            local PlayerPP = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            local EnemyPP = Enemy:FindFirstChild("HumanoidRootPart")
+            
+            if PlayerPP and EnemyPP and (EnemyPP.Position - PlayerPP.Position).Magnitude < 500 then
+                EnemyHumanoid.Health = 0
+                EnemyPP.Size = Vector3.new(50, 50, 50)
+                EnemyPP.CanCollide = false
+                sethiddenproperty(Player, "SimulationRadius", math.huge)
+                
+                -- Use skills if enabled
+                if _G.Settings.SkillsConfig.Z then
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "Z", false, game)
+                    wait(0.1)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(false, "Z", false, game)
+                end
+                if _G.Settings.SkillsConfig.X then
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "X", false, game)
+                    wait(0.1)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(false, "X", false, game)
+                end
+                if _G.Settings.SkillsConfig.C then
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game)
+                    wait(0.1)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(false, "C", false, game)
+                end
+                if _G.Settings.SkillsConfig.V then
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "V", false, game)
+                    wait(0.1)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(false, "V", false, game)
+                end
             end
         else
-            _G.BoostThread = false
+            -- Try to destroy the head if humanoid is not available
+            local EnemyHead = Enemy:FindFirstChild("Head")
+            if EnemyHead then
+                EnemyHead:Destroy()
+            end
         end
     end
-})
+    
+    -- Kill enemies in workspace and replicated storage
+    for _, Enemy in pairs(Enemies:GetChildren()) do
+        KillEnemy(nil, Enemy)
+    end
+    
+    for _, Enemy in pairs(ReplicatedStorage:GetChildren()) do
+        if Enemy:FindFirstChild("Humanoid") then
+            KillEnemy(nil, Enemy)
+        end
+    end
+end
 
--- Jump Height Modifier (stealthy version)
-PlayerTab:CreateSlider({
-    Name = "Stealth Jump Height",
-    Range = {50, 75}, -- Modest range to avoid detection
-    Increment = 1,
-    Suffix = "Height",
-    CurrentValue = 50,
-    Callback = function(value)
-        -- Apply jump power in a way that's harder to detect
-        local player = game.Players.LocalPlayer
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.JumpPower = value
-            
-            -- Use a user state change - this helps avoid detection
+-- Auto Kill Aura thread
+task.spawn(function()
+    while true do
+        wait()
+        if _G.Settings.KillAura then
+            KillAura()
+        end
+    end
+end)
+
+-- Fast Attack Function
+task.spawn(function()
+    while true do
+        wait()
+        if _G.Settings.FastAttack then
+            -- Fast Attack implementation
             pcall(function()
-                player.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+                local Combat = Player.Backpack:FindFirstChild("Combat") or Player.Character:FindFirstChild("Combat")
+                
+                if Combat and Player.Character:FindFirstChild("Humanoid") then
+                    if not Player.Character:FindFirstChild("Combat") then
+                        Player.Character.Humanoid:EquipTool(Combat)
+                    end
+                    
+                    -- Simulate attack
+                    Combat:Activate()
+                    wait(0.1)
+                    Combat:Deactivate()
+                end
+                
+                -- Fast attack using weapons
+                local ActiveWeapon = Player.Character:FindFirstChildOfClass("Tool")
+                if ActiveWeapon and ActiveWeapon:FindFirstChild("CombatTool") then
+                    ActiveWeapon:Activate()
+                    wait(0.1)
+                    ActiveWeapon:Deactivate()
+                end
             end)
         end
     end
-})
+end)
 
--- Create toggle for speed system
-PlayerTab:CreateToggle({
-    Name = "Enable Speed Mods",
-    CurrentValue = false,
-    Callback = function(value)
-        _G.SpeedActive = value
-        
-        -- When disabled, reset to default to avoid detection
-        if not value and game.Players.LocalPlayer.Character and 
-           game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
-        end
-    end
-})
- 
-PlayerTab:CreateButton({
-    Name = "Infinite Yield Admin",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-    end
-})
- 
-PlayerTab:CreateButton({
-    Name = "CMD-X Admin",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source"))()
-    end
-})
- 
-PlayerTab:CreateButton({
-    Name = "Nameless Admin V2",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source"))()
-    end
-})
- 
--- 📌 Main Tab
-local MainTab = Window:CreateTab("Main")  
-local MainSection = MainTab:CreateSection("Item Teleportation")  
- 
-local Items = {
-    "Revolver", "Sawed-off Shotgun", "Shotgun", "Rifle", "Bolt-Action Rifle",
-    "Mauser", "Navy Revolver", "Crucifix", "Holy Water", "Molotov",
-    "Shotgun Shells", "Rifle Ammo", "Revolver Ammo", "Turret Ammo", "Cannon Ammo",
-    "Dynamite", "Helmet", "Left Shoulder Armor", "Right Shoulder Armor", "Chestplate",
-    "Banjo", "Barbed Wire", "Bond", "Camera", "Coal", "Gold Bar", "Gold Cup",
-    "Gold Painting", "Gold Plate", "Gold Statue", "Gold Watch", "Lantern",
-    "Money Bag", "Saddle", "Sheet Metal", "Silver Bar", "Silver Cup", "Silver Painting",
-    "Silver Plate", "Silver Statue", "Stone Statue", "Silver Watch", "Wooden Painting",
-    "Barrel", "Book", "Chair", "Newspaper", "Rope", "Teapot", "Vase", "Wheel",
-    "Bandage", "Snake Oil"
-}
- 
-local function getNearbyItems()
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    if not character then return {} end
- 
-    local foundItems = {}
-    local playerPosition = character:GetPivot().Position 
- 
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and table.find(Items, obj.Name) then
-            local distance = (obj:GetPivot().Position - playerPosition).Magnitude
-            if distance <= 500 then
-                table.insert(foundItems, obj.Name)
-            end
-        end
-    end
- 
-    return foundItems
-end
- 
-local SelectedItem = ""
-local ItemDropdown = MainTab:CreateDropdown({
-    Name = "Select Item to Teleport",
-    Options = getNearbyItems(),
-    CurrentOption = "",
-    Callback = function(option)
-        SelectedItem = option
-    end
-})
- 
-MainTab:CreateButton({
-    Name = "Refresh Item List",
-    Callback = function()
-        ItemDropdown:SetOptions(getNearbyItems())
-    end
-})
- 
--- Create Item ESP system instead of movement-based collection
--- This will highlight items so you can find them naturally
-
--- Container for all visual elements
-local ESPFolder = Instance.new("Folder")
-ESPFolder.Name = "LAJ_ItemESP"
-ESPFolder.Parent = game.CoreGui
-
--- Create a BillboardGui with item name and distance
-local function CreateItemESP(item, colorOverride)
-    -- Check if ESP already exists for this item
-    for _, existing in pairs(ESPFolder:GetChildren()) do
-        if existing.Name == "ESP_" .. item.Name .. "_" .. tostring(item:GetFullName():len()) then
-            return existing -- ESP already exists
-        end
+-- Teleport function
+local function TeleportTo(Position)
+    if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then
+        return
     end
     
-    -- Create unique identifier for this ESP
-    local espName = "ESP_" .. item.Name .. "_" .. tostring(item:GetFullName():len())
+    local HumanoidRootPart = Player.Character.HumanoidRootPart
+    local Distance = (HumanoidRootPart.Position - Position).Magnitude
     
-    -- Create the ESP container
-    local espContainer = Instance.new("Folder")
-    espContainer.Name = espName
-    espContainer.Parent = ESPFolder
+    -- Use TweenService for smooth movement
+    local Tween = TweenService:Create(
+        HumanoidRootPart,
+        TweenInfo.new(Distance / _G.Settings.TweenSpeed, Enum.EasingStyle.Linear),
+        {CFrame = CFrame.new(Position)}
+    )
     
-    -- Determine color based on item type
-    local color
-    if colorOverride then
-        color = colorOverride
-    else
-        -- Different colors for different item types
-        if item.Name:find("Gold") then
-            color = Color3.fromRGB(255, 215, 0) -- Gold
-        elseif item.Name:find("Silver") then
-            color = Color3.fromRGB(192, 192, 192) -- Silver
-        elseif item.Name:find("Rifle") or item.Name:find("Shotgun") or item.Name:find("Revolver") then
-            color = Color3.fromRGB(255, 0, 0) -- Red for weapons
-        elseif item.Name:find("Ammo") then
-            color = Color3.fromRGB(255, 128, 0) -- Orange for ammo
-        elseif item.Name:find("Armor") or item.Name:find("Helmet") or item.Name:find("Chestplate") then
-            color = Color3.fromRGB(0, 0, 255) -- Blue for armor
-        else
-            color = Color3.fromRGB(255, 255, 255) -- White for others
-        end
-    end
-    
-    -- Create billboardgui for the label
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Name = "ESPLabel"
-    billboardGui.AlwaysOnTop = true
-    billboardGui.Size = UDim2.new(0, 200, 0, 50)
-    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
-    billboardGui.Adornee = item
-    billboardGui.Parent = espContainer
-    
-    -- Create text label for item name
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name = "ItemName"
-    nameLabel.Size = UDim2.new(1, 0, 0, 20)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.TextColor3 = color
-    nameLabel.Text = item.Name
-    nameLabel.TextSize = 18
-    nameLabel.Font = Enum.Font.SourceSansBold
-    nameLabel.TextStrokeTransparency = 0.3
-    nameLabel.Parent = billboardGui
-    
-    -- Create text label for distance
-    local distanceLabel = Instance.new("TextLabel")
-    distanceLabel.Name = "Distance"
-    distanceLabel.Size = UDim2.new(1, 0, 0, 20)
-    distanceLabel.Position = UDim2.new(0, 0, 0, 20)
-    distanceLabel.BackgroundTransparency = 1
-    distanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    distanceLabel.TextSize = 14
-    distanceLabel.Font = Enum.Font.SourceSans
-    distanceLabel.TextStrokeTransparency = 0.5
-    distanceLabel.Parent = billboardGui
-    
-    -- Create highlight
-    local highlight = Instance.new("Highlight")
-    highlight.FillColor = color
-    highlight.OutlineColor = Color3.new(1, 1, 1)
-    highlight.FillTransparency = 0.5
-    highlight.OutlineTransparency = 0
-    highlight.Adornee = item
-    highlight.Parent = espContainer
-    
-    -- Create beam pointer (line pointing to the item)
-    local attachment0 = Instance.new("Attachment")
-    attachment0.Name = "BeamAttachment0"
-    attachment0.Parent = workspace.Terrain
-    
-    local attachment1 = Instance.new("Attachment")
-    attachment1.Name = "BeamAttachment1"
-    attachment1.Parent = item
-    
-    local beam = Instance.new("Beam")
-    beam.Name = "PointerBeam"
-    beam.Color = ColorSequence.new(color)
-    beam.Transparency = NumberSequence.new(0.4)
-    beam.Width0 = 0.2
-    beam.Width1 = 0.2
-    beam.FaceCamera = true
-    beam.Attachment0 = attachment0
-    beam.Attachment1 = attachment1
-    beam.Parent = espContainer
-    
-    -- Update the distance label and beam position
-    spawn(function()
-        while espContainer.Parent == ESPFolder do
-            wait(0.1) -- Update 10 times per second
-            
-            local player = game.Players.LocalPlayer
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and item.Parent then
-                local distance = (item:GetPivot().Position - player.Character.HumanoidRootPart.Position).Magnitude
-                distanceLabel.Text = math.floor(distance) .. " studs"
-                
-                -- Update beam starting position
-                attachment0.WorldPosition = player.Character.HumanoidRootPart.Position + Vector3.new(0, 1, 0)
-                
-                -- Color code by distance
-                if distance < 30 then
-                    distanceLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green when close
-                elseif distance < 100 then
-                    distanceLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow when medium distance
-                else
-                    distanceLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red when far
-                end
-                
-                -- Make ESP elements more visible when closer
-                local visibilityMultiplier = math.clamp(1 - (distance / 300), 0.3, 1)
-                nameLabel.TextTransparency = 1 - visibilityMultiplier
-                distanceLabel.TextTransparency = 1 - visibilityMultiplier
-                highlight.FillTransparency = 0.5 + (0.5 * (1 - visibilityMultiplier))
-                beam.Transparency = NumberSequence.new(0.4 + (0.6 * (1 - visibilityMultiplier)))
-            else
-                -- Character or item no longer exists
-                espContainer:Destroy()
-                break
-            end
-        end
-    end)
-    
-    return espContainer
+    Tween:Play()
+    return Tween
 end
 
--- Function to clear all ESP
-local function ClearAllESP()
-    for _, child in pairs(ESPFolder:GetChildren()) do
-        child:Destroy()
-    end
-end
-
--- NO TELEPORT FUNCTIONS - DEAD RAILS HAS SOPHISTICATED ANTI-CHEAT
--- USING ONLY VISUAL ESP SYSTEM WHICH IS SAFE
-
--- Function to get items near the player with visual indicators
-local function ShowNearbyItems(maxDistance)
-    maxDistance = maxDistance or 100 -- Default to 100 studs if not specified
-    
-    -- Clear previous ESPs first
-    ClearAllESP()
-    
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    if not character then return end
-    
-    local foundItems = {}
-    local foundCount = 0
-    local playerPosition = character:GetPivot().Position 
-    
-    -- Find and highlight items
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and table.find(Items, obj.Name) then
-            local distance = (obj:GetPivot().Position - playerPosition).Magnitude
-            if distance <= maxDistance then
-                foundCount = foundCount + 1
-                CreateItemESP(obj)
-                table.insert(foundItems, obj.Name)
-            end
+-- ESP Functions
+local function AddESP(Part, Text, Color)
+    -- Remove existing ESP
+    for _, v in pairs(Part:GetChildren()) do
+        if v.Name == "LAJHubESP" then
+            v:Destroy()
         end
     end
     
-    -- Notify the player
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Items Found",
-        Text = foundCount .. " items highlighted within " .. maxDistance .. " studs",
-        Duration = 5
-    })
+    -- Create ESP elements
+    local BillboardGui = Instance.new("BillboardGui")
+    BillboardGui.Name = "LAJHubESP"
+    BillboardGui.Adornee = Part
+    BillboardGui.Size = UDim2.new(0, 200, 0, 50)
+    BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    BillboardGui.AlwaysOnTop = true
+    BillboardGui.Parent = Part
     
-    return foundItems
-end
- 
--- Show ESP for items instead of trying to walk to them
--- This is our main approach - shows items without teleporting
-MainTab:CreateButton({
-    Name = "Show Nearby Items (50 studs)",
-    Callback = function()
-        ShowNearbyItems(50)
-    end
-})
-
-MainTab:CreateButton({
-    Name = "Show Nearby Items (100 studs)",
-    Callback = function()
-        ShowNearbyItems(100)
-    end
-})
-
-MainTab:CreateButton({
-    Name = "Show Nearby Items (200 studs)",
-    Callback = function()
-        ShowNearbyItems(200)
-    end
-})
-
-MainTab:CreateButton({
-    Name = "Clear Item ESP",
-    Callback = function()
-        ClearAllESP()
-    end
-})
-
--- Enhanced ESP Functionality
-MainTab:CreateButton({
-    Name = "Highlight Players",
-    Callback = function()
-        -- Clear previous player ESPs
-        for _, child in pairs(ESPFolder:GetChildren()) do
-            if child.Name:find("PlayerESP_") then
-                child:Destroy()
-            end
-        end
-        
-        -- Create ESP for all players
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer and player.Character then
-                local espContainer = Instance.new("Folder")
-                espContainer.Name = "PlayerESP_" .. player.Name
-                espContainer.Parent = ESPFolder
-                
-                -- Create highlight
-                local highlight = Instance.new("Highlight")
-                highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red for enemies
-                highlight.OutlineColor = Color3.new(1, 1, 1)
-                highlight.FillTransparency = 0.5
-                highlight.OutlineTransparency = 0
-                highlight.Adornee = player.Character
-                highlight.Parent = espContainer
-                
-                -- Add player name tag
-                local billboardGui = Instance.new("BillboardGui")
-                billboardGui.Name = "PlayerNameTag"
-                billboardGui.AlwaysOnTop = true
-                billboardGui.Size = UDim2.new(0, 200, 0, 50)
-                billboardGui.StudsOffset = Vector3.new(0, 3, 0)
-                billboardGui.Adornee = player.Character:FindFirstChild("Head")
-                billboardGui.Parent = espContainer
-                
-                local nameLabel = Instance.new("TextLabel")
-                nameLabel.Name = "PlayerName"
-                nameLabel.Size = UDim2.new(1, 0, 0, 20)
-                nameLabel.BackgroundTransparency = 1
-                nameLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-                nameLabel.Text = player.Name
-                nameLabel.TextSize = 14
-                nameLabel.Font = Enum.Font.SourceSansBold
-                nameLabel.TextStrokeTransparency = 0.3
-                nameLabel.Parent = billboardGui
-            end
-        end
-        
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Player ESP",
-            Text = "All players have been highlighted",
-            Duration = 3
-        })
-    end
-})
-
--- Show Item Distribution Map
-MainTab:CreateButton({
-    Name = "Show All Items on Map",
-    Callback = function()
-        ShowNearbyItems(1000) -- Show all items on the map
-        
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Item Map",
-            Text = "Showing the location of all items on the map",
-            Duration = 3
-        })
-    end
-})
-
--- Add navigation helper
-MainTab:CreateButton({
-    Name = "Navigation Helper",
-    Callback = function()
-        -- Create a compass at the top of the screen
-        local compassGui = Instance.new("ScreenGui")
-        compassGui.Name = "NavigationCompass"
-        compassGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-        
-        local compassFrame = Instance.new("Frame")
-        compassFrame.Name = "CompassFrame"
-        compassFrame.Size = UDim2.new(0, 300, 0, 30)
-        compassFrame.Position = UDim2.new(0.5, -150, 0, 10)
-        compassFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        compassFrame.BackgroundTransparency = 0.5
-        compassFrame.BorderSizePixel = 0
-        compassFrame.Parent = compassGui
-        
-        local compassLabel = Instance.new("TextLabel")
-        compassLabel.Name = "DirectionLabel"
-        compassLabel.Size = UDim2.new(1, 0, 1, 0)
-        compassLabel.BackgroundTransparency = 1
-        compassLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        compassLabel.Text = "Navigation Helper Active"
-        compassLabel.TextSize = 16
-        compassLabel.Font = Enum.Font.SourceSansBold
-        compassLabel.Parent = compassFrame
-        
-        -- Update direction continuously
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Name = "ESPText"
+    TextLabel.Size = UDim2.new(0, 200, 0, 50)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = Text
+    TextLabel.Font = Enum.Font.GothamBold
+    TextLabel.TextSize = 16
+    TextLabel.TextColor3 = Color or Color3.fromRGB(255, 255, 255)
+    TextLabel.TextStrokeTransparency = 0.5
+    TextLabel.Parent = BillboardGui
+    
+    -- Add distance updating
+    if Part:IsA("BasePart") and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
         spawn(function()
-            while compassGui.Parent do
-                wait(0.1)
-                local player = game.Players.LocalPlayer
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    local lookVector = player.Character.HumanoidRootPart.CFrame.LookVector
-                    local direction = ""
-                    
-                    -- Determine direction based on look vector
-                    local angle = math.atan2(lookVector.X, lookVector.Z) * (180 / math.pi)
-                    if angle < 0 then angle = angle + 360 end
-                    
-                    if angle >= 337.5 or angle < 22.5 then
-                        direction = "N"
-                    elseif angle >= 22.5 and angle < 67.5 then
-                        direction = "NE"
-                    elseif angle >= 67.5 and angle < 112.5 then
-                        direction = "E"
-                    elseif angle >= 112.5 and angle < 157.5 then
-                        direction = "SE"
-                    elseif angle >= 157.5 and angle < 202.5 then
-                        direction = "S"
-                    elseif angle >= 202.5 and angle < 247.5 then
-                        direction = "SW"
-                    elseif angle >= 247.5 and angle < 292.5 then
-                        direction = "W"
-                    elseif angle >= 292.5 and angle < 337.5 then
-                        direction = "NW"
-                    end
-                    
-                    compassLabel.Text = direction .. " (" .. math.floor(angle) .. "°)"
-                end
+            while BillboardGui and BillboardGui.Parent and wait(0.1) do
+                local Distance = (Player.Character.HumanoidRootPart.Position - Part.Position).Magnitude
+                TextLabel.Text = Text .. " [" .. math.floor(Distance) .. "m]"
             end
         end)
-        
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Navigation Helper",
-            Text = "Compass activated to help you navigate",
-            Duration = 3
-        })
     end
+    
+    -- Add highlight
+    local Highlight = Instance.new("Highlight")
+    Highlight.FillColor = Color or Color3.fromRGB(255, 255, 255)
+    Highlight.OutlineColor = Color3.new(0, 0, 0)
+    Highlight.FillTransparency = 0.7
+    Highlight.OutlineTransparency = 0
+    Highlight.Parent = Part
+    
+    return BillboardGui
+end
+
+-- ESP Update Function
+task.spawn(function()
+    while wait(1) do
+        -- Player ESP
+        if _G.Settings.ESP.Players then
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= Player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    AddESP(player.Character.HumanoidRootPart, player.Name, Color3.fromRGB(255, 0, 0))
+                end
+            end
+        end
+        
+        -- Chest ESP
+        if _G.Settings.ESP.Chests then
+            for _, chest in pairs(workspace:GetChildren()) do
+                if chest.Name:find("Chest") and chest:IsA("BasePart") then
+                    AddESP(chest, chest.Name, Color3.fromRGB(255, 215, 0))
+                end
+            end
+        end
+        
+        -- Fruit ESP
+        if _G.Settings.ESP.Fruits then
+            for _, fruit in pairs(workspace:GetChildren()) do
+                if fruit.Name:find("Fruit") and fruit:IsA("Tool") then
+                    AddESP(fruit.Handle, fruit.Name, Color3.fromRGB(0, 255, 0))
+                end
+            end
+        end
+        
+        -- Flower ESP
+        if _G.Settings.ESP.Flowers then
+            for _, flower in pairs(workspace:GetChildren()) do
+                if flower.Name:find("Flower") and flower:IsA("BasePart") then
+                    AddESP(flower, flower.Name, Color3.fromRGB(255, 0, 255))
+                end
+            end
+        end
+    end
+end)
+
+-- Function to get nearby quest level enemies
+local function GetNearbyQuestEnemies()
+    local Enemies = {}
+    for _, v in pairs(workspace.Enemies:GetChildren()) do
+        if v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
+            if v.Name:find(Quest[3]) or v.Name:find(Quest[4]) then
+                table.insert(Enemies, v)
+            end
+        end
+    end
+    return Enemies
+end
+
+-- Auto Farm function
+task.spawn(function()
+    while wait() do
+        if _G.Settings.AutoFarm then
+            pcall(function()
+                -- Basic Auto Farm implementation
+                if _G.Settings.AutoQuest then
+                    -- Get quest if needed
+                    local QuestCheck = Player.PlayerGui.Main.Quest
+                    if not QuestCheck.Visible or (QuestCheck.Visible and QuestCheck.Container.QuestTitle.Title.Text:find("Defeat") and not QuestCheck.Container.QuestTitle.Title.Text:find(Quest[3])) then
+                        -- Go to quest giver
+                        if Quest[1] ~= CFrame.new() then
+                            local Tween = TeleportTo(Quest[1].Position)
+                            if Tween then Tween.Completed:Wait() end
+                            
+                            -- Wait for NPCs to load
+                            wait(1)
+                            
+                            -- Fire quest remote
+                            FireRemote("StartQuest", Quest[5], Quest[4])
+                            wait(0.5)
+                        end
+                    end
+                end
+                
+                -- Find enemies
+                local Enemies = GetNearbyQuestEnemies()
+                if #Enemies > 0 then
+                    local ClosestEnemy = Enemies[1]
+                    local ClosestDistance = (Player.Character.HumanoidRootPart.Position - ClosestEnemy.HumanoidRootPart.Position).Magnitude
+                    
+                    for _, enemy in pairs(Enemies) do
+                        local Distance = (Player.Character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude
+                        if Distance < ClosestDistance then
+                            ClosestEnemy = enemy
+                            ClosestDistance = Distance
+                        end
+                    end
+                    
+                    -- Teleport to enemy
+                    TeleportTo(ClosestEnemy.HumanoidRootPart.Position + Vector3.new(0, 10, 0))
+                    
+                    -- Equip weapon if specified
+                    if _G.Settings.SelectWeapon ~= "" then
+                        local Weapon = Player.Backpack:FindFirstChild(_G.Settings.SelectWeapon) or Player.Character:FindFirstChild(_G.Settings.SelectWeapon)
+                        if Weapon and not Player.Character:FindFirstChild(_G.Settings.SelectWeapon) then
+                            Player.Character.Humanoid:EquipTool(Weapon)
+                        end
+                    end
+                else
+                    -- No enemies found, look for spawns
+                    if Sea1 then
+                        if Player.Data.Level.Value >= 1 and Player.Data.Level.Value < 10 then
+                            Quest = {CFrame.new(1059.37, 16.36, 1549.75), CFrame.new(1059.37, 16.36, 1549.75), "Bandit", "BanditQuest1", 1}
+                        elseif Player.Data.Level.Value >= 10 and Player.Data.Level.Value < 15 then
+                            Quest = {CFrame.new(1059.37, 16.36, 1549.75), CFrame.new(1059.37, 16.36, 1549.75), "Monkey", "JungleQuest", 1}
+                        elseif Player.Data.Level.Value >= 15 and Player.Data.Level.Value < 30 then
+                            Quest = {CFrame.new(-1604.12, 36.9774, 153.451), CFrame.new(-1604.12, 36.9774, 153.451), "Gorilla", "JungleQuest", 2}
+                        -- Add more level checks and quests
+                        end
+                    elseif Sea2 then
+                        -- Second sea quests
+                    elseif Sea3 then
+                        -- Third sea quests
+                    end
+                    
+                    -- Teleport to quest location
+                    if Quest[2] ~= CFrame.new() then
+                        TeleportTo(Quest[2].Position)
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- Auto Farm Boss function
+task.spawn(function()
+    while wait() do
+        if _G.Settings.AutoFarmBoss and _G.Settings.SelectedBoss ~= "" then
+            pcall(function()
+                local Boss
+                
+                -- Find boss in workspace
+                for _, v in pairs(workspace.Enemies:GetChildren()) do
+                    if v.Name == _G.Settings.SelectedBoss and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                        Boss = v
+                        break
+                    end
+                end
+                
+                -- Find boss in ReplicatedStorage if not in workspace
+                if not Boss then
+                    for _, v in pairs(ReplicatedStorage:GetChildren()) do
+                        if v.Name == _G.Settings.SelectedBoss and v:FindFirstChild("Humanoid") then
+                            Boss = v
+                            break
+                        end
+                    end
+                end
+                
+                if Boss then
+                    -- Teleport to boss
+                    TeleportTo(Boss.HumanoidRootPart.Position + Vector3.new(0, 10, 0))
+                    
+                    -- Equip weapon if specified
+                    if _G.Settings.SelectWeapon ~= "" then
+                        local Weapon = Player.Backpack:FindFirstChild(_G.Settings.SelectWeapon) or Player.Character:FindFirstChild(_G.Settings.SelectWeapon)
+                        if Weapon and not Player.Character:FindFirstChild(_G.Settings.SelectWeapon) then
+                            Player.Character.Humanoid:EquipTool(Weapon)
+                        end
+                    end
+                else
+                    -- Boss not found, get quest or go to spawn location
+                    local NeedQuest, QuestCFrame, QuestName, QuestNumber = GetBossQuest(_G.Settings.SelectedBoss)
+                    
+                    if NeedQuest then
+                        -- Get quest if needed
+                        local QuestCheck = Player.PlayerGui.Main.Quest
+                        if not QuestCheck.Visible or (QuestCheck.Visible and not QuestCheck.Container.QuestTitle.Title.Text:find(_G.Settings.SelectedBoss)) then
+                            -- Go to quest giver
+                            local Tween = TeleportTo(QuestCFrame.Position)
+                            if Tween then Tween.Completed:Wait() end
+                            
+                            -- Wait for NPCs to load
+                            wait(1)
+                            
+                            -- Fire quest remote
+                            FireRemote("StartQuest", QuestName, QuestNumber or 1)
+                            wait(0.5)
+                        end
+                    else
+                        -- Just go to boss spawn
+                        TeleportTo(QuestCFrame.Position)
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- Auto Collect Fruit function
+task.spawn(function()
+    while wait() do
+        if _G.Settings.AutoCollectFruit then
+            pcall(function()
+                for _, fruit in pairs(workspace:GetChildren()) do
+                    if fruit.Name:find("Fruit") and fruit:IsA("Tool") then
+                        TeleportTo(fruit.Handle.Position)
+                        wait(1)
+                        fruit.Handle.CFrame = Player.Character.HumanoidRootPart.CFrame
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- Auto Store Fruit function
+task.spawn(function()
+    while wait(3) do
+        if _G.Settings.AutoStoreFruit then
+            pcall(function()
+                -- Check for fruits in inventory
+                for _, tool in pairs(Player.Backpack:GetChildren()) do
+                    if tool.Name:find("Fruit") then
+                        -- Store fruit
+                        FireRemote("StoreFruit", GetFruitName(tool.Name), tool)
+                    end
+                end
+                
+                -- Check for fruits equipped
+                for _, tool in pairs(Player.Character:GetChildren()) do
+                    if tool:IsA("Tool") and tool.Name:find("Fruit") then
+                        -- Store fruit
+                        FireRemote("StoreFruit", GetFruitName(tool.Name), tool)
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- White Screen for performance
+task.spawn(function()
+    while wait() do
+        if _G.Settings.WhiteScreen then
+            game:GetService("RunService"):Set3dRenderingEnabled(false)
+        else
+            game:GetService("RunService"):Set3dRenderingEnabled(true)
+        end
+    end
+end)
+
+-- Hide UI for performance
+task.spawn(function()
+    while wait() do
+        if _G.Settings.HideUI then
+            Player.PlayerGui.Main.Enabled = false
+        else
+            Player.PlayerGui.Main.Enabled = true
+        end
+    end
+end)
+
+-- Build UI
+local MainTab = Window:MakeTab({
+    Name = "Main",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local AutoFarmSection = MainTab:AddSection({
+    Name = "Auto Farm"
+})
+
+AutoFarmSection:AddToggle({
+    Name = "Auto Farm Level",
+    Default = false,
+    Save = true,
+    Flag = "AutoFarm",
+    Callback = function(Value)
+        _G.Settings.AutoFarm = Value
+    end
+})
+
+AutoFarmSection:AddToggle({
+    Name = "Auto Quest",
+    Default = true,
+    Save = true,
+    Flag = "AutoQuest",
+    Callback = function(Value)
+        _G.Settings.AutoQuest = Value
+    end
+})
+
+AutoFarmSection:AddToggle({
+    Name = "Fast Attack",
+    Default = true,
+    Save = true,
+    Flag = "FastAttack",
+    Callback = function(Value)
+        _G.Settings.FastAttack = Value
+    end
+})
+
+AutoFarmSection:AddToggle({
+    Name = "Kill Aura",
+    Default = false,
+    Save = true,
+    Flag = "KillAura",
+    Callback = function(Value)
+        _G.Settings.KillAura = Value
+    end
+})
+
+local WeaponSection = MainTab:AddSection({
+    Name = "Weapon Selection"
+})
+
+-- Get player weapons
+local Weapons = {}
+for _, tool in pairs(Player.Backpack:GetChildren()) do
+    if tool:IsA("Tool") then
+        table.insert(Weapons, tool.Name)
+    end
+end
+
+for _, tool in pairs(Player.Character:GetChildren()) do
+    if tool:IsA("Tool") then
+        table.insert(Weapons, tool.Name)
+    end
+end
+
+WeaponSection:AddDropdown({
+    Name = "Select Weapon",
+    Default = "",
+    Options = Weapons,
+    Save = true,
+    Flag = "SelectedWeapon",
+    Callback = function(Value)
+        _G.Settings.SelectWeapon = Value
+    end
+})
+
+WeaponSection:AddButton({
+    Name = "Refresh Weapons",
+    Callback = function()
+        local NewWeapons = {}
+        for _, tool in pairs(Player.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                table.insert(NewWeapons, tool.Name)
+            end
+        end
+        
+        for _, tool in pairs(Player.Character:GetChildren()) do
+            if tool:IsA("Tool") then
+                table.insert(NewWeapons, tool.Name)
+            end
+        end
+        
+        -- Update the dropdown
+        WeaponSection:UpdateDropdown("Select Weapon", NewWeapons, _G.Settings.SelectWeapon)
+    end
+})
+
+local SkillsSection = MainTab:AddSection({
+    Name = "Auto Skills"
+})
+
+SkillsSection:AddToggle({
+    Name = "Auto Skill Z",
+    Default = true,
+    Save = true,
+    Flag = "SkillZ",
+    Callback = function(Value)
+        _G.Settings.SkillsConfig.Z = Value
+    end
+})
+
+SkillsSection:AddToggle({
+    Name = "Auto Skill X",
+    Default = true,
+    Save = true,
+    Flag = "SkillX",
+    Callback = function(Value)
+        _G.Settings.SkillsConfig.X = Value
+    end
+})
+
+SkillsSection:AddToggle({
+    Name = "Auto Skill C",
+    Default = true,
+    Save = true,
+    Flag = "SkillC",
+    Callback = function(Value)
+        _G.Settings.SkillsConfig.C = Value
+    end
+})
+
+SkillsSection:AddToggle({
+    Name = "Auto Skill V",
+    Default = true,
+    Save = true,
+    Flag = "SkillV",
+    Callback = function(Value)
+        _G.Settings.SkillsConfig.V = Value
+    end
+})
+
+-- Boss Farm Tab
+local BossTab = Window:MakeTab({
+    Name = "Boss",
+    Icon = "rbxassetid://7733911488",
+    PremiumOnly = false
+})
+
+local BossSection = BossTab:AddSection({
+    Name = "Boss Farm"
+})
+
+-- Get current sea boss list
+local CurrentSeaBosses = {}
+if Sea1 then
+    CurrentSeaBosses = BossList.Sea1
+elseif Sea2 then
+    CurrentSeaBosses = BossList.Sea2
+elseif Sea3 then
+    CurrentSeaBosses = BossList.Sea3
+end
+
+BossSection:AddDropdown({
+    Name = "Select Boss",
+    Default = "",
+    Options = CurrentSeaBosses,
+    Save = true,
+    Flag = "SelectedBoss",
+    Callback = function(Value)
+        _G.Settings.SelectedBoss = Value
+    end
+})
+
+BossSection:AddToggle({
+    Name = "Auto Farm Boss",
+    Default = false,
+    Save = true,
+    Flag = "AutoFarmBoss",
+    Callback = function(Value)
+        _G.Settings.AutoFarmBoss = Value
+    end
+})
+
+-- ESP Tab
+local ESPTab = Window:MakeTab({
+    Name = "ESP",
+    Icon = "rbxassetid://7734053495",
+    PremiumOnly = false
+})
+
+local ESPSection = ESPTab:AddSection({
+    Name = "ESP Settings"
+})
+
+ESPSection:AddToggle({
+    Name = "Player ESP",
+    Default = false,
+    Save = true,
+    Flag = "PlayerESP",
+    Callback = function(Value)
+        _G.Settings.ESP.Players = Value
+    end
+})
+
+ESPSection:AddToggle({
+    Name = "Chest ESP",
+    Default = false,
+    Save = true,
+    Flag = "ChestESP",
+    Callback = function(Value)
+        _G.Settings.ESP.Chests = Value
+    end
+})
+
+ESPSection:AddToggle({
+    Name = "Fruit ESP",
+    Default = false,
+    Save = true,
+    Flag = "FruitESP",
+    Callback = function(Value)
+        _G.Settings.ESP.Fruits = Value
+    end
+})
+
+ESPSection:AddToggle({
+    Name = "Flower ESP",
+    Default = false,
+    Save = true,
+    Flag = "FlowerESP",
+    Callback = function(Value)
+        _G.Settings.ESP.Flowers = Value
+    end
+})
+
+-- Fruit Tab
+local FruitTab = Window:MakeTab({
+    Name = "Fruit",
+    Icon = "rbxassetid://7733674128",
+    PremiumOnly = false
+})
+
+local FruitSection = FruitTab:AddSection({
+    Name = "Fruit Options"
+})
+
+FruitSection:AddToggle({
+    Name = "Auto Collect Fruit",
+    Default = false,
+    Save = true,
+    Flag = "AutoCollectFruit",
+    Callback = function(Value)
+        _G.Settings.AutoCollectFruit = Value
+    end
+})
+
+FruitSection:AddToggle({
+    Name = "Auto Store Fruit",
+    Default = false,
+    Save = true,
+    Flag = "AutoStoreFruit",
+    Callback = function(Value)
+        _G.Settings.AutoStoreFruit = Value
+    end
+})
+
+-- Misc Tab
+local MiscTab = Window:MakeTab({
+    Name = "Misc",
+    Icon = "rbxassetid://7044233235",
+    PremiumOnly = false
+})
+
+local MiscSection = MiscTab:AddSection({
+    Name = "Misc Settings"
+})
+
+MiscSection:AddToggle({
+    Name = "No Clip",
+    Default = true,
+    Save = true,
+    Flag = "NoClip",
+    Callback = function(Value)
+        _G.Settings.NoClip = Value
+    end
+})
+
+MiscSection:AddToggle({
+    Name = "White Screen (Performance)",
+    Default = false,
+    Save = true,
+    Flag = "WhiteScreen",
+    Callback = function(Value)
+        _G.Settings.WhiteScreen = Value
+    end
+})
+
+MiscSection:AddToggle({
+    Name = "Hide UI (Performance)",
+    Default = false,
+    Save = true,
+    Flag = "HideUI",
+    Callback = function(Value)
+        _G.Settings.HideUI = Value
+    end
+})
+
+MiscSection:AddToggle({
+    Name = "Hide Damage (Performance)",
+    Default = true,
+    Save = true,
+    Flag = "HideDamage",
+    Callback = function(Value)
+        _G.Settings.HideDamage = Value
+        
+        -- Hide damage numbers
+        if _G.Settings.HideDamage then
+            game:GetService("ReplicatedStorage").Assets.GUI.DamageCounter.Enabled = false
+        else
+            game:GetService("ReplicatedStorage").Assets.GUI.DamageCounter.Enabled = true
+        end
+    end
+})
+
+-- Settings Tab
+local SettingsTab = Window:MakeTab({
+    Name = "Settings",
+    Icon = "rbxassetid://7734053495",
+    PremiumOnly = false
+})
+
+local TweenSection = SettingsTab:AddSection({
+    Name = "Tween Settings"
+})
+
+TweenSection:AddSlider({
+    Name = "Tween Speed",
+    Min = 100,
+    Max = 500,
+    Default = 350,
+    Color = Color3.fromRGB(255, 255, 255),
+    Increment = 10,
+    Save = true,
+    Flag = "TweenSpeed",
+    Callback = function(Value)
+        _G.Settings.TweenSpeed = Value
+    end
+})
+
+TweenSection:AddSlider({
+    Name = "Sea Boat Speed",
+    Min = 100,
+    Max = 500,
+    Default = 350,
+    Color = Color3.fromRGB(255, 255, 255),
+    Increment = 10,
+    Save = true,
+    Flag = "SeaBoatSpeed",
+    Callback = function(Value)
+        _G.Settings.SeaBoatSpeed = Value
+    end
+})
+
+-- Initialize the library
+OrionLib:Init()
+
+-- Display welcome message
+OrionLib:MakeNotification({
+    Name = "LAJ HUB Loaded",
+    Content = "Welcome to LAJ HUB Blox Fruits script!",
+    Image = "rbxassetid://10618928818",
+    Time = 5
 })
