@@ -1,12 +1,11 @@
 --[[
-    LAJ HUB MOBILE
-    A mobile-optimized UI for Roblox exploits
+    LAJ HUB FUTURISTIC
     
-    Features:
-    - Touch-friendly controls
-    - Compact design
-    - Optimized for smaller screens
-    - Simplified but stylish interface
+    A cutting-edge, futuristic UI design with:
+    - Neon glow effects and holographic elements
+    - Animated components and transitions
+    - Advanced 3D-like interface components
+    - Sci-fi inspired visual language
 ]]
 
 -- Services
@@ -14,102 +13,440 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 
--- Colors
-local Colors = {
-    Background = Color3.fromRGB(15, 15, 25),       -- Dark background
-    Secondary = Color3.fromRGB(20, 20, 30),        -- Slightly lighter
-    Primary = Color3.fromRGB(0, 170, 255),         -- Bright blue
-    PrimaryDark = Color3.fromRGB(0, 120, 210),     -- Darker blue
-    Accent = Color3.fromRGB(255, 50, 120),         -- Pink accent
-    Text = Color3.fromRGB(240, 240, 255),          -- White text
-    TextDark = Color3.fromRGB(170, 170, 200),      -- Gray text
-    Success = Color3.fromRGB(50, 200, 100),        -- Green
-    Error = Color3.fromRGB(230, 50, 50)            -- Red
+-- Design System
+local Design = {
+    -- Primary Colors
+    Colors = {
+        Background = Color3.fromRGB(8, 12, 25),         -- Dark blue-black
+        BackgroundLight = Color3.fromRGB(13, 18, 35),   -- Slightly lighter background
+        Primary = Color3.fromRGB(0, 210, 255),          -- Cyan
+        PrimaryDark = Color3.fromRGB(0, 150, 200),      -- Darker cyan
+        PrimaryLight = Color3.fromRGB(70, 230, 255),    -- Lighter cyan
+        Secondary = Color3.fromRGB(255, 40, 150),       -- Magenta
+        SecondaryDark = Color3.fromRGB(200, 20, 110),   -- Darker magenta
+        Tertiary = Color3.fromRGB(180, 120, 255),       -- Purple
+        Success = Color3.fromRGB(0, 230, 160),          -- Green
+        Warning = Color3.fromRGB(255, 190, 0),          -- Yellow
+        Error = Color3.fromRGB(255, 60, 80),            -- Red
+        TextPrimary = Color3.fromRGB(230, 240, 255),    -- Nearly white
+        TextSecondary = Color3.fromRGB(160, 180, 220),  -- Light blue-gray
+        Inactive = Color3.fromRGB(80, 100, 130),        -- Grayed out blue
+        Stroke = Color3.fromRGB(0, 130, 180),           -- Border glow
+        Glass = Color3.fromRGB(25, 40, 60),             -- Glass panels
+        Shadow = Color3.fromRGB(0, 0, 15),              -- Deep shadow
+    },
+    
+    -- Transparency Settings
+    Transparency = {
+        GlassPanel = 0.65,            -- Glass panel transparency
+        GlowEffect = 0.2,             -- Glow transparency
+        ShadowDefault = 0.6,          -- Default shadow
+        StrokePrimary = 0.2,          -- Primary borders
+        StrokeSecondary = 0.5,        -- Secondary borders
+    },
+    
+    -- Animation Settings
+    Animation = {
+        Micro = TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        Quick = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        Normal = TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        Slow = TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        Bounce = TweenInfo.new(0.6, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0),
+    },
+    
+    -- Sizing & Spacing
+    Sizing = {
+        ButtonHeight = 42,            -- Larger button height for mobile
+        CornerRadius = 8,             -- Default corner radius
+        IconSize = 24,                -- Larger icon size for mobile
+        StrokeThickness = 1.5,        -- Default stroke thickness
+        GlowSize = 15,                -- Glow size
+    },
+    
+    -- Fonts
+    Font = {
+        Title = Enum.Font.GothamBlack,
+        Header = Enum.Font.GothamBold,
+        Body = Enum.Font.GothamSemibold,
+        Caption = Enum.Font.Gotham,
+        Mono = Enum.Font.Code,
+    },
+    
+    -- Sizing & Dimensions
+    UI = {
+        Width = 420,
+        Height = 330,
+    }
 }
 
--- UI Parameters
-local UI = {
-    Width = 420,       -- Mobile width (increased size)
-    Height = 330,      -- Mobile height (increased size)
-    Corner = 6,        -- Rounded corners
-    ButtonHeight = 40, -- Button height for touch (increased)
-    IconSize = 24,     -- Icon size (increased)
-    Padding = 12       -- Standard padding (increased)
-}
+-- Utility Functions
+local Util = {}
 
--- Animation Settings
-local Anim = {
-    Short = TweenInfo.new(0.15, Enum.EasingStyle.Quad),
-    Normal = TweenInfo.new(0.25, Enum.EasingStyle.Quad)
-}
-
--- Helper functions
-local function Create(className, properties)
+-- Create new instances quickly
+function Util.Create(className, properties)
     local instance = Instance.new(className)
-    for prop, value in pairs(properties or {}) do
-        instance[prop] = value
+    for name, value in pairs(properties or {}) do
+        instance[name] = value
     end
     return instance
 end
 
-local function Round(instance, radius)
-    Create("UICorner", {
-        CornerRadius = UDim.new(0, radius or UI.Corner),
+-- Apply rounded corners
+function Util.Round(instance, radius)
+    local corner = Util.Create("UICorner", {
+        CornerRadius = UDim.new(0, radius or Design.Sizing.CornerRadius),
         Parent = instance
     })
-    return instance
+    return corner
 end
 
-local function Tween(instance, tweenInfo, properties)
+-- Apply a stroke effect
+function Util.Stroke(instance, color, thickness, transparency)
+    local stroke = Util.Create("UIStroke", {
+        Color = color or Design.Colors.Stroke,
+        Thickness = thickness or Design.Sizing.StrokeThickness,
+        Transparency = transparency or Design.Transparency.StrokePrimary,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Parent = instance
+    })
+    return stroke
+end
+
+-- Create glowing shadow
+function Util.Glow(instance, color, size, transparency)
+    local glow = Util.Create("ImageLabel", {
+        Name = "Glow",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://5028857084", -- Radial gradient
+        ImageColor3 = color or Design.Colors.Primary,
+        ImageTransparency = transparency or Design.Transparency.GlowEffect,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(24, 24, 276, 276),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = UDim2.new(1, size or Design.Sizing.GlowSize, 1, size or Design.Sizing.GlowSize),
+        ZIndex = instance.ZIndex - 1,
+        Parent = instance
+    })
+    return glow
+end
+
+-- Create a shadow
+function Util.Shadow(instance, color, offset, transparency)
+    local shadow = Util.Create("ImageLabel", {
+        Name = "Shadow",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://6014261993",
+        ImageColor3 = color or Design.Colors.Shadow,
+        ImageTransparency = transparency or Design.Transparency.ShadowDefault,
+        Position = UDim2.new(0, -(offset or 15), 0, -(offset or 15)),
+        Size = UDim2.new(1, (offset or 15) * 2, 1, (offset or 15) * 2),
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(49, 49, 450, 450),
+        ZIndex = instance.ZIndex - 2,
+        Parent = instance
+    })
+    return shadow
+end
+
+-- Create a gradient
+function Util.Gradient(instance, colorSequence, transparency, rotation)
+    local gradient = Util.Create("UIGradient", {
+        Color = colorSequence,
+        Transparency = transparency,
+        Rotation = rotation or 0,
+        Parent = instance
+    })
+    return gradient
+end
+
+-- Tween an instance's properties
+function Util.Tween(instance, tweenInfo, properties)
     local tween = TweenService:Create(instance, tweenInfo, properties)
     tween:Play()
     return tween
+end
+
+-- Create ripple effect for buttons
+function Util.AddRipple(button, rippleColor)
+    local rippleContainer = Util.Create("Frame", {
+        Name = "RippleContainer",
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = button.ZIndex,
+        Parent = button
+    })
+    
+    -- Get corner radius if it exists
+    local function getCornerRadius()
+        local corner = button:FindFirstChildOfClass("UICorner")
+        if corner then
+            local radius = corner.CornerRadius
+            if radius.Scale > 0 then
+                return math.min(
+                    button.AbsoluteSize.X * radius.Scale,
+                    button.AbsoluteSize.Y * radius.Scale
+                ) + radius.Offset
+            else
+                return radius.Offset
+            end
+        end
+        return 0
+    end
+    
+    Util.Round(rippleContainer, getCornerRadius())
+    
+    button.MouseButton1Down:Connect(function(x, y)
+        local mouse = UserInputService:GetMouseLocation()
+        local buttonPos = button.AbsolutePosition
+        local relX, relY = mouse.X - buttonPos.X, mouse.Y - buttonPos.Y
+        
+        -- Calculate max distance to any corner
+        local buttonSize = button.AbsoluteSize
+        local cornerDistances = {
+            Vector2.new(0, 0) - Vector2.new(relX, relY),
+            Vector2.new(buttonSize.X, 0) - Vector2.new(relX, relY),
+            Vector2.new(0, buttonSize.Y) - Vector2.new(relX, relY),
+            Vector2.new(buttonSize.X, buttonSize.Y) - Vector2.new(relX, relY)
+        }
+        
+        local maxDistance = 0
+        for _, vector in ipairs(cornerDistances) do
+            maxDistance = math.max(maxDistance, vector.Magnitude)
+        end
+        
+        -- Create ripple
+        local ripple = Util.Create("Frame", {
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = rippleColor or Color3.fromRGB(255, 255, 255),
+            BackgroundTransparency = 0.7,
+            Position = UDim2.new(0, relX, 0, relY),
+            Size = UDim2.new(0, 0, 0, 0),
+            ZIndex = button.ZIndex,
+            Parent = rippleContainer
+        })
+        
+        Util.Round(ripple, 999) -- Make it circular
+        
+        -- Animate ripple
+        Util.Tween(ripple, Design.Animation.Normal, {
+            Size = UDim2.new(0, maxDistance * 2, 0, maxDistance * 2),
+            BackgroundTransparency = 1
+        }).Completed:Connect(function()
+            ripple:Destroy()
+        end)
+    end)
+    
+    return rippleContainer
+end
+
+-- Create a scanner line effect (like a holographic scan)
+function Util.AddScannerEffect(frame, color, scanTime, waitTime)
+    local scanner = Util.Create("Frame", {
+        Name = "ScannerLine",
+        BackgroundColor3 = color or Design.Colors.Primary,
+        BackgroundTransparency = 0.7,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 2),
+        Position = UDim2.new(0, 0, 0, -2),
+        ZIndex = frame.ZIndex + 2,
+        Parent = frame
+    })
+    
+    -- Add glow to scanner
+    Util.Glow(scanner, color or Design.Colors.Primary, 10, 0.5)
+    
+    -- Create scanning animation
+    spawn(function()
+        while scanner and scanner.Parent do
+            Util.Tween(scanner, TweenInfo.new(scanTime or 2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                Position = UDim2.new(0, 0, 1, 0)
+            }).Completed:Wait()
+            
+            scanner.Position = UDim2.new(0, 0, 0, -2)
+            wait(waitTime or 3)
+        end
+    end)
+    
+    return scanner
+end
+
+-- Create a glitch effect
+function Util.AddGlitchEffect(instance, intensity, interval)
+    intensity = intensity or 0.02
+    interval = interval or 0.2
+    
+    local originalPos = instance.Position
+    local originalSize = instance.Size
+    
+    local function glitch()
+        local xOffset = math.random(-10, 10) * intensity
+        local yOffset = math.random(-10, 10) * intensity
+        local widthChange = math.random(-5, 5) * intensity
+        local heightChange = math.random(-5, 5) * intensity
+        
+        instance.Position = UDim2.new(
+            originalPos.X.Scale, 
+            originalPos.X.Offset + xOffset, 
+            originalPos.Y.Scale, 
+            originalPos.Y.Offset + yOffset
+        )
+        
+        instance.Size = UDim2.new(
+            originalSize.X.Scale, 
+            originalSize.X.Offset + widthChange, 
+            originalSize.Y.Scale, 
+            originalSize.Y.Offset + heightChange
+        )
+        
+        -- Small chance of color distortion
+        if math.random() > 0.7 then
+            Util.Tween(instance, Design.Animation.Micro, {
+                ImageColor3 = Design.Colors.Secondary
+            })
+        else
+            Util.Tween(instance, Design.Animation.Micro, {
+                ImageColor3 = Design.Colors.Primary
+            })
+        end
+    end
+    
+    local function resetPosition()
+        instance.Position = originalPos
+        instance.Size = originalSize
+    end
+    
+    spawn(function()
+        while instance and instance.Parent do
+            -- Random chance of glitching
+            if math.random() > 0.6 then
+                glitch()
+                wait(math.random(1, 3) * 0.05) -- Short random duration
+                resetPosition()
+            end
+            
+            wait(interval)
+        end
+    end)
+end
+
+-- Create a pulsing effect
+function Util.AddPulseEffect(instance, minTransparency, maxTransparency, speed)
+    minTransparency = minTransparency or 0.4
+    maxTransparency = maxTransparency or 0.9
+    speed = speed or 1.5
+    
+    spawn(function()
+        while instance and instance.Parent do
+            Util.Tween(instance, TweenInfo.new(speed, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                ImageTransparency = maxTransparency
+            }).Completed:Wait()
+            
+            Util.Tween(instance, TweenInfo.new(speed, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                ImageTransparency = minTransparency
+            }).Completed:Wait()
+        end
+    end)
+end
+
+-- Create holographic effect
+function Util.CreateHologram(parent, size, position, imageId)
+    local container = Util.Create("Frame", {
+        Name = "HologramContainer",
+        BackgroundTransparency = 1,
+        Size = size or UDim2.new(0, 100, 0, 100),
+        Position = position or UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Parent = parent
+    })
+    
+    -- Create hologram image
+    local image = Util.Create("ImageLabel", {
+        Name = "HologramImage",
+        BackgroundTransparency = 1,
+        Image = imageId or "rbxassetid://6022668888",
+        ImageColor3 = Design.Colors.Primary,
+        ImageTransparency = 0.2,
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = container
+    })
+    
+    -- Add scan lines
+    for i = 1, 10 do
+        local scanLine = Util.Create("Frame", {
+            BackgroundColor3 = Design.Colors.Primary,
+            BackgroundTransparency = 0.7,
+            BorderSizePixel = 0,
+            Position = UDim2.new(0, 0, 0, i * 10 - 5),
+            Size = UDim2.new(1, 0, 0, 1),
+            Parent = container
+        })
+    end
+    
+    -- Add distortion effect
+    Util.AddGlitchEffect(image, 0.01, 0.3)
+    
+    -- Add pulse effect
+    Util.AddPulseEffect(image, 0.2, 0.5, 2)
+    
+    return container
 end
 
 -- Main UI Class
 local LAJHub = {}
 LAJHub.__index = LAJHub
 
+-- Initialize and create the UI
 function LAJHub.new()
     local self = setmetatable({}, LAJHub)
     
     -- Create ScreenGui
-    self.GUI = Create("ScreenGui", {
-        Name = "LAJHubMobile",
+    self.GUI = Util.Create("ScreenGui", {
+        Name = "LAJHubFuturistic",
         ResetOnSpawn = false,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         IgnoreGuiInset = true
     })
     
-    -- Try to parent to CoreGui
+    -- Try to parent to CoreGui for better persistence
     pcall(function() self.GUI.Parent = CoreGui end)
     if not self.GUI.Parent then
         self.GUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
     end
     
-    -- Create overlay (handles touches outside the UI)
-    self.Overlay = Create("Frame", {
+    -- Create background blur effect
+    self.Blur = Util.Create("BlurEffect", {
+        Name = "LAJHubBlur",
+        Size = 0,
+        Parent = Lighting
+    })
+    Util.Tween(self.Blur, Design.Animation.Slow, {Size = 10})
+    
+    -- Create full screen overlay with transparency for background
+    self.Overlay = Util.Create("Frame", {
         Name = "Overlay",
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
         Parent = self.GUI
     })
-    Tween(self.Overlay, Anim.Normal, {BackgroundTransparency = 0.5})
+    Util.Tween(self.Overlay, Design.Animation.Slow, {BackgroundTransparency = 0.5})
     
-    -- Close when clicked outside
+    -- Close when clicking outside
     self.Overlay.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or
-           input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             self:Close()
         end
     end)
     
-    -- Container for centered UI
-    self.Container = Create("Frame", {
+    -- Create main container (centered)
+    self.Container = Util.Create("Frame", {
         Name = "Container",
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundTransparency = 1,
@@ -118,263 +455,467 @@ function LAJHub.new()
         Parent = self.GUI
     })
     
-    -- Main Frame
-    self.Main = Create("Frame", {
+    -- Create the main frame with animation (starts small)
+    self.Main = Util.Create("Frame", {
         Name = "Main",
         AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundColor3 = Colors.Background,
+        BackgroundColor3 = Design.Colors.Background,
+        BackgroundTransparency = 0.1,
         BorderSizePixel = 0,
         Position = UDim2.new(0.5, 0, 0.5, 0),
-        Size = UDim2.new(0, 0, 0, 0), -- Start small for animation
+        Size = UDim2.new(0, 0, 0, 0),
         Parent = self.Container
     })
-    Round(self.Main)
     
-    -- Shadow effect
-    Create("ImageLabel", {
-        Name = "Shadow",
+    -- Apply rounded corners
+    Util.Round(self.Main, Design.Sizing.CornerRadius)
+    
+    -- Add shadow and glow
+    Util.Shadow(self.Main, Design.Colors.Shadow, 30, 0.4)
+    Util.Glow(self.Main, Design.Colors.Primary, 25, 0.85)
+    
+    -- Add border stroke
+    Util.Stroke(self.Main, Design.Colors.Primary, 1.5, 0.3)
+    
+    -- Add background pattern
+    local pattern = Util.Create("ImageLabel", {
+        Name = "BackgroundPattern",
         BackgroundTransparency = 1,
-        Image = "rbxassetid://6014261993",
-        ImageColor3 = Color3.fromRGB(0, 0, 0),
-        ImageTransparency = 0.5,
-        Position = UDim2.new(0, -15, 0, -15),
-        Size = UDim2.new(1, 30, 1, 30),
-        ZIndex = -1,
+        Image = "rbxassetid://6372755229", -- Tech pattern
+        ImageColor3 = Design.Colors.Primary,
+        ImageTransparency = 0.9,
+        ScaleType = Enum.ScaleType.Tile,
+        TileSize = UDim2.new(0, 200, 0, 200),
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 0,
         Parent = self.Main
     })
     
-    -- Create UI Components
-    self:CreateTopBar()
-    self:CreateTabButtons()
+    -- Add scanner effect
+    Util.AddScannerEffect(self.Main, Design.Colors.Primary, 3, 5)
+    
+    -- Create the components (will be populated in their own methods)
+    self:CreateHeader()
+    self:CreateSidebar()
     self:CreateContent()
     
-    -- Opening animation
-    Tween(self.Main, Anim.Normal, {
-        Size = UDim2.new(0, UI.Width, 0, UI.Height)
+    -- Setup tab selection
+    self.ActiveTab = nil
+    
+    -- Open animation
+    Util.Tween(self.Main, Design.Animation.Slow, {
+        Size = UDim2.new(0, Design.UI.Width, 0, Design.UI.Height)
     }).Completed:Connect(function()
+        -- After opening, show home tab
         self:SwitchTab("Home")
-        self:ShowNotification("Ready", "LAJ Hub Mobile loaded!")
+        
+        -- Show welcome notification
+        self:ShowNotification("System Online", "LAJ Hub Futuristic Interface Activated", Design.Colors.Success)
     end)
     
-    -- Make draggable for devices that support it
+    -- Make the window draggable
     self:MakeDraggable()
     
-    -- Track current tab
-    self.ActiveTab = nil
+    -- Create particle system
+    self:CreateParticles()
     
     return self
 end
 
--- Create top bar
-function LAJHub:CreateTopBar()
-    self.TopBar = Create("Frame", {
-        Name = "TopBar",
-        BackgroundColor3 = Colors.Secondary,
-        Size = UDim2.new(1, 0, 0, 36), -- Taller for touch targets
+-- Create the header/top bar
+function LAJHub:CreateHeader()
+    -- Create header container
+    self.Header = Util.Create("Frame", {
+        Name = "Header",
+        BackgroundColor3 = Design.Colors.BackgroundLight,
+        BackgroundTransparency = 0.2,
+        Size = UDim2.new(1, 0, 0, 45),
         Parent = self.Main
     })
-    Round(self.TopBar)
     
-    -- Fix bottom corners
-    Create("Frame", {
-        BackgroundColor3 = Colors.Secondary,
+    -- Round just the top corners
+    Util.Round(self.Header, Design.Sizing.CornerRadius)
+    
+    -- Fill in the bottom corners
+    local cornerFill = Util.Create("Frame", {
+        Name = "CornerFill",
+        BackgroundColor3 = self.Header.BackgroundColor3,
+        BackgroundTransparency = self.Header.BackgroundTransparency,
         BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 1, -UI.Corner),
-        Size = UDim2.new(1, 0, 0, UI.Corner),
-        Parent = self.TopBar
+        Position = UDim2.new(0, 0, 1, -Design.Sizing.CornerRadius),
+        Size = UDim2.new(1, 0, 0, Design.Sizing.CornerRadius),
+        Parent = self.Header
     })
     
-    -- Title label
-    self.Title = Create("TextLabel", {
+    -- Create header gradient
+    Util.Gradient(self.Header, ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Design.Colors.BackgroundLight),
+        ColorSequenceKeypoint.new(1, Design.Colors.Background)
+    }), NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 0.4)
+    }), 90)
+    
+    -- Apply same gradient to corner fill
+    Util.Gradient(cornerFill, ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Design.Colors.BackgroundLight),
+        ColorSequenceKeypoint.new(1, Design.Colors.Background)
+    }), NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 0.4)
+    }), 90)
+    
+    -- Logo/icon
+    self.Logo = Util.Create("ImageLabel", {
+        Name = "Logo",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://7743878358", -- Can be replaced with your logo
+        ImageColor3 = Design.Colors.Primary,
+        Size = UDim2.new(0, 28, 0, 28),
+        Position = UDim2.new(0, 15, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Parent = self.Header
+    })
+    
+    -- Add pulse glow to logo
+    local logoGlow = Util.Glow(self.Logo, Design.Colors.Primary, 15, 0.7)
+    Util.AddPulseEffect(logoGlow, 0.7, 0.95, 2)
+    
+    -- Title text
+    self.Title = Util.Create("TextLabel", {
         Name = "Title",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, UI.Padding, 0, 0),
-        Size = UDim2.new(1, -60, 1, 0),
-        Font = Enum.Font.GothamBold,
+        Font = Design.Font.Title,
         Text = "LAJ HUB",
-        TextColor3 = Colors.Text,
-        TextSize = 16,
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 18,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = self.TopBar
+        Position = UDim2.new(0, 55, 0, 0),
+        Size = UDim2.new(1, -110, 1, 0),
+        Parent = self.Header
     })
     
-    -- Close button (larger for touch)
-    self.CloseButton = Create("TextButton", {
-        Name = "CloseButton",
+    -- Subtitle with typewriter effect
+    self.Subtitle = Util.Create("TextLabel", {
+        Name = "Subtitle",
         BackgroundTransparency = 1,
-        Position = UDim2.new(1, -36, 0, 0),
-        Size = UDim2.new(0, 36, 1, 0),
-        Font = Enum.Font.GothamBold,
+        Font = Design.Font.Caption,
+        Text = "",
+        TextColor3 = Design.Colors.Primary,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Position = UDim2.new(0, 150, 0, 0),
+        Size = UDim2.new(1, -220, 1, 0),
+        Parent = self.Header
+    })
+    
+    -- Animate subtitle with typewriter effect
+    spawn(function()
+        local fullText = "FUTURISTIC INTERFACE v1.0"
+        local currentText = ""
+        
+        for i = 1, #fullText do
+            currentText = currentText .. string.sub(fullText, i, i)
+            self.Subtitle.Text = currentText
+            wait(0.05)
+        end
+    end)
+    
+    -- Close button
+    self.CloseButton = Util.Create("TextButton", {
+        Name = "CloseButton",
+        BackgroundColor3 = Design.Colors.Error,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -40, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Size = UDim2.new(0, 26, 0, 26),
+        Font = Design.Font.Header,
         Text = "✕",
-        TextColor3 = Colors.Text,
-        TextSize = 18,
-        Parent = self.TopBar
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 16,
+        Parent = self.Header
     })
     
     -- Close button effects
     self.CloseButton.MouseEnter:Connect(function()
-        Tween(self.CloseButton, Anim.Short, {TextColor3 = Colors.Error})
+        Util.Tween(self.CloseButton, Design.Animation.Quick, {
+            BackgroundTransparency = 0.7,
+            TextColor3 = Design.Colors.Error
+        })
     end)
     
     self.CloseButton.MouseLeave:Connect(function()
-        Tween(self.CloseButton, Anim.Short, {TextColor3 = Colors.Text})
+        Util.Tween(self.CloseButton, Design.Animation.Quick, {
+            BackgroundTransparency = 1,
+            TextColor3 = Design.Colors.TextPrimary
+        })
     end)
     
-    -- Close function
+    -- Close functionality
     self.CloseButton.MouseButton1Click:Connect(function()
         self:Close()
     end)
+    
+    -- Minimize button
+    self.MinimizeButton = Util.Create("TextButton", {
+        Name = "MinimizeButton",
+        BackgroundColor3 = Design.Colors.Warning,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -70, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Size = UDim2.new(0, 26, 0, 26),
+        Font = Design.Font.Header,
+        Text = "—",
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 16,
+        Parent = self.Header
+    })
+    
+    -- Minimize button effects
+    self.MinimizeButton.MouseEnter:Connect(function()
+        Util.Tween(self.MinimizeButton, Design.Animation.Quick, {
+            BackgroundTransparency = 0.7,
+            TextColor3 = Design.Colors.Warning
+        })
+    end)
+    
+    self.MinimizeButton.MouseLeave:Connect(function()
+        Util.Tween(self.MinimizeButton, Design.Animation.Quick, {
+            BackgroundTransparency = 1,
+            TextColor3 = Design.Colors.TextPrimary
+        })
+    end)
+    
+    -- Minimize functionality (just visual effect)
+    self.MinimizeButton.MouseButton1Click:Connect(function()
+        Util.Tween(self.Main, Design.Animation.Normal, {
+            Size = UDim2.new(0, Design.UI.Width, 0, self.Header.Size.Y.Offset)
+        }).Completed:Wait()
+        wait(0.5)
+        Util.Tween(self.Main, Design.Animation.Normal, {
+            Size = UDim2.new(0, Design.UI.Width, 0, Design.UI.Height)
+        })
+    end)
+    
+    return self.Header
 end
 
--- Create tab buttons
-function LAJHub:CreateTabButtons()
-    -- Tab container
-    self.TabsContainer = Create("Frame", {
-        Name = "TabsContainer",
-        BackgroundColor3 = Colors.Secondary,
-        Position = UDim2.new(0, 0, 0, 36),
-        Size = UDim2.new(1, 0, 0, 40),
+-- Create sidebar with navigation
+function LAJHub:CreateSidebar()
+    -- Create sidebar container
+    self.Sidebar = Util.Create("Frame", {
+        Name = "Sidebar",
+        BackgroundColor3 = Design.Colors.BackgroundLight,
+        BackgroundTransparency = 0.1,
+        Position = UDim2.new(0, 0, 0, 45),
+        Size = UDim2.new(0, 60, 1, -45),
         Parent = self.Main
     })
     
-    -- Create tab buttons
-    self.TabButtons = {}
+    -- Add sidebar gradient
+    Util.Gradient(self.Sidebar, ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Design.Colors.Background),
+        ColorSequenceKeypoint.new(1, Design.Colors.BackgroundLight)
+    }), nil, 0)
     
-    -- Tab data
-    local tabs = {
-        {name = "Home", icon = "rbxassetid://7733960981"},
-        {name = "Games", icon = "rbxassetid://7734042071"},
-        {name = "Settings", icon = "rbxassetid://7734053495"}
-    }
+    -- Add subtle glow to the right edge
+    local sidebarEdge = Util.Create("Frame", {
+        Name = "SidebarEdge",
+        BackgroundColor3 = Design.Colors.Primary,
+        BackgroundTransparency = 0.85,
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, -1, 0, 0),
+        Size = UDim2.new(0, 1, 1, 0),
+        Parent = self.Sidebar
+    })
     
-    -- Create each tab button
-    for i, tab in ipairs(tabs) do
-        local buttonWidth = 1/#tabs
-        
-        -- Container for the button
-        local container = Create("Frame", {
-            Name = tab.name .. "Container",
-            BackgroundTransparency = 1,
-            Position = UDim2.new((i-1) * buttonWidth, 0, 0, 0),
-            Size = UDim2.new(buttonWidth, 0, 1, 0),
-            Parent = self.TabsContainer
+    -- Navigation buttons
+    self.NavButtons = {}
+    
+    -- Create home button
+    self.NavButtons.Home = self:CreateNavButton("Home", "rbxassetid://7733960981", 0)
+    
+    -- Create games button
+    self.NavButtons.Games = self:CreateNavButton("Games", "rbxassetid://7734042071", 1)
+    
+    -- Create settings button
+    self.NavButtons.Settings = self:CreateNavButton("Settings", "rbxassetid://7734053495", 2)
+    
+    return self.Sidebar
+end
+
+-- Create a navigation button
+function LAJHub:CreateNavButton(name, icon, order)
+    -- Create button container with glow effect
+    local container = Util.Create("Frame", {
+        Name = name .. "Container",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 15 + (order * 60)),
+        Size = UDim2.new(1, 0, 0, 50),
+        Parent = self.Sidebar
+    })
+    
+    -- Create the button itself
+    local button = Util.Create("ImageButton", {
+        Name = name .. "Button",
+        BackgroundColor3 = Design.Colors.Glass,
+        BackgroundTransparency = 1, -- Start fully transparent
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, 40, 0, 40),
+        Image = icon,
+        ImageColor3 = Design.Colors.Inactive,
+        ImageTransparency = 0.2,
+        ScaleType = Enum.ScaleType.Fit,
+        Parent = container
+    })
+    Util.Round(button, Design.Sizing.CornerRadius)
+    
+    -- Add button indicator (initially hidden)
+    local indicator = Util.Create("Frame", {
+        Name = "Indicator",
+        BackgroundColor3 = Design.Colors.Primary,
+        BackgroundTransparency = 0.2,
+        Position = UDim2.new(0, 0, 0.5, -15),
+        Size = UDim2.new(0, 3, 0, 30),
+        Visible = false,
+        Parent = button
+    })
+    Util.Glow(indicator, Design.Colors.Primary, 5, 0.5)
+    
+    -- Add hover effect
+    button.MouseEnter:Connect(function()
+        if not indicator.Visible then
+            Util.Tween(button, Design.Animation.Quick, {
+                BackgroundTransparency = 0.7,
+                ImageColor3 = Design.Colors.TextSecondary
+            })
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if not indicator.Visible then
+            Util.Tween(button, Design.Animation.Quick, {
+                BackgroundTransparency = 1,
+                ImageColor3 = Design.Colors.Inactive
+            })
+        end
+    end)
+    
+    -- Add click functionality
+    button.MouseButton1Click:Connect(function()
+        self:SwitchTab(name)
+    end)
+    
+    -- Add tooltip (shows on hover)
+    local tooltip = Util.Create("Frame", {
+        Name = "Tooltip",
+        BackgroundColor3 = Design.Colors.Glass,
+        BackgroundTransparency = 0.2,
+        Position = UDim2.new(1, 10, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Size = UDim2.new(0, 0, 0, 24), -- Start with 0 width for animation
+        ClipsDescendants = true,
+        Visible = false,
+        Parent = container
+    })
+    Util.Round(tooltip, Design.Sizing.CornerRadius)
+    Util.Stroke(tooltip, Design.Colors.Primary, 1, 0.5)
+    
+    -- Tooltip text
+    local tooltipText = Util.Create("TextLabel", {
+        Name = "Text",
+        BackgroundTransparency = 1,
+        Font = Design.Font.Body,
+        Text = name,
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = tooltip
+    })
+    
+    -- Show/hide tooltip with animation
+    button.MouseEnter:Connect(function()
+        tooltip.Visible = true
+        Util.Tween(tooltip, Design.Animation.Quick, {
+            Size = UDim2.new(0, 80, 0, 24)
         })
-        
-        -- Button
-        local button = Create("TextButton", {
-            Name = tab.name .. "Button",
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 1, 0),
-            Text = "",
-            Parent = container
-        })
-        
-        -- Icon
-        local icon = Create("ImageLabel", {
-            Name = "Icon",
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0.5, -12, 0, 3),
-            Size = UDim2.new(0, 24, 0, 24),
-            Image = tab.icon,
-            ImageColor3 = Colors.TextDark,
-            Parent = button
-        })
-        
-        -- Label
-        local label = Create("TextLabel", {
-            Name = "Label",
-            BackgroundTransparency = 1,
-            Position = UDim2.new(0, 0, 0, 22),
-            Size = UDim2.new(1, 0, 0, 14),
-            Font = Enum.Font.GothamSemibold,
-            Text = tab.name,
-            TextColor3 = Colors.TextDark,
-            TextSize = 12,
-            Parent = button
-        })
-        
-        -- Indicator for selected tab
-        local indicator = Create("Frame", {
-            Name = "Indicator",
-            BackgroundColor3 = Colors.Primary,
-            BorderSizePixel = 0,
-            Position = UDim2.new(0.5, -15, 1, -2),
-            Size = UDim2.new(0, 30, 0, 2),
-            Visible = false,
-            Parent = button
-        })
-        
-        -- Button functionality
-        button.MouseButton1Click:Connect(function()
-            self:SwitchTab(tab.name)
+    end)
+    
+    button.MouseLeave:Connect(function()
+        Util.Tween(tooltip, Design.Animation.Quick, {
+            Size = UDim2.new(0, 0, 0, 24)
+        }).Completed:Connect(function()
+            tooltip.Visible = false
         end)
-        
-        -- Store button references
-        self.TabButtons[tab.name] = {
-            Container = container,
-            Button = button,
-            Icon = icon,
-            Label = label,
-            Indicator = indicator
-        }
-    end
+    end)
+    
+    return {
+        Container = container,
+        Button = button,
+        Indicator = indicator,
+        Tooltip = tooltip
+    }
 end
 
 -- Create content area
 function LAJHub:CreateContent()
-    self.Content = Create("Frame", {
+    -- Create content container (right of sidebar)
+    self.Content = Util.Create("Frame", {
         Name = "Content",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 76),
-        Size = UDim2.new(1, 0, 1, -76),
+        Position = UDim2.new(0, 60, 0, 45),
+        Size = UDim2.new(1, -60, 1, -45),
         ClipsDescendants = true,
         Parent = self.Main
     })
     
-    -- Create pages
+    -- Create tab pages
     self.Pages = {}
     
-    -- Home page
-    self.Pages.Home = Create("Frame", {
+    -- Home tab
+    self.Pages.Home = Util.Create("Frame", {
         Name = "HomePage",
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
-        Visible = false,
+        Visible = false, -- Will be shown on open
         Parent = self.Content
     })
     
-    -- Games page
-    self.Pages.Games = Create("ScrollingFrame", {
+    -- Games tab (scrollable)
+    self.Pages.Games = Util.Create("ScrollingFrame", {
         Name = "GamesPage",
         BackgroundTransparency = 1,
+        BorderSizePixel = 0,
         Size = UDim2.new(1, 0, 1, 0),
         CanvasSize = UDim2.new(0, 0, 0, 0),
-        ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Colors.Primary,
-        ScrollBarImageTransparency = 0.3,
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = Design.Colors.Primary,
+        ScrollBarImageTransparency = 0.5,
         VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right,
         Visible = false,
         Parent = self.Content
     })
     
-    -- Add layout for games page
-    Create("UIListLayout", {
-        Padding = UDim.new(0, 8),
+    -- Layout for games page
+    Util.Create("UIListLayout", {
+        Padding = UDim.new(0, 10),
         SortOrder = Enum.SortOrder.LayoutOrder,
         Parent = self.Pages.Games
     })
     
-    -- Add padding for games page
-    Create("UIPadding", {
-        PaddingLeft = UDim.new(0, 10),
-        PaddingRight = UDim.new(0, 10),
-        PaddingTop = UDim.new(0, 10),
-        PaddingBottom = UDim.new(0, 10),
+    -- Padding for games page
+    Util.Create("UIPadding", {
+        PaddingLeft = UDim.new(0, 15),
+        PaddingRight = UDim.new(0, 15),
+        PaddingTop = UDim.new(0, 15),
+        PaddingBottom = UDim.new(0, 15),
         Parent = self.Pages.Games
     })
     
-    -- Settings page
-    self.Pages.Settings = Create("Frame", {
+    -- Settings tab
+    self.Pages.Settings = Util.Create("Frame", {
         Name = "SettingsPage",
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
@@ -382,90 +923,264 @@ function LAJHub:CreateContent()
         Parent = self.Content
     })
     
-    -- Fill pages with content
-    self:CreateHomePage()
-    self:CreateGamesPage()
-    self:CreateSettingsPage()
+    -- Fill tabs with content
+    self:CreateHomeTab()
+    self:CreateGamesTab()
+    self:CreateSettingsTab()
+    
+    return self.Content
 end
 
--- Create home page content
-function LAJHub:CreateHomePage()
+-- Create home tab content
+function LAJHub:CreateHomeTab()
     local page = self.Pages.Home
     
-    -- Welcome text
-    local welcome = Create("TextLabel", {
-        Name = "Welcome",
+    -- Welcome text with futuristic style
+    local welcome = Util.Create("TextLabel", {
+        Name = "WelcomeText",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, UI.Padding, 0, UI.Padding),
-        Size = UDim2.new(1, -UI.Padding*2, 0, 20),
-        Font = Enum.Font.GothamBold,
-        Text = "Welcome",
-        TextColor3 = Colors.Primary,
-        TextSize = 16,
+        Position = UDim2.new(0, 30, 0, 20),
+        Size = UDim2.new(1, -60, 0, 40),
+        Font = Design.Font.Header,
+        Text = "SYSTEM ACTIVATED",
+        TextColor3 = Design.Colors.Primary,
+        TextSize = 24,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = page
     })
     
-    -- Description
-    local description = Create("TextLabel", {
-        Name = "Description",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, UI.Padding, 0, 35),
-        Size = UDim2.new(1, -UI.Padding*2, 0, 40),
-        Font = Enum.Font.Gotham,
-        Text = "Touch a game below to execute scripts.",
-        TextColor3 = Colors.TextDark,
-        TextSize = 14,
-        TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Left,
+    -- Holographic display
+    local hologram = self:CreateHolographicDisplay(page)
+    
+    -- Status display (glass panel)
+    local statusPanel = Util.Create("Frame", {
+        Name = "StatusPanel",
+        BackgroundColor3 = Design.Colors.Glass,
+        BackgroundTransparency = Design.Transparency.GlassPanel,
+        Position = UDim2.new(0, 30, 0, 70),
+        Size = UDim2.new(0.42, 0, 0, 100),
         Parent = page
+    })
+    Util.Round(statusPanel, Design.Sizing.CornerRadius)
+    Util.Stroke(statusPanel, Design.Colors.Primary, 1, 0.5)
+    
+    -- Add status panel header
+    Util.Create("TextLabel", {
+        Name = "StatusHeader",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 15, 0, 10),
+        Size = UDim2.new(1, -30, 0, 20),
+        Font = Design.Font.Body,
+        Text = "SYSTEM STATUS",
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = statusPanel
+    })
+    
+    -- Add status items
+    local statusItems = {
+        {name = "Scripts Loaded", value = "24", color = Design.Colors.Success},
+        {name = "Execution Engine", value = "ONLINE", color = Design.Colors.Success},
+        {name = "Security Level", value = "MAXIMUM", color = Design.Colors.Warning}
+    }
+    
+    for i, item in ipairs(statusItems) do
+        local statusItem = Util.Create("Frame", {
+            Name = "StatusItem" .. i,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 15, 0, 30 + (i-1) * 20),
+            Size = UDim2.new(1, -30, 0, 20),
+            Parent = statusPanel
+        })
+        
+        -- Status name
+        Util.Create("TextLabel", {
+            Name = "Name",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0.6, 0, 1, 0),
+            Font = Design.Font.Caption,
+            Text = item.name,
+            TextColor3 = Design.Colors.TextSecondary,
+            TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            Parent = statusItem
+        })
+        
+        -- Status value
+        Util.Create("TextLabel", {
+            Name = "Value",
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0.6, 0, 0, 0),
+            Size = UDim2.new(0.4, 0, 1, 0),
+            Font = Design.Font.Body,
+            Text = item.value,
+            TextColor3 = item.color,
+            TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Right,
+            Parent = statusItem
+        })
+    end
+    
+    -- Quick access panel
+    local quickPanel = Util.Create("Frame", {
+        Name = "QuickAccessPanel",
+        BackgroundColor3 = Design.Colors.Glass,
+        BackgroundTransparency = Design.Transparency.GlassPanel,
+        Position = UDim2.new(0, 30, 0, 180),
+        Size = UDim2.new(0.9, 0, 0, 120),
+        Parent = page
+    })
+    Util.Round(quickPanel, Design.Sizing.CornerRadius)
+    Util.Stroke(quickPanel, Design.Colors.Primary, 1, 0.5)
+    
+    -- Add quick access header
+    Util.Create("TextLabel", {
+        Name = "QuickAccessHeader",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 15, 0, 10),
+        Size = UDim2.new(1, -30, 0, 20),
+        Font = Design.Font.Body,
+        Text = "QUICK ACCESS",
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = quickPanel
     })
     
     -- Quick access buttons
-    local quickButtons = Create("Frame", {
-        Name = "QuickButtons",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, UI.Padding, 0, 85),
-        Size = UDim2.new(1, -UI.Padding*2, 0, 40),
-        Parent = page
-    })
-    
-    -- Popular games
-    local popularGames = {
-        "Blox Fruits",
-        "Dead Rails",
-        "Pet Sim 99"
+    local buttonData = {
+        {name = "Blox Fruits", script = "Blox Fruits"},
+        {name = "Dead Rails", script = "Dead Rails"},
+        {name = "Pet Sim 99", script = "Pet Simulator 99"},
     }
     
-    -- Create buttons for popular games
-    for i, game in ipairs(popularGames) do
-        local button = self:CreateButton(
-            game,
-            function() self:ExecuteScript(game) end,
-            UDim2.new((i-1)/3, i > 1 and 5 or 0, 0, 0),
-            UDim2.new(1/3, -5, 1, 0),
-            quickButtons
+    for i, data in ipairs(buttonData) do
+        local posX = (i-1) % 3 * 0.33
+        local posY = math.floor((i-1) / 3) * 0.5
+        
+        local button = self:CreateActionButton(
+            data.name,
+            function() self:ExecuteScript(data.script) end,
+            UDim2.new(posX, 15, 0, 40),
+            UDim2.new(0.3, -20, 0, 36),
+            quickPanel
         )
     end
+    
+    -- News ticker at bottom
+    local newsTicker = Util.Create("Frame", {
+        Name = "NewsTicker",
+        BackgroundColor3 = Design.Colors.Glass,
+        BackgroundTransparency = Design.Transparency.GlassPanel,
+        Position = UDim2.new(0, 30, 1, -50),
+        Size = UDim2.new(0.9, 0, 0, 30),
+        ClipsDescendants = true,
+        Parent = page
+    })
+    Util.Round(newsTicker, Design.Sizing.CornerRadius)
+    Util.Stroke(newsTicker, Design.Colors.Secondary, 1, 0.5)
+    
+    -- News icon
+    Util.Create("ImageLabel", {
+        Name = "NewsIcon",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://7072707704", -- Alert/News icon
+        ImageColor3 = Design.Colors.Secondary,
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(0, 10, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Parent = newsTicker
+    })
+    
+    -- News text that scrolls
+    local newsText = Util.Create("TextLabel", {
+        Name = "NewsText",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 40, 0, 0),
+        Size = UDim2.new(1, -50, 1, 0),
+        Font = Design.Font.Body,
+        Text = "BREAKING: New scripts added for Blox Fruits • Dead Rails update v1.3 available • LAJ Hub updated to Premium Version • More games coming soon",
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = newsTicker
+    })
+    
+    -- Animate the news ticker
+    spawn(function()
+        local textSize = newsText.TextBounds.X
+        local containerSize = newsTicker.AbsoluteSize.X - 50
+        
+        if textSize > containerSize then
+            while newsText and newsText.Parent do
+                newsText.Position = UDim2.new(0, 40, 0, 0)
+                
+                Util.Tween(newsText, TweenInfo.new(textSize / 50, Enum.EasingStyle.Linear), {
+                    Position = UDim2.new(0, -textSize, 0, 0)
+                }).Completed:Wait()
+                
+                wait(1)
+            end
+        end
+    end)
+    
+    return page
 end
 
--- Create games page content
-function LAJHub:CreateGamesPage()
+-- Create games tab content
+function LAJHub:CreateGamesTab()
     local page = self.Pages.Games
     
-    -- Game data
-    local games = {
-        {name = "Blox Fruits", desc = "Auto-farm, ESP"},
-        {name = "Dead Rails", desc = "Auto-farm, ESP"},
-        {name = "Pet Simulator 99", desc = "Auto-farm, pets"},
-        {name = "Arsenal", desc = "Aimbot, ESP"},
-        {name = "Adopt Me", desc = "Features"},
-        {name = "Jailbreak", desc = "Auto-rob, ESP"}
+    -- Game scripts data
+    local gameScripts = {
+        {
+            name = "Blox Fruits",
+            description = "Auto-farm, ESP, teleports, and more features for Blox Fruits",
+            tags = {"Popular", "Updated"},
+            script = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Dead Rails",
+            description = "Auto-farm, ESP, and gameplay enhancements for Dead Rails",
+            tags = {"Featured"},
+            script = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Pet Simulator 99",
+            description = "Auto-farm coins, eggs, and other features for Pet Simulator 99",
+            tags = {"New"},
+            script = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Anime Fighting Simulator",
+            description = "Auto-train, auto-farm, and teleports for AFS",
+            tags = {},
+            script = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Adopt Me",
+            description = "Auto-farm, teleports, and other features for Adopt Me",
+            tags = {},
+            script = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Jailbreak",
+            description = "Auto-rob, ESP, and other features for Jailbreak",
+            tags = {"Popular"},
+            script = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        },
+        {
+            name = "Arsenal",
+            description = "Aimbot, ESP, and combat enhancements for Arsenal",
+            tags = {},
+            script = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua"
+        }
     }
     
     -- Create game cards
-    for i, game in ipairs(games) do
-        self:CreateGameCard(game.name, game.desc, i)
+    for i, game in ipairs(gameScripts) do
+        self:CreateGameCard(game.name, game.description, game.tags, game.script, i)
     end
     
     -- Update canvas size based on content
@@ -473,339 +1188,630 @@ function LAJHub:CreateGamesPage()
     layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         page.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
     end)
+    
+    return page
+end
+
+-- Create settings tab content
+function LAJHub:CreateSettingsTab()
+    local page = self.Pages.Settings
+    
+    -- Settings header
+    local header = Util.Create("TextLabel", {
+        Name = "SettingsHeader",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 30, 0, 20),
+        Size = UDim2.new(1, -60, 0, 30),
+        Font = Design.Font.Header,
+        Text = "SYSTEM SETTINGS",
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 22,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = page
+    })
+    
+    -- Settings container
+    local settingsContainer = Util.Create("Frame", {
+        Name = "SettingsContainer",
+        BackgroundColor3 = Design.Colors.Glass,
+        BackgroundTransparency = Design.Transparency.GlassPanel,
+        Position = UDim2.new(0, 30, 0, 60),
+        Size = UDim2.new(0.9, 0, 0, 200),
+        Parent = page
+    })
+    Util.Round(settingsContainer, Design.Sizing.CornerRadius)
+    Util.Stroke(settingsContainer, Design.Colors.Primary, 1, 0.5)
+    
+    -- Create toggle for auto-execute
+    local toggle1 = self:CreateToggle(
+        "Auto-Execute Scripts",
+        "Automatically execute scripts when joining supported games",
+        true,
+        UDim2.new(0, 20, 0, 20),
+        settingsContainer
+    )
+    
+    -- Create toggle for notifications
+    local toggle2 = self:CreateToggle(
+        "Show Notifications",
+        "Display system notifications on script execution",
+        true,
+        UDim2.new(0, 20, 0, 70),
+        settingsContainer
+    )
+    
+    -- Create toggle for interface sounds
+    local toggle3 = self:CreateToggle(
+        "Interface Sounds",
+        "Enable sound effects for UI interactions",
+        false,
+        UDim2.new(0, 20, 0, 120),
+        settingsContainer
+    )
+    
+    -- Create visual style selector
+    local styleContainer = Util.Create("Frame", {
+        Name = "StyleContainer",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 30, 0, 280),
+        Size = UDim2.new(0.9, 0, 0, 80),
+        Parent = page
+    })
+    
+    -- Style header
+    Util.Create("TextLabel", {
+        Name = "StyleHeader",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 20),
+        Font = Design.Font.Body,
+        Text = "INTERFACE STYLE",
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = styleContainer
+    })
+    
+    -- Style selector buttons
+    local styles = {
+        {name = "Futuristic", color = Design.Colors.Primary, selected = true},
+        {name = "Minimal", color = Design.Colors.TextSecondary},
+        {name = "Classic", color = Design.Colors.Secondary}
+    }
+    
+    -- Create style buttons
+    for i, style in ipairs(styles) do
+        local button = Util.Create("TextButton", {
+            Name = style.name .. "Button",
+            BackgroundColor3 = Design.Colors.Glass,
+            BackgroundTransparency = style.selected and 0.4 or 0.7,
+            Position = UDim2.new((i-1) * 0.33, 0, 0, 30),
+            Size = UDim2.new(0.3, -10, 0, 36),
+            Font = Design.Font.Body,
+            Text = style.name,
+            TextColor3 = style.selected and style.color or Design.Colors.TextSecondary,
+            TextSize = 14,
+            Parent = styleContainer
+        })
+        Util.Round(button, Design.Sizing.CornerRadius)
+        
+        -- Add border to selected style
+        if style.selected then
+            Util.Stroke(button, style.color, 1.5, 0.3)
+        end
+        
+        -- Add hover effect
+        button.MouseEnter:Connect(function()
+            if not style.selected then
+                Util.Tween(button, Design.Animation.Quick, {
+                    BackgroundTransparency = 0.5,
+                    TextColor3 = style.color
+                })
+            end
+        end)
+        
+        button.MouseLeave:Connect(function()
+            if not style.selected then
+                Util.Tween(button, Design.Animation.Quick, {
+                    BackgroundTransparency = 0.7,
+                    TextColor3 = Design.Colors.TextSecondary
+                })
+            end
+        end)
+        
+        -- Ripple effect
+        Util.AddRipple(button, style.color)
+    end
+    
+    -- Version information
+    local versionContainer = Util.Create("Frame", {
+        Name = "VersionContainer",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 30, 1, -60),
+        Size = UDim2.new(0.9, 0, 0, 50),
+        Parent = page
+    })
+    
+    -- Version text
+    Util.Create("TextLabel", {
+        Name = "VersionText",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 20),
+        Font = Design.Font.Caption,
+        Text = "LAJ HUB FUTURISTIC v1.0",
+        TextColor3 = Design.Colors.TextSecondary,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = versionContainer
+    })
+    
+    -- Discord link
+    Util.Create("TextLabel", {
+        Name = "DiscordLink",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 20),
+        Size = UDim2.new(1, 0, 0, 20),
+        Font = Design.Font.Caption,
+        Text = "discord.gg/lajhub",
+        TextColor3 = Design.Colors.Secondary,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = versionContainer
+    })
+    
+    return page
 end
 
 -- Create a game card
-function LAJHub:CreateGameCard(name, desc, order)
-    local card = Create("Frame", {
+function LAJHub:CreateGameCard(name, description, tags, script, order)
+    local card = Util.Create("Frame", {
         Name = name .. "Card",
-        BackgroundColor3 = Colors.Secondary,
-        Size = UDim2.new(1, 0, 0, 70),
+        BackgroundColor3 = Design.Colors.Glass,
+        BackgroundTransparency = Design.Transparency.GlassPanel,
+        Size = UDim2.new(1, 0, 0, 90),  -- Increased height for mobile touch
         LayoutOrder = order,
         Parent = self.Pages.Games
     })
-    Round(card)
+    Util.Round(card, Design.Sizing.CornerRadius)
+    Util.Stroke(card, Design.Colors.Primary, 1, 0.7)
     
-    -- Title text
-    local title = Create("TextLabel", {
-        Name = "Title",
+    -- Game icon (placeholder)
+    local icon = Util.Create("ImageLabel", {
+        Name = "GameIcon",
+        BackgroundColor3 = Design.Colors.Background,
+        BackgroundTransparency = 0.5,
+        Position = UDim2.new(0, 10, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Size = UDim2.new(0, 50, 0, 50),
+        Image = "rbxassetid://7743878966", -- Game icon placeholder
+        ImageColor3 = Design.Colors.Primary,
+        Parent = card
+    })
+    Util.Round(icon, Design.Sizing.CornerRadius)
+    
+    -- Game name
+    local gameName = Util.Create("TextLabel", {
+        Name = "GameName",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 10),
-        Size = UDim2.new(1, -20, 0, 20),
-        Font = Enum.Font.GothamBold,
+        Position = UDim2.new(0, 70, 0, 10),
+        Size = UDim2.new(1, -170, 0, 20),
+        Font = Design.Font.Body,
         Text = name,
-        TextColor3 = Colors.Text,
-        TextSize = 14,
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = card
     })
     
-    -- Description text
-    local description = Create("TextLabel", {
-        Name = "Description",
+    -- Game description
+    local gameDesc = Util.Create("TextLabel", {
+        Name = "GameDescription",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 32),
-        Size = UDim2.new(1, -110, 0, 20),
-        Font = Enum.Font.Gotham,
-        Text = desc,
-        TextColor3 = Colors.TextDark,
-        TextSize = 12,
+        Position = UDim2.new(0, 70, 0, 32),
+        Size = UDim2.new(1, -170, 0, 20),
+        Font = Design.Font.Caption,
+        Text = description,
+        TextColor3 = Design.Colors.TextSecondary,
+        TextSize = 13,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = card
     })
+    
+    -- Add tags if any
+    if #tags > 0 then
+        local tagContainer = Util.Create("Frame", {
+            Name = "TagContainer",
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 70, 0, 54),
+            Size = UDim2.new(1, -170, 0, 18),
+            Parent = card
+        })
+        
+        -- Create tags
+        for i, tag in ipairs(tags) do
+            local tagColor
+            if tag == "Popular" then
+                tagColor = Design.Colors.Tertiary
+            elseif tag == "Updated" then
+                tagColor = Design.Colors.Success
+            elseif tag == "New" then
+                tagColor = Design.Colors.Secondary
+            elseif tag == "Featured" then
+                tagColor = Design.Colors.Warning
+            else
+                tagColor = Design.Colors.TextSecondary
+            end
+            
+            local tagLabel = Util.Create("TextLabel", {
+                Name = tag .. "Tag",
+                BackgroundColor3 = tagColor,
+                BackgroundTransparency = 0.8,
+                Position = UDim2.new(0, (i-1) * 70, 0, 0),
+                Size = UDim2.new(0, 65, 0, 18),
+                Font = Design.Font.Caption,
+                Text = tag,
+                TextColor3 = tagColor,
+                TextSize = 11,
+                Parent = tagContainer
+            })
+            Util.Round(tagLabel, 4)
+        end
+    end
     
     -- Execute button
-    local button = Create("TextButton", {
+    local executeButton = Util.Create("TextButton", {
         Name = "ExecuteButton",
-        BackgroundColor3 = Colors.Primary,
-        Position = UDim2.new(1, -90, 0.5, 0),
+        BackgroundColor3 = Design.Colors.Primary,
+        BackgroundTransparency = 0.2,
+        Position = UDim2.new(1, -120, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
-        Size = UDim2.new(0, 80, 0, 32),
-        Font = Enum.Font.GothamSemibold,
+        Size = UDim2.new(0, 110, 0, 42), -- Larger button for mobile touch
+        Font = Design.Font.Body,
         Text = "EXECUTE",
-        TextColor3 = Colors.Text,
-        TextSize = 12,
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 16, -- Larger font for mobile
         Parent = card
     })
-    Round(button, 4)
+    Util.Round(executeButton, 4)
+    Util.Glow(executeButton, Design.Colors.Primary, 10, 0.85)
     
-    -- Button hover effects
-    button.MouseEnter:Connect(function()
-        Tween(button, Anim.Short, {BackgroundColor3 = Colors.PrimaryDark})
+    -- Add ripple effect
+    Util.AddRipple(executeButton, Color3.fromRGB(255, 255, 255))
+    
+    -- Add hover effects
+    executeButton.MouseEnter:Connect(function()
+        Util.Tween(executeButton, Design.Animation.Quick, {
+            BackgroundColor3 = Design.Colors.PrimaryDark,
+            BackgroundTransparency = 0
+        })
     end)
     
-    button.MouseLeave:Connect(function()
-        Tween(button, Anim.Short, {BackgroundColor3 = Colors.Primary})
+    executeButton.MouseLeave:Connect(function()
+        Util.Tween(executeButton, Design.Animation.Quick, {
+            BackgroundColor3 = Design.Colors.Primary,
+            BackgroundTransparency = 0.2
+        })
     end)
     
-    -- Card hover effects
+    -- Add functionality
+    executeButton.MouseButton1Click:Connect(function()
+        self:ExecuteScript(name, script)
+    end)
+    
+    -- Add hover effect to card
     card.MouseEnter:Connect(function()
-        Tween(card, Anim.Short, {BackgroundColor3 = Color3.fromRGB(25, 25, 35)})
+        Util.Tween(card, Design.Animation.Quick, {
+            BackgroundTransparency = Design.Transparency.GlassPanel - 0.2
+        })
     end)
     
     card.MouseLeave:Connect(function()
-        Tween(card, Anim.Short, {BackgroundColor3 = Colors.Secondary})
-    end)
-    
-    -- Execute functionality
-    button.MouseButton1Click:Connect(function()
-        self:ExecuteScript(name)
-    end)
-    
-    -- Make the whole card clickable for mobile
-    card.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or
-           input.UserInputType == Enum.UserInputType.Touch then
-            -- Don't trigger if clicking the button
-            local relativePosition = input.Position - card.AbsolutePosition
-            if relativePosition.X < card.AbsoluteSize.X - 90 then
-                self:ExecuteScript(name)
-            end
-        end
+        Util.Tween(card, Design.Animation.Quick, {
+            BackgroundTransparency = Design.Transparency.GlassPanel
+        })
     end)
     
     return card
 end
 
--- Create settings page content
-function LAJHub:CreateSettingsPage()
-    local page = self.Pages.Settings
-    
-    -- Title
-    local title = Create("TextLabel", {
-        Name = "Title",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, UI.Padding, 0, UI.Padding),
-        Size = UDim2.new(1, -UI.Padding*2, 0, 20),
-        Font = Enum.Font.GothamBold,
-        Text = "Settings",
-        TextColor3 = Colors.Text,
-        TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = page
-    })
-    
-    -- Auto-execute toggle
-    self:CreateToggle("Auto-Execute", "Execute scripts when joining games", true, UDim2.new(0, UI.Padding, 0, 40), page)
-    
-    -- Notifications toggle
-    self:CreateToggle("Notifications", "Show on-screen notifications", true, UDim2.new(0, UI.Padding, 0, 80), page)
-    
-    -- Version info
-    local version = Create("TextLabel", {
-        Name = "Version",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, UI.Padding, 1, -40),
-        Size = UDim2.new(1, -UI.Padding*2, 0, 20),
-        Font = Enum.Font.Gotham,
-        Text = "LAJ Hub Mobile v1.0",
-        TextColor3 = Colors.TextDark,
-        TextSize = 12,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = page
-    })
-    
-    -- Discord link
-    local discord = Create("TextLabel", {
-        Name = "Discord",
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, UI.Padding, 1, -20),
-        Size = UDim2.new(1, -UI.Padding*2, 0, 20),
-        Font = Enum.Font.Gotham,
-        Text = "discord.gg/lajhub",
-        TextColor3 = Colors.Primary,
-        TextSize = 12,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = page
-    })
-end
-
--- Create a toggle switch
+-- Create a toggle button
 function LAJHub:CreateToggle(title, description, defaultState, position, parent)
-    local container = Create("Frame", {
-        Name = title .. "Container",
+    local container = Util.Create("Frame", {
+        Name = title:gsub("%s+", "") .. "Container",
         BackgroundTransparency = 1,
         Position = position,
-        Size = UDim2.new(1, -UI.Padding*2, 0, 30),
+        Size = UDim2.new(1, -40, 0, 40),
         Parent = parent
     })
     
-    -- Label
-    local label = Create("TextLabel", {
-        Name = "Label",
+    -- Title
+    Util.Create("TextLabel", {
+        Name = "Title",
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, -50, 0, 16),
-        Font = Enum.Font.GothamSemibold,
+        Size = UDim2.new(0.7, 0, 0, 20),
+        Font = Design.Font.Body,
         Text = title,
-        TextColor3 = Colors.Text,
+        TextColor3 = Design.Colors.TextPrimary,
         TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = container
     })
     
     -- Description
-    local desc = Create("TextLabel", {
+    Util.Create("TextLabel", {
         Name = "Description",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 16),
-        Size = UDim2.new(1, -50, 0, 14),
-        Font = Enum.Font.Gotham,
+        Position = UDim2.new(0, 0, 0, 20),
+        Size = UDim2.new(0.7, 0, 0, 20),
+        Font = Design.Font.Caption,
         Text = description,
-        TextColor3 = Colors.TextDark,
+        TextColor3 = Design.Colors.TextSecondary,
         TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Left,
         Parent = container
     })
     
     -- Toggle background
-    local toggleBg = Create("Frame", {
+    local toggleBackground = Util.Create("Frame", {
         Name = "ToggleBackground",
-        BackgroundColor3 = defaultState and Colors.Primary or Colors.TextDark,
-        Position = UDim2.new(1, -40, 0.5, 0),
+        BackgroundColor3 = defaultState and Design.Colors.Primary or Design.Colors.Inactive,
+        BackgroundTransparency = 0.2,
+        Position = UDim2.new(1, -60, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
-        Size = UDim2.new(0, 40, 0, 20),
+        Size = UDim2.new(0, 50, 0, 24),
         Parent = container
     })
-    Round(toggleBg, 10)
+    Util.Round(toggleBackground, 12)
+    Util.Glow(toggleBackground, defaultState and Design.Colors.Primary or Design.Colors.Background, 5, 0.7)
     
     -- Toggle indicator
-    local toggleBall = Create("Frame", {
-        Name = "ToggleBall",
-        BackgroundColor3 = Colors.Text,
-        Position = defaultState and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
+    local toggleIndicator = Util.Create("Frame", {
+        Name = "ToggleIndicator",
+        BackgroundColor3 = Design.Colors.TextPrimary,
+        Position = defaultState and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5),
-        Size = UDim2.new(0, 16, 0, 16),
-        Parent = toggleBg
+        Size = UDim2.new(0, 20, 0, 20),
+        Parent = toggleBackground
     })
-    Round(toggleBall, 8)
+    Util.Round(toggleIndicator, 10)
     
     -- Toggle state
     local state = defaultState
     
-    -- Toggle functionality
-    toggleBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or
-           input.UserInputType == Enum.UserInputType.Touch then
+    -- Make toggle interactive
+    toggleBackground.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             state = not state
             
-            Tween(toggleBall, Anim.Short, {
-                Position = state and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+            -- Animate toggle
+            Util.Tween(toggleIndicator, Design.Animation.Quick, {
+                Position = state and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
             })
             
-            Tween(toggleBg, Anim.Short, {
-                BackgroundColor3 = state and Colors.Primary or Colors.TextDark
+            Util.Tween(toggleBackground, Design.Animation.Quick, {
+                BackgroundColor3 = state and Design.Colors.Primary or Design.Colors.Inactive
             })
+            
+            -- Update glow
+            local glow = toggleBackground:FindFirstChild("Glow")
+            if glow then
+                Util.Tween(glow, Design.Animation.Quick, {
+                    ImageColor3 = state and Design.Colors.Primary or Design.Colors.Background
+                })
+            end
         end
     end)
     
     return container
 end
 
--- Create a button
-function LAJHub:CreateButton(text, callback, position, size, parent)
-    local button = Create("TextButton", {
-        Name = text .. "Button",
-        BackgroundColor3 = Colors.Primary,
-        Position = position,
-        Size = size,
-        Font = Enum.Font.GothamSemibold,
-        Text = text,
-        TextColor3 = Colors.Text,
-        TextSize = 13,
+-- Create a holographic display for the home tab
+function LAJHub:CreateHolographicDisplay(parent)
+    local display = Util.Create("Frame", {
+        Name = "HolographicDisplay",
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0.6, 0, 0.15, 0),
+        Size = UDim2.new(0.25, 0, 0.3, 0),
         Parent = parent
     })
-    Round(button, 4)
     
-    -- Hover effects
+    -- Create scanner effect
+    local scanner = Util.Create("Frame", {
+        Name = "Scanner",
+        BackgroundColor3 = Design.Colors.Primary,
+        BackgroundTransparency = 0.7,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 2),
+        ZIndex = 2,
+        Parent = display
+    })
+    
+    -- Create hologram
+    local hologram = Util.Create("ImageLabel", {
+        Name = "Hologram",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://7743878358", -- Roblox logo as placeholder
+        ImageColor3 = Design.Colors.Primary,
+        ImageTransparency = 0.2,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = UDim2.new(0.8, 0, 0.8, 0),
+        Parent = display
+    })
+    
+    -- Add scan lines
+    for i = 1, 15 do
+        local scanLine = Util.Create("Frame", {
+            Name = "ScanLine" .. i,
+            BackgroundColor3 = Design.Colors.Primary,
+            BackgroundTransparency = 0.85,
+            BorderSizePixel = 0,
+            Position = UDim2.new(0, 0, 0, i * 10),
+            Size = UDim2.new(1, 0, 0, 1),
+            ZIndex = 2,
+            Parent = display
+        })
+    end
+    
+    -- Animate scanner
+    spawn(function()
+        while scanner and scanner.Parent do
+            Util.Tween(scanner, TweenInfo.new(2, Enum.EasingStyle.Linear), {
+                Position = UDim2.new(0, 0, 1, 0)
+            }).Completed:Wait()
+            
+            scanner.Position = UDim2.new(0, 0, 0, 0)
+        end
+    end)
+    
+    -- Add glitch effect
+    Util.AddGlitchEffect(hologram, 0.02, 0.3)
+    
+    -- Rotate hologram
+    spawn(function()
+        local rotation = 0
+        
+        while hologram and hologram.Parent do
+            rotation = (rotation + 1) % 360
+            hologram.Rotation = rotation
+            
+            wait(0.05)
+        end
+    end)
+    
+    -- Add pulse to hologram
+    Util.AddPulseEffect(hologram, 0.2, 0.4, 2)
+    
+    return display
+end
+
+-- Create an action button
+function LAJHub:CreateActionButton(text, callback, position, size, parent)
+    local button = Util.Create("TextButton", {
+        Name = text:gsub("%s+", "") .. "Button",
+        BackgroundColor3 = Design.Colors.Primary,
+        BackgroundTransparency = 0.2,
+        Position = position,
+        Size = size,
+        Font = Design.Font.Body,
+        Text = text,
+        TextColor3 = Design.Colors.TextPrimary,
+        TextSize = 14,
+        Parent = parent
+    })
+    Util.Round(button, 4)
+    
+    -- Add ripple effect
+    Util.AddRipple(button, Color3.fromRGB(255, 255, 255))
+    
+    -- Add hover effects
     button.MouseEnter:Connect(function()
-        Tween(button, Anim.Short, {BackgroundColor3 = Colors.PrimaryDark})
+        Util.Tween(button, Design.Animation.Quick, {
+            BackgroundColor3 = Design.Colors.PrimaryDark,
+            BackgroundTransparency = 0
+        })
     end)
     
     button.MouseLeave:Connect(function()
-        Tween(button, Anim.Short, {BackgroundColor3 = Colors.Primary})
+        Util.Tween(button, Design.Animation.Quick, {
+            BackgroundColor3 = Design.Colors.Primary,
+            BackgroundTransparency = 0.2
+        })
     end)
     
-    -- Click functionality
+    -- Add functionality
     button.MouseButton1Click:Connect(function()
-        if callback then callback() end
+        if callback then
+            callback()
+        end
     end)
     
     return button
 end
 
--- Switch between tabs
-function LAJHub:SwitchTab(tabName)
-    -- Don't switch to current tab
-    if self.ActiveTab == tabName then
-        return
-    end
+-- Create particle system
+function LAJHub:CreateParticles()
+    -- Create particle container
+    self.ParticleContainer = Util.Create("Frame", {
+        Name = "ParticleContainer",
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 0,
+        Parent = self.Main
+    })
     
-    -- Update active tab
-    self.ActiveTab = tabName
+    -- Create particles
+    local particles = {}
+    local particleCount = 20
     
-    -- Update title
-    self.Title.Text = tabName == "Home" and "LAJ HUB" or tabName
-    
-    -- Hide all pages with animation
-    for name, page in pairs(self.Pages) do
-        if page.Visible then
-            Tween(page, Anim.Short, {
-                Position = UDim2.new(0.1, 0, 0, 0),
-                BackgroundTransparency = 1
-            }).Completed:Connect(function()
-                page.Visible = false
-                page.Position = UDim2.new(-0.1, 0, 0, 0)
-            end)
+    for i = 1, particleCount do
+        local size = math.random(1, 3)
+        local particle = Util.Create("Frame", {
+            Name = "Particle" .. i,
+            BackgroundColor3 = Design.Colors.Primary,
+            BackgroundTransparency = math.random(80, 95) / 100,
+            BorderSizePixel = 0,
+            Position = UDim2.new(math.random(0, 100) / 100, 0, math.random(0, 100) / 100, 0),
+            Size = UDim2.new(0, size, 0, size),
+            ZIndex = 0,
+            Parent = self.ParticleContainer
+        })
+        
+        -- Add some variety in colors
+        if math.random() > 0.7 then
+            particle.BackgroundColor3 = Design.Colors.Secondary
+        elseif math.random() > 0.8 then
+            particle.BackgroundColor3 = Design.Colors.Tertiary
         end
+        
+        Util.Round(particle, size)
+        table.insert(particles, particle)
     end
     
-    -- Reset all tab buttons
-    for name, tab in pairs(self.TabButtons) do
-        tab.Indicator.Visible = false
-        
-        Tween(tab.Icon, Anim.Short, {
-            ImageColor3 = Colors.TextDark
-        })
-        
-        Tween(tab.Label, Anim.Short, {
-            TextColor3 = Colors.TextDark
-        })
-    end
+    -- Animate particles
+    spawn(function()
+        while self.ParticleContainer and self.ParticleContainer.Parent do
+            for _, particle in ipairs(particles) do
+                if particle and particle.Parent then
+                    -- Random slow drift
+                    local xOffset = math.random(-30, 30)
+                    local yOffset = math.random(-30, 30)
+                    local duration = math.random(20, 50) / 10
+                    
+                    Util.Tween(particle, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+                        Position = UDim2.new(
+                            particle.Position.X.Scale + (xOffset / 500),
+                            particle.Position.X.Offset,
+                            particle.Position.Y.Scale + (yOffset / 500),
+                            particle.Position.Y.Offset
+                        ),
+                        BackgroundTransparency = math.random(90, 98) / 100
+                    })
+                    
+                    -- Reset if particle moves out of bounds
+                    if particle.Position.X.Scale < 0 or particle.Position.X.Scale > 1 or
+                       particle.Position.Y.Scale < 0 or particle.Position.Y.Scale > 1 then
+                        particle.Position = UDim2.new(math.random(0, 100) / 100, 0, math.random(0, 100) / 100, 0)
+                    end
+                end
+            end
+            wait(0.5)
+        end
+    end)
     
-    -- Show selected page
-    if self.Pages[tabName] then
-        local page = self.Pages[tabName]
-        page.Position = UDim2.new(-0.1, 0, 0, 0)
-        page.Visible = true
-        
-        Tween(page, Anim.Normal, {
-            Position = UDim2.new(0, 0, 0, 0),
-            BackgroundTransparency = 0
-        })
-    end
-    
-    -- Highlight selected tab
-    if self.TabButtons[tabName] then
-        local tab = self.TabButtons[tabName]
-        tab.Indicator.Visible = true
-        
-        Tween(tab.Icon, Anim.Short, {
-            ImageColor3 = Colors.Primary
-        })
-        
-        Tween(tab.Label, Anim.Short, {
-            TextColor3 = Colors.Primary
-        })
-    end
+    return self.ParticleContainer
 end
 
--- Make UI draggable
+-- Make the UI draggable
 function LAJHub:MakeDraggable()
     local frame = self.Main
+    local header = self.Header
     local dragToggle, dragStart, startPos
     
-    self.TopBar.InputBegan:Connect(function(input)
+    header.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragToggle = true
             dragStart = input.Position
@@ -834,107 +1840,207 @@ end
 
 -- Show a notification
 function LAJHub:ShowNotification(title, message, color)
-    color = color or Colors.Primary
+    color = color or Design.Colors.Primary
     
     -- Create notification container
-    local notification = Create("Frame", {
+    local notification = Util.Create("Frame", {
         Name = "Notification",
-        AnchorPoint = Vector2.new(0.5, 0),
-        BackgroundColor3 = Colors.Secondary,
-        Position = UDim2.new(0.5, 0, 0, -60),
-        Size = UDim2.new(0, 250, 0, 60),
+        AnchorPoint = Vector2.new(1, 1),
+        BackgroundColor3 = Design.Colors.Background,
+        BackgroundTransparency = 0.1,
+        Position = UDim2.new(1, 20, 1, -20),
+        Size = UDim2.new(0, 280, 0, 80),
         ZIndex = 100,
         Parent = self.GUI
     })
-    Round(notification)
+    Util.Round(notification, Design.Sizing.CornerRadius)
+    Util.Stroke(notification, color, 1, 0.5)
+    Util.Shadow(notification, Design.Colors.Shadow, 10, 0.6)
     
-    -- Accent bar
-    Create("Frame", {
+    -- Create accent bar
+    Util.Create("Frame", {
         Name = "AccentBar",
         BackgroundColor3 = color,
         BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 0, 3),
+        Size = UDim2.new(0, 4, 1, 0),
         ZIndex = 101,
         Parent = notification
     })
     
-    -- Title
-    Create("TextLabel", {
+    -- Create title
+    Util.Create("TextLabel", {
         Name = "Title",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 8),
-        Size = UDim2.new(1, -20, 0, 16),
-        Font = Enum.Font.GothamBold,
+        Position = UDim2.new(0, 15, 0, 10),
+        Size = UDim2.new(1, -25, 0, 20),
+        Font = Design.Font.Body,
         Text = title,
         TextColor3 = color,
-        TextSize = 14,
+        TextSize = 16,
         TextXAlignment = Enum.TextXAlignment.Left,
         ZIndex = 101,
         Parent = notification
     })
     
-    -- Message
-    Create("TextLabel", {
+    -- Create message
+    Util.Create("TextLabel", {
         Name = "Message",
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 28),
-        Size = UDim2.new(1, -20, 0, 26),
-        Font = Enum.Font.Gotham,
+        Position = UDim2.new(0, 15, 0, 35),
+        Size = UDim2.new(1, -25, 0, 40),
+        Font = Design.Font.Caption,
         Text = message,
-        TextColor3 = Colors.TextDark,
-        TextSize = 12,
+        TextColor3 = Design.Colors.TextSecondary,
+        TextSize = 14,
         TextWrapped = true,
         TextXAlignment = Enum.TextXAlignment.Left,
         ZIndex = 101,
         Parent = notification
     })
     
-    -- Animate in
-    Tween(notification, Anim.Normal, {
-        Position = UDim2.new(0.5, 0, 0, 20)
+    -- Add progress bar
+    local progressBar = Util.Create("Frame", {
+        Name = "ProgressBar",
+        BackgroundColor3 = color,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 1, -2),
+        Size = UDim2.new(1, 0, 0, 2),
+        ZIndex = 101,
+        Parent = notification
     })
     
-    -- Auto remove
+    -- Add glow to progress bar
+    Util.Glow(progressBar, color, 5, 0.7)
+    
+    -- Animate in
+    notification.Position = UDim2.new(1, 300, 1, -20)
+    Util.Tween(notification, Design.Animation.Normal, {
+        Position = UDim2.new(1, -20, 1, -20)
+    })
+    
+    -- Animate progress bar
+    Util.Tween(progressBar, TweenInfo.new(4, Enum.EasingStyle.Linear), {
+        Size = UDim2.new(0, 0, 0, 2)
+    })
+    
+    -- Auto remove after delay
     spawn(function()
-        wait(3)
-        Tween(notification, Anim.Normal, {
-            Position = UDim2.new(0.5, 0, 0, -60)
+        wait(4)
+        
+        -- Animate out
+        Util.Tween(notification, Design.Animation.Normal, {
+            Position = UDim2.new(1, 300, 1, -20)
         }).Completed:Wait()
+        
         notification:Destroy()
     end)
     
     return notification
 end
 
--- Close the UI
+-- Switch between tabs
+function LAJHub:SwitchTab(tabName)
+    -- Don't switch if we're already on this tab
+    if self.ActiveTab == tabName then
+        return
+    end
+    
+    -- Update the active tab
+    self.ActiveTab = tabName
+    
+    -- Hide all pages first with animation
+    for name, page in pairs(self.Pages) do
+        if page.Visible then
+            Util.Tween(page, Design.Animation.Quick, {
+                Position = UDim2.new(0.1, 0, 0, 0),
+                BackgroundTransparency = 1
+            }).Completed:Connect(function()
+                page.Visible = false
+                page.Position = UDim2.new(-0.1, 0, 0, 0)
+            end)
+        end
+    end
+    
+    -- Reset all navigation button states
+    for name, navButton in pairs(self.NavButtons) do
+        -- Hide indicator
+        navButton.Button.Indicator.Visible = false
+        
+        -- Reset button appearance
+        Util.Tween(navButton.Button, Design.Animation.Quick, {
+            BackgroundTransparency = 1,
+            ImageColor3 = Design.Colors.Inactive
+        })
+    end
+    
+    -- Show the selected tab with animation
+    if self.Pages[tabName] then
+        local page = self.Pages[tabName]
+        page.Position = UDim2.new(-0.1, 0, 0, 0)
+        page.Visible = true
+        
+        Util.Tween(page, Design.Animation.Normal, {
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundTransparency = 0
+        })
+    end
+    
+    -- Highlight the active navigation button
+    if self.NavButtons[tabName] then
+        local navButton = self.NavButtons[tabName]
+        
+        -- Show indicator
+        navButton.Button.Indicator.Visible = true
+        
+        -- Update button appearance
+        Util.Tween(navButton.Button, Design.Animation.Quick, {
+            BackgroundTransparency = 0.7,
+            ImageColor3 = Design.Colors.Primary
+        })
+    end
+end
+
+-- Close the UI with animation
 function LAJHub:Close()
-    Tween(self.Overlay, Anim.Short, {
+    -- Fade out blur
+    Util.Tween(self.Blur, Design.Animation.Slow, {Size = 0})
+    
+    -- Fade out overlay
+    Util.Tween(self.Overlay, Design.Animation.Normal, {
         BackgroundTransparency = 1
     })
     
-    Tween(self.Main, Anim.Normal, {
+    -- Collapse main frame
+    Util.Tween(self.Main, Design.Animation.Normal, {
         Size = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 1
     }).Completed:Connect(function()
+        -- Remove the blur
+        self.Blur:Destroy()
+        
+        -- Destroy the GUI
         self.GUI:Destroy()
     end)
 end
 
 -- Execute a script
-function LAJHub:ExecuteScript(gameName)
-    self:ShowNotification("Loading", "Loading script for " .. gameName)
+function LAJHub:ExecuteScript(gameName, scriptUrl)
+    self:ShowNotification("EXECUTING", "Loading script for " .. gameName, Design.Colors.Primary)
     
-    -- Execute the script (simplified)
+    -- Use pcall to safely execute without errors
     pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        local success = loadstring(game:HttpGet(scriptUrl or "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        
+        -- Show success notification
+        wait(1) -- Give a moment between notifications
+        if success ~= false then -- Consider nil as success
+            self:ShowNotification("SUCCESS", "Successfully loaded script for " .. gameName, Design.Colors.Success)
+        else
+            self:ShowNotification("ERROR", "Failed to load script for " .. gameName, Design.Colors.Error)
+        end
     end)
-    
-    -- Show success notification
-    wait(1)
-    self:ShowNotification("Success", "Script loaded for " .. gameName, Colors.Success)
 end
 
--- Initialize the UI
+-- Initialize and return the hub
 local hub = LAJHub.new()
 return hub
