@@ -1,933 +1,1029 @@
 --[[
-    LAJ HUB Premium UI
-    A premium, modern UI design inspired by Ronix Hub
-    Ultra-sleek dark design with advanced animations and effects
+    LAJ HUB ELITE
+    A revolutionary custom UI for Roblox exploits
+    Features ultra-modern design with dynamic animations and effects
+    Designed to be completely unique and superior to other UIs
 ]]
 
--- Create function to easily load assets from Roblox or web
+-- Services
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local Lighting = game:GetService("Lighting")
+
+-- Utility functions
 local function getsynasset(id)
     if not id then return "" end
     return "rbxassetid://" .. tostring(id)
 end
 
--- Core UI elements
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local Lighting = game:GetService("Lighting")
+-- Create metatable for color handling
+local Color = setmetatable({}, {
+    __call = function(_, r, g, b)
+        return Color3.fromRGB(r, g, b)
+    end
+})
 
--- Create base UI elements
+-- Dynamic color scheme (ultra-premium palette)
+local colors = {
+    -- Primary colors
+    primary = Color(25, 15, 35),  -- Deep purple-black
+    primaryLight = Color(40, 25, 55),
+    primaryDark = Color(15, 10, 25),
+    
+    -- Accent colors
+    accent1 = Color(170, 50, 255),  -- Electric purple
+    accent1Dark = Color(130, 35, 205),
+    accent1Light = Color(200, 90, 255),
+    
+    accent2 = Color(0, 220, 255),  -- Cyan blue
+    accent2Dark = Color(0, 170, 220),
+    accent2Light = Color(60, 230, 255),
+    
+    accent3 = Color(255, 40, 110),  -- Hot pink
+    accent3Dark = Color(220, 30, 90),
+    accent3Light = Color(255, 80, 140),
+    
+    -- Text colors
+    text = Color(240, 240, 255),  -- Almost white
+    textDim = Color(170, 170, 190),
+    textDark = Color(100, 100, 120),
+    
+    -- Functional colors
+    success = Color(30, 220, 120),
+    warning = Color(255, 190, 0),
+    error = Color(255, 40, 40),
+    
+    -- UI Element colors
+    uiBackground = Color(20, 15, 30),
+    uiBackgroundLight = Color(35, 25, 45),
+    uiBorder = Color(60, 45, 80),
+    uiHighlight = Color(80, 65, 100),
+    
+    -- Transparent colors for gradients
+    transparent = Color3.fromRGB(255, 255, 255):Lerp(Color3.fromRGB(0, 0, 0), 1),
+    
+    -- Special effects
+    glowAccent1 = Color(180, 80, 255),
+    glowAccent2 = Color(40, 230, 255),
+    glowAccent3 = Color(255, 80, 140),
+    shadow = Color(10, 5, 15)
+}
+
+-- Create UI
 local LAJHub = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local MainGradient = Instance.new("UIGradient")
-local TopBar = Instance.new("Frame")
-local TopBarGradient = Instance.new("UIGradient")
-local Title = Instance.new("TextLabel")
-local TitleGlow = Instance.new("ImageLabel")
-local TitleIcon = Instance.new("ImageLabel")
-local CloseButton = Instance.new("ImageButton")
+local MainContainer = Instance.new("Frame")
+local MainBackground = Instance.new("Frame")
+local OuterBorder = Instance.new("UIStroke")
+local InnerBorder = Instance.new("UIStroke")
+local BackgroundPattern = Instance.new("ImageLabel")
+local GlowEffect = Instance.new("ImageLabel")
+local TitleBar = Instance.new("Frame")
+local TitleGradient = Instance.new("UIGradient")
+local Logo = Instance.new("ImageLabel")
+local LogoGlow = Instance.new("ImageLabel")
+local TitleText = Instance.new("TextLabel")
 local MinimizeButton = Instance.new("ImageButton")
-local SideBar = Instance.new("Frame")
-local SideBarGradient = Instance.new("UIGradient")
-local SideBarLine = Instance.new("Frame")
-local ContentFrame = Instance.new("Frame")
-local ContentGradient = Instance.new("UIGradient")
-local MinimizedButton = Instance.new("TextButton")
+local CloseButton = Instance.new("ImageButton")
+local MainContent = Instance.new("Frame")
+local SideNav = Instance.new("Frame")
+local NavGradient = Instance.new("UIGradient")
+local NavBlur = Instance.new("BlurEffect")
+local ContentContainer = Instance.new("Frame")
+
+-- Minimized UI elements
+local MinimizedUI = Instance.new("Frame")
 local MinimizedGlow = Instance.new("ImageLabel")
+local MinimizedLogo = Instance.new("ImageLabel")
+local MinimizedText = Instance.new("TextLabel")
 
 -- Visual effects
 local BlurEffect = Instance.new("BlurEffect")
-local MainCorner = Instance.new("UICorner")
+local MainUICorners = Instance.new("UICorner")
 local DropShadow = Instance.new("ImageLabel")
-local ProfileImage = Instance.new("ImageLabel")
+local Particles = Instance.new("Frame")
 
--- Navigation buttons
-local HomeButton = Instance.new("TextButton")
-local HomeIcon = Instance.new("ImageLabel")
-local HomeIndicator = Instance.new("Frame")
-local GamesButton = Instance.new("TextButton")
-local GamesIcon = Instance.new("ImageLabel")
-local GamesIndicator = Instance.new("Frame")
-local TeleportButton = Instance.new("TextButton")
-local TeleportIcon = Instance.new("ImageLabel")
-local TeleportIndicator = Instance.new("Frame")
-local SettingsButton = Instance.new("TextButton")
-local SettingsIcon = Instance.new("ImageLabel")
-local SettingsIndicator = Instance.new("Frame")
+-- Navigation buttons container
+local NavButtonsContainer = Instance.new("Frame")
+local NavUILayout = Instance.new("UIListLayout")
 
--- Content tabs
-local HomeTab = Instance.new("ScrollingFrame")
+-- Content frames
+local HomePanel = Instance.new("ScrollingFrame")
 local HomeUILayout = Instance.new("UIListLayout")
-local GamesTab = Instance.new("ScrollingFrame")
+local HomeUIScale = Instance.new("UIScale")
+local GamesPanel = Instance.new("ScrollingFrame")
 local GamesUILayout = Instance.new("UIListLayout")
-local TeleportTab = Instance.new("ScrollingFrame")
+local GamesUIScale = Instance.new("UIScale")
+local TeleportPanel = Instance.new("ScrollingFrame")
 local TeleportUILayout = Instance.new("UIListLayout")
-local SettingsTab = Instance.new("ScrollingFrame")
+local TeleportUIScale = Instance.new("UIScale")
+local SettingsPanel = Instance.new("ScrollingFrame")
 local SettingsUILayout = Instance.new("UIListLayout")
+local SettingsUIScale = Instance.new("UIScale")
 
--- Premium colors scheme
-local colors = {
-    background = Color3.fromRGB(20, 20, 25), -- Dark background
-    backgroundAlt = Color3.fromRGB(25, 25, 30), -- Slightly lighter background
-    backgroundLight = Color3.fromRGB(35, 35, 40), -- Even lighter background
-    accent = Color3.fromRGB(230, 230, 15), -- Yellow accent like the image
-    accentDark = Color3.fromRGB(200, 200, 10), -- Darker accent for gradients
-    accentGlow = Color3.fromRGB(255, 255, 100), -- Glow effect color
-    text = Color3.fromRGB(255, 255, 255), -- White text
-    textDim = Color3.fromRGB(180, 180, 180), -- Dimmed text
-    button = Color3.fromRGB(40, 40, 50), -- Button background
-    buttonHover = Color3.fromRGB(50, 50, 60), -- Button when hovered
-    separator = Color3.fromRGB(50, 50, 60), -- Line separators
-    success = Color3.fromRGB(70, 200, 120), -- Success indicators
-    warning = Color3.fromRGB(240, 180, 60), -- Warning indicators
-    error = Color3.fromRGB(240, 70, 70), -- Error indicators
-    highlight = Color3.fromRGB(90, 90, 255), -- Highlight blue for special elements
-    shadow = Color3.fromRGB(10, 10, 15) -- Shadow color
+-- UI Configuration
+local config = {
+    version = "v3.0 ELITE",
+    animationSpeed = 0.4,
+    borderThickness = 1.5,
+    cornerRadius = 10,
+    glowIntensity = 0.8,
+    glowSize = 1.2,
+    blurIntensity = 15,
+    enableParticles = true,
+    accentColor = "accent1",  -- Current accent color
+    uiScale = 1,              -- Overall UI scale
+    navButtonSize = 36,       -- Size of navigation buttons
+    navButtonGap = 20,        -- Gap between nav buttons
+    showTooltips = true,      -- Whether to show tooltips
+    expandedNav = true,       -- Whether the nav is expanded
+    enableSounds = true,      -- Whether UI sounds are enabled
+    enableBlur = true,        -- Whether to use blur effects
+    roundedCorners = true,    -- Whether to use rounded corners
+    themePresets = {
+        -- Options for theme presets
+        {name = "Elite Purple", primary = "accent1"},
+        {name = "Cyan Tech", primary = "accent2"},
+        {name = "Hot Pink", primary = "accent3"},
+    },
+    currentTheme = 1          -- Current theme index
 }
 
--- Screen GUI setup
-LAJHub.Name = "LAJHub"
+-- Initialize UI
+LAJHub.Name = "LAJHub_Elite"
 LAJHub.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-LAJHub.ResetOnSpawn = false
 LAJHub.DisplayOrder = 999
+LAJHub.ResetOnSpawn = false
 pcall(function() LAJHub.Parent = game:GetService("CoreGui") end)
-if not LAJHub.Parent then LAJHub.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end
+if not LAJHub.Parent then LAJHub.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
 
--- Add blur effect to the game when UI is open
+-- Add blur effect to the game
 BlurEffect.Name = "LAJHubBlur"
-BlurEffect.Size = 10
-BlurEffect.Enabled = true
+BlurEffect.Size = config.enableBlur and config.blurIntensity or 0
+BlurEffect.Enabled = config.enableBlur
 BlurEffect.Parent = Lighting
 
--- Main frame
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = LAJHub
-MainFrame.BackgroundColor3 = colors.background
-MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -275, 0.5, -175)
-MainFrame.Size = UDim2.new(0, 550, 0, 350)
-MainFrame.ClipsDescendants = true
-MainFrame.Active = true
-MainFrame.Draggable = true
+-- Main Container (holds the entire UI)
+MainContainer.Name = "MainContainer"
+MainContainer.Parent = LAJHub
+MainContainer.BackgroundTransparency = 1
+MainContainer.Position = UDim2.new(0.5, -400, 0.5, -225)
+MainContainer.Size = UDim2.new(0, 800, 0, 450)
+MainContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+MainContainer.Active = true
+MainContainer.Draggable = true
 
--- Add gradient to main frame
-MainGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 35)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 20))
-})
-MainGradient.Rotation = 45
-MainGradient.Parent = MainFrame
+-- Main Background
+MainBackground.Name = "MainBackground"
+MainBackground.Parent = MainContainer
+MainBackground.BackgroundColor3 = colors.primary
+MainBackground.BorderSizePixel = 0
+MainBackground.Size = UDim2.new(1, 0, 1, 0)
+MainBackground.ClipsDescendants = true
 
--- Apply corner radius to the main frame
-MainCorner.CornerRadius = UDim.new(0, 10)
-MainCorner.Parent = MainFrame
+-- Apply inner and outer borders
+OuterBorder.Name = "OuterBorder"
+OuterBorder.Parent = MainBackground
+OuterBorder.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+OuterBorder.Color = colors[config.accentColor]
+OuterBorder.LineJoinMode = Enum.LineJoinMode.Round
+OuterBorder.Thickness = config.borderThickness * 1.5
+OuterBorder.Transparency = 0
 
--- Add glow shadow effect
+InnerBorder.Name = "InnerBorder"
+InnerBorder.Parent = MainBackground
+InnerBorder.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+InnerBorder.Color = colors[config.accentColor].Lerp(colors.text, 0.3)
+InnerBorder.LineJoinMode = Enum.LineJoinMode.Round
+InnerBorder.Thickness = config.borderThickness
+InnerBorder.Transparency = 0.7
+
+-- Apply rounded corners to main UI
+MainUICorners.CornerRadius = UDim.new(0, config.cornerRadius)
+MainUICorners.Parent = MainBackground
+
+-- Add background pattern
+BackgroundPattern.Name = "BackgroundPattern"
+BackgroundPattern.Parent = MainBackground
+BackgroundPattern.BackgroundTransparency = 1
+BackgroundPattern.Position = UDim2.new(0, 0, 0, 0)
+BackgroundPattern.Size = UDim2.new(1, 0, 1, 0)
+BackgroundPattern.Image = "rbxassetid://300134974" -- Grid pattern
+BackgroundPattern.ImageColor3 = colors[config.accentColor]
+BackgroundPattern.ImageTransparency = 0.94
+BackgroundPattern.ScaleType = Enum.ScaleType.Tile
+BackgroundPattern.TileSize = UDim2.new(0, 80, 0, 80)
+
+-- Add glow effect around the UI
+GlowEffect.Name = "GlowEffect"
+GlowEffect.Parent = MainBackground
+GlowEffect.AnchorPoint = Vector2.new(0.5, 0.5)
+GlowEffect.BackgroundTransparency = 1
+GlowEffect.Position = UDim2.new(0.5, 0, 0.5, 0)
+GlowEffect.Size = UDim2.new(1, 40, 1, 40)
+GlowEffect.Image = "rbxassetid://5028857084" -- Soft glow
+GlowEffect.ImageColor3 = colors[config.accentColor]
+GlowEffect.ImageTransparency = 1 - config.glowIntensity
+GlowEffect.ZIndex = 0
+
+-- Add shadow effect
 DropShadow.Name = "DropShadow"
-DropShadow.Parent = MainFrame
+DropShadow.Parent = MainContainer
 DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
 DropShadow.BackgroundTransparency = 1
-DropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-DropShadow.Size = UDim2.new(1, 35, 1, 35)
-DropShadow.Image = "rbxassetid://6014261993"
+DropShadow.Position = UDim2.new(0.5, 0, 0.5, 6)
+DropShadow.Size = UDim2.new(1, 50, 1, 50)
+DropShadow.Image = "rbxassetid://6014054906" -- Shadow image
 DropShadow.ImageColor3 = colors.shadow
-DropShadow.ImageTransparency = 0.2
+DropShadow.ImageTransparency = 0.4
 DropShadow.ScaleType = Enum.ScaleType.Slice
-DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+DropShadow.SliceCenter = Rect.new(256, 256, 256, 256)
+DropShadow.SliceScale = 1
 DropShadow.ZIndex = -1
 
--- Top bar
-TopBar.Name = "TopBar"
-TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = colors.backgroundLight
-TopBar.BorderSizePixel = 0
-TopBar.Size = UDim2.new(1, 0, 0, 35)
+-- Title bar
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = MainBackground
+TitleBar.BackgroundColor3 = colors.primaryDark
+TitleBar.BorderSizePixel = 0
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
 
--- Apply gradient to top bar
-TopBarGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 45)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35))
+-- Apply gradient to title bar
+TitleGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, colors.primaryDark),
+    ColorSequenceKeypoint.new(0.5, colors.primaryDark:Lerp(colors[config.accentColor], 0.1)),
+    ColorSequenceKeypoint.new(1, colors.primaryDark)
 })
-TopBarGradient.Rotation = 90
-TopBarGradient.Parent = TopBar
+TitleGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0),
+    NumberSequenceKeypoint.new(1, 0)
+})
+TitleGradient.Rotation = 90
+TitleGradient.Parent = TitleBar
 
--- Apply corner radius to top bar corners
-local TopCorner = Instance.new("UICorner")
-TopCorner.CornerRadius = UDim.new(0, 10)
-TopCorner.Parent = TopBar
+-- Logo
+Logo.Name = "Logo"
+Logo.Parent = TitleBar
+Logo.BackgroundTransparency = 1
+Logo.Position = UDim2.new(0, 12, 0, 6)
+Logo.Size = UDim2.new(0, 28, 0, 28)
+Logo.Image = "rbxassetid://7743878358" -- Placeholder logo (shark)
+Logo.ImageColor3 = colors[config.accentColor]
 
--- Fix top corners
-local TopbarFix = Instance.new("Frame")
-TopbarFix.Name = "TopbarFix"
-TopbarFix.Parent = TopBar
-TopbarFix.BackgroundColor3 = colors.backgroundLight
-TopbarFix.BorderSizePixel = 0
-TopbarFix.Position = UDim2.new(0, 0, 0.5, 0)
-TopbarFix.Size = UDim2.new(1, 0, 0.5, 0)
-TopbarFix.ZIndex = 0
+-- Add glow to logo
+LogoGlow.Name = "LogoGlow"
+LogoGlow.Parent = Logo
+LogoGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+LogoGlow.BackgroundTransparency = 1
+LogoGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+LogoGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+LogoGlow.Image = "rbxassetid://5028857084" -- Glow texture
+LogoGlow.ImageColor3 = colors[config.accentColor]
+LogoGlow.ImageTransparency = 0.4
+LogoGlow.ZIndex = 2
 
-local TopFixGradient = TopBarGradient:Clone()
-TopFixGradient.Parent = TopbarFix
+-- Title text
+TitleText.Name = "TitleText"
+TitleText.Parent = TitleBar
+TitleText.BackgroundTransparency = 1
+TitleText.Position = UDim2.new(0, 50, 0, 0)
+TitleText.Size = UDim2.new(1, -120, 1, 0)
+TitleText.Font = Enum.Font.GothamBold
+TitleText.Text = "LAJ HUB ELITE " .. config.version
+TitleText.TextColor3 = colors[config.accentColor]
+TitleText.TextSize = 18
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
 
--- Title and icon
-TitleIcon = Instance.new("ImageLabel")
-TitleIcon.Name = "TitleIcon"
-TitleIcon.Parent = TopBar
-TitleIcon.BackgroundTransparency = 1
-TitleIcon.Position = UDim2.new(0, 12, 0, 5)
-TitleIcon.Size = UDim2.new(0, 25, 0, 25)
-TitleIcon.Image = "rbxassetid://7743878358" -- Shark icon like in reference
-TitleIcon.ImageColor3 = colors.accent
-TitleIcon.ZIndex = 3
-
--- Add glow to the icon
-local IconGlow = Instance.new("ImageLabel")
-IconGlow.Name = "Glow"
-IconGlow.Parent = TitleIcon
-IconGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-IconGlow.BackgroundTransparency = 1
-IconGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-IconGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
-IconGlow.Image = "rbxassetid://7072718362" -- Glow effect
-IconGlow.ImageColor3 = colors.accentGlow
-IconGlow.ImageTransparency = 0.6
-IconGlow.ZIndex = 2
-
-Title.Name = "Title"
-Title.Parent = TopBar
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 45, 0, 0)
-Title.Size = UDim2.new(1, -100, 1, 0)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "LAJ HUB v2"
-Title.TextColor3 = colors.accent
-Title.TextSize = 18
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 3
-
--- Add glow to title
-TitleGlow.Name = "Glow"
-TitleGlow.Parent = Title
-TitleGlow.AnchorPoint = Vector2.new(0, 0.5)
-TitleGlow.BackgroundTransparency = 1
-TitleGlow.Position = UDim2.new(0, -5, 0.5, 0)
-TitleGlow.Size = UDim2.new(1.1, 10, 1.5, 0)
-TitleGlow.Image = "rbxassetid://7072718362" -- Glow effect
-TitleGlow.ImageColor3 = colors.accentGlow
-TitleGlow.ImageTransparency = 0.85
-TitleGlow.ZIndex = 2
-
--- Window controls
+-- Window Controls
 CloseButton.Name = "CloseButton"
-CloseButton.Parent = TopBar
-CloseButton.BackgroundTransparency = 1
-CloseButton.Position = UDim2.new(1, -30, 0.5, -10)
-CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Parent = TitleBar
+CloseButton.BackgroundTransparency = 0.9
+CloseButton.Position = UDim2.new(1, -35, 0.5, -12)
+CloseButton.Size = UDim2.new(0, 24, 0, 24)
 CloseButton.Image = "rbxassetid://9064230540" -- X icon
-CloseButton.ImageColor3 = colors.textDim
-CloseButton.ZIndex = 3
+CloseButton.ImageColor3 = colors.error
+CloseButton.ImageTransparency = 0.2
 
 MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Parent = TopBar
-MinimizeButton.BackgroundTransparency = 1
-MinimizeButton.Position = UDim2.new(1, -60, 0.5, -10)
-MinimizeButton.Size = UDim2.new(0, 20, 0, 20)
+MinimizeButton.Parent = TitleBar
+MinimizeButton.BackgroundTransparency = 0.9
+MinimizeButton.Position = UDim2.new(1, -70, 0.5, -12)
+MinimizeButton.Size = UDim2.new(0, 24, 0, 24)
 MinimizeButton.Image = "rbxassetid://9064227139" -- Minimize icon
-MinimizeButton.ImageColor3 = colors.textDim
-MinimizeButton.ZIndex = 3
+MinimizeButton.ImageColor3 = colors.warning
+MinimizeButton.ImageTransparency = 0.2
 
--- Sidebar for navigation
-SideBar.Name = "SideBar"
-SideBar.Parent = MainFrame
-SideBar.BackgroundColor3 = colors.backgroundLight
-SideBar.BorderSizePixel = 0
-SideBar.Position = UDim2.new(0, 0, 0, 35)
-SideBar.Size = UDim2.new(0, 50, 1, -35)
-SideBar.ZIndex = 2
+-- Main content area
+MainContent.Name = "MainContent"
+MainContent.Parent = MainBackground
+MainContent.BackgroundTransparency = 1
+MainContent.Position = UDim2.new(0, 0, 0, 40)
+MainContent.Size = UDim2.new(1, 0, 1, -40)
 
--- Add gradient to sidebar
-SideBarGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 45)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35))
+-- Side navigation
+SideNav.Name = "SideNav"
+SideNav.Parent = MainContent
+SideNav.BackgroundColor3 = colors.primaryDark
+SideNav.BorderSizePixel = 0
+SideNav.Position = UDim2.new(0, 0, 0, 0)
+SideNav.Size = UDim2.new(0, 70, 1, 0)
+
+-- Apply gradient to side nav
+NavGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, colors.primaryDark),
+    ColorSequenceKeypoint.new(1, colors.primary)
 })
-SideBarGradient.Rotation = 0
-SideBarGradient.Parent = SideBar
-
--- Add separator line for sidebar
-SideBarLine.Name = "Line"
-SideBarLine.Parent = SideBar
-SideBarLine.BackgroundColor3 = colors.separator
-SideBarLine.BorderSizePixel = 0
-SideBarLine.Position = UDim2.new(1, -1, 0, 0)
-SideBarLine.Size = UDim2.new(0, 1, 1, 0)
-SideBarLine.ZIndex = 3
-
--- Content frame
-ContentFrame.Name = "ContentFrame"
-ContentFrame.Parent = MainFrame
-ContentFrame.BackgroundColor3 = colors.background
-ContentFrame.BorderSizePixel = 0
-ContentFrame.Position = UDim2.new(0, 50, 0, 35)
-ContentFrame.Size = UDim2.new(1, -50, 1, -35)
-ContentFrame.ZIndex = 2
-
--- Add gradient to content area
-ContentGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 30)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 25))
+NavGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0),
+    NumberSequenceKeypoint.new(1, 0)
 })
-ContentGradient.Rotation = 45
-ContentGradient.Parent = ContentFrame
+NavGradient.Rotation = 0
+NavGradient.Parent = SideNav
 
--- Minimized button (when UI is minimized)
-MinimizedButton.Name = "MinimizedButton"
-MinimizedButton.Parent = LAJHub
-MinimizedButton.BackgroundColor3 = colors.background
-MinimizedButton.BorderSizePixel = 0
-MinimizedButton.Position = UDim2.new(0, 20, 0, 20)
-MinimizedButton.Size = UDim2.new(0, 140, 0, 40)
-MinimizedButton.Font = Enum.Font.GothamBold
-MinimizedButton.Text = "  LAJ HUB"
-MinimizedButton.TextColor3 = colors.accent
-MinimizedButton.TextSize = 16
-MinimizedButton.TextXAlignment = Enum.TextXAlignment.Left
-MinimizedButton.Visible = false
-MinimizedButton.ZIndex = 10
+-- Navigation buttons container
+NavButtonsContainer.Name = "NavButtonsContainer"
+NavButtonsContainer.Parent = SideNav
+NavButtonsContainer.BackgroundTransparency = 1
+NavButtonsContainer.Position = UDim2.new(0, 0, 0, 20)
+NavButtonsContainer.Size = UDim2.new(1, 0, 1, -40)
 
--- Add corner radius to minimized button
-local MinimizedCorner = Instance.new("UICorner")
-MinimizedCorner.CornerRadius = UDim.new(0, 8)
-MinimizedCorner.Parent = MinimizedButton
+NavUILayout.Parent = NavButtonsContainer
+NavUILayout.FillDirection = Enum.FillDirection.Vertical
+NavUILayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+NavUILayout.SortOrder = Enum.SortOrder.LayoutOrder
+NavUILayout.Padding = UDim.new(0, config.navButtonGap)
 
--- Add glow to minimized button
-MinimizedGlow = Instance.new("ImageLabel")
-MinimizedGlow.Name = "Glow"
-MinimizedGlow.Parent = MinimizedButton
+-- Content container
+ContentContainer.Name = "ContentContainer"
+ContentContainer.Parent = MainContent
+ContentContainer.BackgroundTransparency = 1
+ContentContainer.Position = UDim2.new(0, 70, 0, 0)
+ContentContainer.Size = UDim2.new(1, -70, 1, 0)
+ContentContainer.ClipsDescendants = true
+
+-- Content panels
+HomePanel.Name = "HomePanel"
+HomePanel.Parent = ContentContainer
+HomePanel.Active = true
+HomePanel.BackgroundTransparency = 1
+HomePanel.BorderSizePixel = 0
+HomePanel.Position = UDim2.new(0, 0, 0, 0)
+HomePanel.Size = UDim2.new(1, 0, 1, 0)
+HomePanel.ScrollBarThickness = 4
+HomePanel.ScrollBarImageColor3 = colors[config.accentColor]
+HomePanel.Visible = true
+
+HomeUILayout.Parent = HomePanel
+HomeUILayout.SortOrder = Enum.SortOrder.LayoutOrder
+HomeUILayout.Padding = UDim.new(0, 15)
+HomeUILayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+HomeUIScale.Parent = HomePanel
+HomeUIScale.Scale = config.uiScale
+
+GamesPanel.Name = "GamesPanel"
+GamesPanel.Parent = ContentContainer
+GamesPanel.Active = true
+GamesPanel.BackgroundTransparency = 1
+GamesPanel.BorderSizePixel = 0
+GamesPanel.Position = UDim2.new(0, 0, 0, 0)
+GamesPanel.Size = UDim2.new(1, 0, 1, 0)
+GamesPanel.ScrollBarThickness = 4
+GamesPanel.ScrollBarImageColor3 = colors[config.accentColor]
+GamesPanel.Visible = false
+
+GamesUILayout.Parent = GamesPanel
+GamesUILayout.SortOrder = Enum.SortOrder.LayoutOrder
+GamesUILayout.Padding = UDim.new(0, 15)
+GamesUILayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+GamesUIScale.Parent = GamesPanel
+GamesUIScale.Scale = config.uiScale
+
+TeleportPanel.Name = "TeleportPanel"
+TeleportPanel.Parent = ContentContainer
+TeleportPanel.Active = true
+TeleportPanel.BackgroundTransparency = 1
+TeleportPanel.BorderSizePixel = 0
+TeleportPanel.Position = UDim2.new(0, 0, 0, 0)
+TeleportPanel.Size = UDim2.new(1, 0, 1, 0)
+TeleportPanel.ScrollBarThickness = 4
+TeleportPanel.ScrollBarImageColor3 = colors[config.accentColor]
+TeleportPanel.Visible = false
+
+TeleportUILayout.Parent = TeleportPanel
+TeleportUILayout.SortOrder = Enum.SortOrder.LayoutOrder
+TeleportUILayout.Padding = UDim.new(0, 15)
+TeleportUILayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+TeleportUIScale.Parent = TeleportPanel
+TeleportUIScale.Scale = config.uiScale
+
+SettingsPanel.Name = "SettingsPanel"
+SettingsPanel.Parent = ContentContainer
+SettingsPanel.Active = true
+SettingsPanel.BackgroundTransparency = 1
+SettingsPanel.BorderSizePixel = 0
+SettingsPanel.Position = UDim2.new(0, 0, 0, 0)
+SettingsPanel.Size = UDim2.new(1, 0, 1, 0)
+SettingsPanel.ScrollBarThickness = 4
+SettingsPanel.ScrollBarImageColor3 = colors[config.accentColor]
+SettingsPanel.Visible = false
+
+SettingsUILayout.Parent = SettingsPanel
+SettingsUILayout.SortOrder = Enum.SortOrder.LayoutOrder
+SettingsUILayout.Padding = UDim.new(0, 15)
+SettingsUILayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+SettingsUIScale.Parent = SettingsPanel
+SettingsUIScale.Scale = config.uiScale
+
+-- Minimized UI
+MinimizedUI.Name = "MinimizedUI"
+MinimizedUI.Parent = LAJHub
+MinimizedUI.BackgroundColor3 = colors.primaryDark
+MinimizedUI.BorderSizePixel = 0
+MinimizedUI.Position = UDim2.new(0, 20, 0, 20)
+MinimizedUI.Size = UDim2.new(0, 150, 0, 40)
+MinimizedUI.Visible = false
+MinimizedUI.ZIndex = 10
+MinimizedUI.Active = true
+MinimizedUI.Draggable = true
+
+local MinimizedUICorner = Instance.new("UICorner")
+MinimizedUICorner.CornerRadius = UDim.new(0, config.cornerRadius)
+MinimizedUICorner.Parent = MinimizedUI
+
+local MinimizedUIStroke = Instance.new("UIStroke")
+MinimizedUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+MinimizedUIStroke.Color = colors[config.accentColor]
+MinimizedUIStroke.LineJoinMode = Enum.LineJoinMode.Round
+MinimizedUIStroke.Thickness = config.borderThickness
+MinimizedUIStroke.Parent = MinimizedUI
+
+MinimizedGlow.Name = "MinimizedGlow"
+MinimizedGlow.Parent = MinimizedUI
 MinimizedGlow.AnchorPoint = Vector2.new(0.5, 0.5)
 MinimizedGlow.BackgroundTransparency = 1
 MinimizedGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-MinimizedGlow.Size = UDim2.new(1, 15, 1, 15)
-MinimizedGlow.Image = "rbxassetid://7072718362" -- Glow effect
-MinimizedGlow.ImageColor3 = colors.accent
-MinimizedGlow.ImageTransparency = 0.8
+MinimizedGlow.Size = UDim2.new(1, 20, 1, 20)
+MinimizedGlow.Image = "rbxassetid://5028857084"
+MinimizedGlow.ImageColor3 = colors[config.accentColor]
+MinimizedGlow.ImageTransparency = 0.7
 MinimizedGlow.ZIndex = 9
 
--- Profile icon at bottom of sidebar
-ProfileImage.Name = "ProfileImage"
-ProfileImage.Parent = SideBar
-ProfileImage.AnchorPoint = Vector2.new(0.5, 0)
-ProfileImage.BackgroundColor3 = colors.background
-ProfileImage.Position = UDim2.new(0.5, 0, 1, -45)
-ProfileImage.Size = UDim2.new(0, 32, 0, 32)
-ProfileImage.Image = "rbxassetid://7072724538" -- Default user icon
-ProfileImage.ZIndex = 3
+MinimizedLogo.Name = "MinimizedLogo"
+MinimizedLogo.Parent = MinimizedUI
+MinimizedLogo.BackgroundTransparency = 1
+MinimizedLogo.Position = UDim2.new(0, 8, 0, 8)
+MinimizedLogo.Size = UDim2.new(0, 24, 0, 24)
+MinimizedLogo.Image = "rbxassetid://7743878358" -- Logo image
+MinimizedLogo.ImageColor3 = colors[config.accentColor]
+MinimizedLogo.ZIndex = 11
 
--- Add corner radius to profile image
-local ProfileCorner = Instance.new("UICorner")
-ProfileCorner.CornerRadius = UDim.new(1, 0) -- Circle
-ProfileCorner.Parent = ProfileImage
+MinimizedText.Name = "MinimizedText"
+MinimizedText.Parent = MinimizedUI
+MinimizedText.BackgroundTransparency = 1
+MinimizedText.Position = UDim2.new(0, 40, 0, 0)
+MinimizedText.Size = UDim2.new(1, -45, 1, 0)
+MinimizedText.Font = Enum.Font.GothamBold
+MinimizedText.Text = "LAJ HUB"
+MinimizedText.TextColor3 = colors[config.accentColor]
+MinimizedText.TextSize = 16
+MinimizedText.TextXAlignment = Enum.TextXAlignment.Left
+MinimizedText.ZIndex = 11
 
--- Try to set profile image to player's avatar
-local player = game:GetService("Players").LocalPlayer
-if player then
-    pcall(function()
-        ProfileImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" 
-            .. player.UserId .. "&width=100&height=100&format=png"
-    end)
+-- Particles system (ambient floating particles)
+if config.enableParticles then
+    Particles.Name = "ParticleSystem"
+    Particles.Parent = MainBackground
+    Particles.BackgroundTransparency = 1
+    Particles.Size = UDim2.new(1, 0, 1, 0)
+    Particles.ZIndex = 5
+    
+    -- Create particle emitters
+    for i = 1, 15 do
+        local particle = Instance.new("Frame")
+        particle.Name = "Particle_" .. i
+        particle.Parent = Particles
+        particle.BackgroundColor3 = colors[config.accentColor]
+        particle.BackgroundTransparency = math.random(30, 80) / 100
+        particle.BorderSizePixel = 0
+        particle.Position = UDim2.new(math.random(0, 100) / 100, 0, math.random(0, 100) / 100, 0)
+        particle.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5))
+        particle.ZIndex = 4
+        
+        -- Round the particles
+        local particleCorner = Instance.new("UICorner")
+        particleCorner.CornerRadius = UDim.new(1, 0)
+        particleCorner.Parent = particle
+        
+        -- Animate the particle
+        spawn(function()
+            while particle and particle.Parent do
+                -- Random movement speed and direction
+                local xVelocity = math.random(-20, 20) / 100
+                local yVelocity = math.random(-20, 20) / 100
+                local duration = math.random(3, 8)
+                
+                TweenService:Create(particle, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+                    Position = UDim2.new(
+                        math.clamp(particle.Position.X.Scale + xVelocity, 0, 1), 0,
+                        math.clamp(particle.Position.Y.Scale + yVelocity, 0, 1), 0
+                    ),
+                    BackgroundTransparency = math.random(50, 90) / 100
+                }):Play()
+                
+                wait(duration)
+            end
+        end)
+    end
 end
 
--- Navigation buttons setup
--- Home button
-HomeButton.Name = "HomeButton"
-HomeButton.Parent = SideBar
-HomeButton.BackgroundTransparency = 1
-HomeButton.Position = UDim2.new(0, 0, 0, 10)
-HomeButton.Size = UDim2.new(1, 0, 0, 40)
-HomeButton.Font = Enum.Font.SourceSans
-HomeButton.Text = ""
-HomeButton.ZIndex = 3
+-- UTILITY FUNCTIONS
 
-HomeIcon.Name = "Icon"
-HomeIcon.Parent = HomeButton
-HomeIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-HomeIcon.BackgroundTransparency = 1
-HomeIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
-HomeIcon.Size = UDim2.new(0, 20, 0, 20)
-HomeIcon.Image = "rbxassetid://9114126333" -- Home icon
-HomeIcon.ImageColor3 = colors.accent
-HomeIcon.ZIndex = 4
+-- Function to create a navigation button
+local function CreateNavButton(name, icon, tooltip, order)
+    local button = Instance.new("ImageButton")
+    local indicator = Instance.new("Frame")
+    local buttonGlow = Instance.new("ImageLabel")
+    
+    button.Name = name .. "Button"
+    button.Parent = NavButtonsContainer
+    button.BackgroundColor3 = colors.primaryLight
+    button.BackgroundTransparency = 0.9
+    button.BorderSizePixel = 0
+    button.Position = UDim2.new(0.5, -config.navButtonSize/2, 0, 0)
+    button.Size = UDim2.new(0, config.navButtonSize, 0, config.navButtonSize)
+    button.Image = icon or "rbxassetid://9114126333" -- Default home icon
+    button.ImageColor3 = colors.textDim
+    button.LayoutOrder = order or 0
+    button.ZIndex = 5
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, config.cornerRadius)
+    buttonCorner.Parent = button
+    
+    indicator.Name = "Indicator"
+    indicator.Parent = button
+    indicator.BackgroundColor3 = colors[config.accentColor]
+    indicator.BorderSizePixel = 0
+    indicator.Position = UDim2.new(0, -2, 0.5, -15)
+    indicator.Size = UDim2.new(0, 3, 0, 30)
+    indicator.Visible = false
+    indicator.ZIndex = 6
+    
+    local indicatorCorner = Instance.new("UICorner")
+    indicatorCorner.CornerRadius = UDim.new(0, 2)
+    indicatorCorner.Parent = indicator
+    
+    buttonGlow.Name = "Glow"
+    buttonGlow.Parent = button
+    buttonGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    buttonGlow.BackgroundTransparency = 1
+    buttonGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    buttonGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+    buttonGlow.Image = "rbxassetid://5028857084" -- Glow effect
+    buttonGlow.ImageColor3 = colors[config.accentColor]
+    buttonGlow.ImageTransparency = 1 -- Start fully transparent
+    buttonGlow.ZIndex = 4
+    
+    -- Hover and click effects
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.3), {
+            BackgroundTransparency = 0.7,
+            ImageColor3 = colors.text
+        }):Play()
+        
+        TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+            ImageTransparency = 0.7
+        }):Play()
+        
+        -- Show tooltip if enabled
+        if config.showTooltips and tooltip then
+            -- Create tooltip functionality here
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        -- Only fade out if not selected
+        if not indicator.Visible then
+            TweenService:Create(button, TweenInfo.new(0.3), {
+                BackgroundTransparency = 0.9,
+                ImageColor3 = colors.textDim
+            }):Play()
+            
+            TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+                ImageTransparency = 1
+            }):Play()
+        end
+        
+        -- Hide tooltip if showing
+        -- Add tooltip hide code here
+    end)
+    
+    return button, indicator, buttonGlow
+end
 
-HomeIndicator.Name = "Indicator"
-HomeIndicator.Parent = HomeButton
-HomeIndicator.BackgroundColor3 = colors.accent
-HomeIndicator.BorderSizePixel = 0
-HomeIndicator.Position = UDim2.new(0, 0, 0.5, -10)
-HomeIndicator.Size = UDim2.new(0, 2, 0, 20)
-HomeIndicator.ZIndex = 4
-
--- Games button
-GamesButton.Name = "GamesButton"
-GamesButton.Parent = SideBar
-GamesButton.BackgroundTransparency = 1
-GamesButton.Position = UDim2.new(0, 0, 0, 60)
-GamesButton.Size = UDim2.new(1, 0, 0, 40)
-GamesButton.Font = Enum.Font.SourceSans
-GamesButton.Text = ""
-GamesButton.ZIndex = 3
-
-GamesIcon.Name = "Icon"
-GamesIcon.Parent = GamesButton
-GamesIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-GamesIcon.BackgroundTransparency = 1
-GamesIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
-GamesIcon.Size = UDim2.new(0, 20, 0, 20)
-GamesIcon.Image = "rbxassetid://9114138583" -- Game controller icon
-GamesIcon.ImageColor3 = colors.textDim
-GamesIcon.ZIndex = 4
-
-GamesIndicator.Name = "Indicator"
-GamesIndicator.Parent = GamesButton
-GamesIndicator.BackgroundColor3 = colors.accent
-GamesIndicator.BorderSizePixel = 0
-GamesIndicator.Position = UDim2.new(0, 0, 0.5, -10)
-GamesIndicator.Size = UDim2.new(0, 2, 0, 20)
-GamesIndicator.Visible = false
-GamesIndicator.ZIndex = 4
-
--- Teleport button (similar to Ronix Hub)
-TeleportButton.Name = "TeleportButton"
-TeleportButton.Parent = SideBar
-TeleportButton.BackgroundTransparency = 1
-TeleportButton.Position = UDim2.new(0, 0, 0, 110)
-TeleportButton.Size = UDim2.new(1, 0, 0, 40)
-TeleportButton.Font = Enum.Font.SourceSans
-TeleportButton.Text = ""
-TeleportButton.ZIndex = 3
-
-TeleportIcon.Name = "Icon"
-TeleportIcon.Parent = TeleportButton
-TeleportIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-TeleportIcon.BackgroundTransparency = 1
-TeleportIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
-TeleportIcon.Size = UDim2.new(0, 20, 0, 20)
-TeleportIcon.Image = "rbxassetid://9114172721" -- Location pin icon
-TeleportIcon.ImageColor3 = colors.textDim
-TeleportIcon.ZIndex = 4
-
-TeleportIndicator.Name = "Indicator"
-TeleportIndicator.Parent = TeleportButton
-TeleportIndicator.BackgroundColor3 = colors.accent
-TeleportIndicator.BorderSizePixel = 0
-TeleportIndicator.Position = UDim2.new(0, 0, 0.5, -10)
-TeleportIndicator.Size = UDim2.new(0, 2, 0, 20)
-TeleportIndicator.Visible = false
-TeleportIndicator.ZIndex = 4
-
--- Settings button
-SettingsButton.Name = "SettingsButton"
-SettingsButton.Parent = SideBar
-SettingsButton.BackgroundTransparency = 1
-SettingsButton.Position = UDim2.new(0, 0, 0, 160)
-SettingsButton.Size = UDim2.new(1, 0, 0, 40)
-SettingsButton.Font = Enum.Font.SourceSans
-SettingsButton.Text = ""
-SettingsButton.ZIndex = 3
-
-SettingsIcon.Name = "Icon"
-SettingsIcon.Parent = SettingsButton
-SettingsIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-SettingsIcon.BackgroundTransparency = 1
-SettingsIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
-SettingsIcon.Size = UDim2.new(0, 20, 0, 20)
-SettingsIcon.Image = "rbxassetid://9114159200" -- Settings/gear icon
-SettingsIcon.ImageColor3 = colors.textDim
-SettingsIcon.ZIndex = 4
-
-SettingsIndicator.Name = "Indicator"
-SettingsIndicator.Parent = SettingsButton
-SettingsIndicator.BackgroundColor3 = colors.accent
-SettingsIndicator.BorderSizePixel = 0
-SettingsIndicator.Position = UDim2.new(0, 0, 0.5, -10)
-SettingsIndicator.Size = UDim2.new(0, 2, 0, 20)
-SettingsIndicator.Visible = false
-SettingsIndicator.ZIndex = 4
-
--- Content tabs setup
-HomeTab.Name = "HomeTab"
-HomeTab.Parent = ContentFrame
-HomeTab.Active = true
-HomeTab.BackgroundTransparency = 1
-HomeTab.BorderSizePixel = 0
-HomeTab.Size = UDim2.new(1, 0, 1, 0)
-HomeTab.ScrollBarThickness = 0
-HomeTab.Visible = true
-HomeTab.ZIndex = 2
-
-HomeUILayout.Parent = HomeTab
-HomeUILayout.SortOrder = Enum.SortOrder.LayoutOrder
-HomeUILayout.Padding = UDim.new(0, 0)
-
-GamesTab.Name = "GamesTab"
-GamesTab.Parent = ContentFrame
-GamesTab.Active = true
-GamesTab.BackgroundTransparency = 1
-GamesTab.BorderSizePixel = 0
-GamesTab.Size = UDim2.new(1, 0, 1, 0)
-GamesTab.ScrollBarThickness = 4
-GamesTab.ScrollBarImageColor3 = colors.accent
-GamesTab.Visible = false
-GamesTab.ZIndex = 2
-
-GamesUILayout.Parent = GamesTab
-GamesUILayout.SortOrder = Enum.SortOrder.LayoutOrder
-GamesUILayout.Padding = UDim.new(0, 8)
-
-TeleportTab.Name = "TeleportTab"
-TeleportTab.Parent = ContentFrame
-TeleportTab.Active = true
-TeleportTab.BackgroundTransparency = 1
-TeleportTab.BorderSizePixel = 0
-TeleportTab.Size = UDim2.new(1, 0, 1, 0)
-TeleportTab.ScrollBarThickness = 4
-TeleportTab.ScrollBarImageColor3 = colors.accent
-TeleportTab.Visible = false
-TeleportTab.ZIndex = 2
-
-TeleportUILayout.Parent = TeleportTab
-TeleportUILayout.SortOrder = Enum.SortOrder.LayoutOrder
-TeleportUILayout.Padding = UDim.new(0, 8)
-
-SettingsTab.Name = "SettingsTab"
-SettingsTab.Parent = ContentFrame
-SettingsTab.Active = true
-SettingsTab.BackgroundTransparency = 1
-SettingsTab.BorderSizePixel = 0
-SettingsTab.Size = UDim2.new(1, 0, 1, 0)
-SettingsTab.ScrollBarThickness = 4
-SettingsTab.ScrollBarImageColor3 = colors.accent
-SettingsTab.Visible = false
-SettingsTab.ZIndex = 2
-
-SettingsUILayout.Parent = SettingsTab
-SettingsUILayout.SortOrder = Enum.SortOrder.LayoutOrder
-SettingsUILayout.Padding = UDim.new(0, 8)
-
---[[ UTILITY FUNCTIONS ]]--
-
--- Function to create a header with glow effect
-local function CreateHeader(parent, text, position)
+-- Function to create a section header with animation
+local function CreateSectionHeader(parent, text, layoutOrder)
     local headerFrame = Instance.new("Frame")
     local headerText = Instance.new("TextLabel")
-    local headerGlow = Instance.new("ImageLabel")
+    local headerLine = Instance.new("Frame")
     local headerAccent = Instance.new("Frame")
     
-    headerFrame.Name = "HeaderFrame"
+    headerFrame.Name = text .. "Header"
     headerFrame.Parent = parent
     headerFrame.BackgroundTransparency = 1
-    headerFrame.Position = position or UDim2.new(0, 0, 0, 0)
-    headerFrame.Size = UDim2.new(1, 0, 0, 40)
-    headerFrame.ZIndex = 3
+    headerFrame.Size = UDim2.new(1, -40, 0, 40)
+    headerFrame.LayoutOrder = layoutOrder or 0
     
     headerText.Name = "HeaderText"
     headerText.Parent = headerFrame
     headerText.BackgroundTransparency = 1
-    headerText.Position = UDim2.new(0, 20, 0, 5)
-    headerText.Size = UDim2.new(1, -40, 0, 30)
+    headerText.Position = UDim2.new(0, 0, 0, 0)
+    headerText.Size = UDim2.new(1, 0, 0, 30)
     headerText.Font = Enum.Font.GothamBold
     headerText.Text = text
     headerText.TextColor3 = colors.text
     headerText.TextSize = 22
     headerText.TextXAlignment = Enum.TextXAlignment.Left
-    headerText.ZIndex = 4
     
-    headerGlow.Name = "Glow"
-    headerGlow.Parent = headerText
-    headerGlow.AnchorPoint = Vector2.new(0, 0.5)
-    headerGlow.BackgroundTransparency = 1
-    headerGlow.Position = UDim2.new(0, -5, 0.5, 0)
-    headerGlow.Size = UDim2.new(1.1, 10, 1.5, 0)
-    headerGlow.Image = "rbxassetid://7072718362" -- Glow effect
-    headerGlow.ImageColor3 = colors.accent
-    headerGlow.ImageTransparency = 0.85
-    headerGlow.ZIndex = 3
+    headerLine.Name = "Line"
+    headerLine.Parent = headerFrame
+    headerLine.BackgroundColor3 = colors.uiHighlight
+    headerLine.BorderSizePixel = 0
+    headerLine.Position = UDim2.new(0, 0, 0, 35)
+    headerLine.Size = UDim2.new(1, 0, 0, 1)
     
     headerAccent.Name = "Accent"
     headerAccent.Parent = headerFrame
-    headerAccent.BackgroundColor3 = colors.accent
+    headerAccent.BackgroundColor3 = colors[config.accentColor]
     headerAccent.BorderSizePixel = 0
-    headerAccent.Position = UDim2.new(0, 20, 0, 37)
-    headerAccent.Size = UDim2.new(0, 50, 0, 2)
-    headerAccent.ZIndex = 4
+    headerAccent.Position = UDim2.new(0, 0, 0, 35)
+    headerAccent.Size = UDim2.new(0, 0, 0, 2)
     
-    -- Add subtle animation to the accent line
+    -- Animate the accent line
     spawn(function()
-        while headerAccent and headerAccent.Parent do
-            TweenService:Create(headerAccent, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 100, 0, 2)
-            }):Play()
-            wait(1.5)
-            TweenService:Create(headerAccent, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 50, 0, 2)
-            }):Play()
-            wait(1.5)
-        end
+        TweenService:Create(headerAccent, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0.3, 0, 0, 2)
+        }):Play()
     end)
     
     return headerFrame
 end
 
 -- Function to create a card container
-local function CreateCard(parent, title, description, size)
-    local cardFrame = Instance.new("Frame")
-    local cardGradient = Instance.new("UIGradient")
+local function CreateCard(parent, title, layoutOrder, transparentBg)
+    local card = Instance.new("Frame")
     local cardCorner = Instance.new("UICorner")
+    local cardStroke = Instance.new("UIStroke")
     local cardTitle = Instance.new("TextLabel")
-    local cardDescription = Instance.new("TextLabel")
+    local cardGlow = Instance.new("ImageLabel")
+    local cardContent = Instance.new("Frame")
     
-    cardFrame.Name = "Card"
-    cardFrame.Parent = parent
-    cardFrame.BackgroundColor3 = colors.backgroundLight
-    cardFrame.Size = size or UDim2.new(1, -40, 0, 100)
-    cardFrame.Position = UDim2.new(0, 20, 0, 0) -- Will be positioned by UI layout
-    cardFrame.ZIndex = 3
+    card.Name = title .. "Card"
+    card.Parent = parent
+    card.BackgroundColor3 = transparentBg and colors.transparent or colors.primaryLight
+    card.BackgroundTransparency = transparentBg and 1 or 0.2
+    card.Size = UDim2.new(1, -40, 0, 100) -- Height will be adjusted based on content
+    card.LayoutOrder = layoutOrder or 0
+    card.ClipsDescendants = false
     
-    cardGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 45)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35))
-    })
-    cardGradient.Rotation = 45
-    cardGradient.Parent = cardFrame
+    cardCorner.CornerRadius = UDim.new(0, config.cornerRadius)
+    cardCorner.Parent = card
     
-    cardCorner.CornerRadius = UDim.new(0, 8)
-    cardCorner.Parent = cardFrame
+    cardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    cardStroke.Color = colors[config.accentColor]
+    cardStroke.LineJoinMode = Enum.LineJoinMode.Round
+    cardStroke.Thickness = config.borderThickness
+    cardStroke.Transparency = 0.7
+    cardStroke.Parent = card
+    
+    cardGlow.Name = "Glow"
+    cardGlow.Parent = card
+    cardGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    cardGlow.BackgroundTransparency = 1
+    cardGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    cardGlow.Size = UDim2.new(1, 20, 1, 20)
+    cardGlow.Image = "rbxassetid://5028857084" -- Glow effect
+    cardGlow.ImageColor3 = colors[config.accentColor]
+    cardGlow.ImageTransparency = 0.93
+    cardGlow.ZIndex = 0
     
     cardTitle.Name = "Title"
-    cardTitle.Parent = cardFrame
+    cardTitle.Parent = card
     cardTitle.BackgroundTransparency = 1
     cardTitle.Position = UDim2.new(0, 15, 0, 10)
-    cardTitle.Size = UDim2.new(1, -30, 0, 20)
+    cardTitle.Size = UDim2.new(1, -30, 0, 24)
     cardTitle.Font = Enum.Font.GothamBold
     cardTitle.Text = title
-    cardTitle.TextColor3 = colors.accent
+    cardTitle.TextColor3 = colors[config.accentColor]
     cardTitle.TextSize = 16
     cardTitle.TextXAlignment = Enum.TextXAlignment.Left
-    cardTitle.ZIndex = 4
     
-    cardDescription.Name = "Description"
-    cardDescription.Parent = cardFrame
-    cardDescription.BackgroundTransparency = 1
-    cardDescription.Position = UDim2.new(0, 15, 0, 35)
-    cardDescription.Size = UDim2.new(1, -30, 0, 0)
-    cardDescription.Font = Enum.Font.Gotham
-    cardDescription.Text = description
-    cardDescription.TextColor3 = colors.textDim
-    cardDescription.TextSize = 14
-    cardDescription.TextWrapped = true
-    cardDescription.TextXAlignment = Enum.TextXAlignment.Left
-    cardDescription.ZIndex = 4
+    cardContent.Name = "Content"
+    cardContent.Parent = card
+    cardContent.BackgroundTransparency = 1
+    cardContent.Position = UDim2.new(0, 15, 0, 40)
+    cardContent.Size = UDim2.new(1, -30, 1, -50)
     
-    -- Auto-size the description
-    cardDescription.Size = UDim2.new(1, -30, 0, cardDescription.TextBounds.Y + 10)
+    -- Add hover effect
+    card.MouseEnter:Connect(function()
+        TweenService:Create(cardGlow, TweenInfo.new(0.3), {
+            ImageTransparency = 0.85
+        }):Play()
+        
+        TweenService:Create(cardStroke, TweenInfo.new(0.3), {
+            Transparency = 0.5
+        }):Play()
+    end)
     
-    return cardFrame
+    card.MouseLeave:Connect(function()
+        TweenService:Create(cardGlow, TweenInfo.new(0.3), {
+            ImageTransparency = 0.93
+        }):Play()
+        
+        TweenService:Create(cardStroke, TweenInfo.new(0.3), {
+            Transparency = 0.7
+        }):Play()
+    end)
+    
+    return card, cardContent
 end
 
--- Function to create a modern button
-local function CreateButton(parent, text, callback, position, size, accent)
-    local buttonFrame = Instance.new("TextButton")
+-- Function to create a button
+local function CreateButton(parent, text, callback, isAccent, position, size)
+    local button = Instance.new("TextButton")
     local buttonCorner = Instance.new("UICorner")
-    local buttonGradient = Instance.new("UIGradient")
     local buttonGlow = Instance.new("ImageLabel")
     
-    buttonFrame.Name = text .. "Button"
-    buttonFrame.Parent = parent
-    buttonFrame.BackgroundColor3 = accent and colors.accent or colors.button
-    buttonFrame.Position = position or UDim2.new(0, 0, 0, 0)
-    buttonFrame.Size = size or UDim2.new(1, 0, 0, 40)
-    buttonFrame.Font = Enum.Font.GothamBold
-    buttonFrame.Text = text
-    buttonFrame.TextColor3 = accent and colors.background or colors.text
-    buttonFrame.TextSize = 14
-    buttonFrame.AutoButtonColor = false
-    buttonFrame.ZIndex = 5
+    button.Name = text .. "Button"
+    button.Parent = parent
+    button.BackgroundColor3 = isAccent and colors[config.accentColor] or colors.primaryLight
+    button.BorderSizePixel = 0
+    button.Position = position or UDim2.new(0, 0, 0, 0)
+    button.Size = size or UDim2.new(1, 0, 0, 36)
+    button.Font = Enum.Font.GothamBold
+    button.Text = text
+    button.TextColor3 = isAccent and colors.primaryDark or colors.text
+    button.TextSize = 14
+    button.AutoButtonColor = false
     
-    buttonCorner.CornerRadius = UDim.new(0, 6)
-    buttonCorner.Parent = buttonFrame
-    
-    buttonGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, accent and colors.accent or colors.buttonHover),
-        ColorSequenceKeypoint.new(1, accent and colors.accentDark or colors.button)
-    })
-    buttonGradient.Rotation = 90
-    buttonGradient.Parent = buttonFrame
+    buttonCorner.CornerRadius = UDim.new(0, config.cornerRadius)
+    buttonCorner.Parent = button
     
     buttonGlow.Name = "Glow"
-    buttonGlow.Parent = buttonFrame
+    buttonGlow.Parent = button
     buttonGlow.AnchorPoint = Vector2.new(0.5, 0.5)
     buttonGlow.BackgroundTransparency = 1
     buttonGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    buttonGlow.Size = UDim2.new(1, 15, 1, 15)
-    buttonGlow.Image = "rbxassetid://7072718362" -- Glow effect
-    buttonGlow.ImageColor3 = accent and colors.accentGlow or colors.backgroundLight
+    buttonGlow.Size = UDim2.new(1, 10, 1, 10)
+    buttonGlow.Image = "rbxassetid://5028857084" -- Glow effect
+    buttonGlow.ImageColor3 = isAccent and colors[config.accentColor] or colors.uiHighlight
     buttonGlow.ImageTransparency = 0.9
-    buttonGlow.ZIndex = 4
+    buttonGlow.ZIndex = 0
     
-    -- Hover effects
-    buttonFrame.MouseEnter:Connect(function()
-        TweenService:Create(buttonFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = size + UDim2.new(0, 4, 0, 4),
-            Position = position - UDim2.new(0, 2, 0, 2)
+    -- Hover and click effects
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.3), {
+            BackgroundColor3 = isAccent and 
+                colors[config.accentColor]:Lerp(Color3.new(1,1,1), 0.2) or 
+                colors.primaryLight:Lerp(colors[config.accentColor], 0.1)
         }):Play()
         
-        TweenService:Create(buttonGlow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            ImageTransparency = 0.7
+        TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+            ImageTransparency = 0.7,
+            Size = UDim2.new(1, 20, 1, 20)
         }):Play()
     end)
     
-    buttonFrame.MouseLeave:Connect(function()
-        TweenService:Create(buttonFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.3), {
+            BackgroundColor3 = isAccent and colors[config.accentColor] or colors.primaryLight
+        }):Play()
+        
+        TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+            ImageTransparency = 0.9,
+            Size = UDim2.new(1, 10, 1, 10)
+        }):Play()
+    end)
+    
+    button.MouseButton1Down:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.1), {
+            Size = size - UDim2.new(0, 4, 0, 4),
+            Position = position + UDim2.new(0, 2, 0, 2)
+        }):Play()
+    end)
+    
+    button.MouseButton1Up:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.1), {
             Size = size,
             Position = position
         }):Play()
-        
-        TweenService:Create(buttonGlow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            ImageTransparency = 0.9
-        }):Play()
     end)
     
-    -- Button click effect
-    buttonFrame.MouseButton1Down:Connect(function()
-        TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = size - UDim2.new(0, 2, 0, 2),
-            Position = position + UDim2.new(0, 1, 0, 1)
-        }):Play()
+    button.MouseButton1Click:Connect(function()
+        if callback then callback() end
     end)
     
-    buttonFrame.MouseButton1Up:Connect(function()
-        TweenService:Create(buttonFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = size,
-            Position = position
-        }):Play()
-    end)
-    
-    -- Click callback
-    buttonFrame.MouseButton1Click:Connect(callback)
-    
-    return buttonFrame
+    return button
 end
 
 -- Function to create a toggle switch
 local function CreateToggle(parent, text, description, default, callback)
     local toggleFrame = Instance.new("Frame")
-    local toggleTitle = Instance.new("TextLabel")
-    local toggleDescription = Instance.new("TextLabel")
     local toggleButton = Instance.new("TextButton")
-    local toggleCorner = Instance.new("UICorner")
     local toggleInner = Instance.new("Frame")
-    local innerCorner = Instance.new("UICorner")
+    local toggleTitle = Instance.new("TextLabel")
+    local toggleDesc = Instance.new("TextLabel")
     
     toggleFrame.Name = text .. "Toggle"
     toggleFrame.Parent = parent
     toggleFrame.BackgroundTransparency = 1
-    toggleFrame.Size = UDim2.new(1, -40, 0, 70)
-    toggleFrame.Position = UDim2.new(0, 20, 0, 0) -- Will be positioned by UI layout
-    toggleFrame.ZIndex = 3
+    toggleFrame.Size = UDim2.new(1, 0, 0, 50)
     
     toggleTitle.Name = "Title"
     toggleTitle.Parent = toggleFrame
     toggleTitle.BackgroundTransparency = 1
     toggleTitle.Position = UDim2.new(0, 0, 0, 0)
-    toggleTitle.Size = UDim2.new(1, -60, 0, 25)
+    toggleTitle.Size = UDim2.new(1, -60, 0, 20)
     toggleTitle.Font = Enum.Font.GothamBold
     toggleTitle.Text = text
     toggleTitle.TextColor3 = colors.text
-    toggleTitle.TextSize = 16
+    toggleTitle.TextSize = 14
     toggleTitle.TextXAlignment = Enum.TextXAlignment.Left
-    toggleTitle.ZIndex = 4
     
-    toggleDescription.Name = "Description"
-    toggleDescription.Parent = toggleFrame
-    toggleDescription.BackgroundTransparency = 1
-    toggleDescription.Position = UDim2.new(0, 0, 0, 25)
-    toggleDescription.Size = UDim2.new(1, -60, 0, 40)
-    toggleDescription.Font = Enum.Font.Gotham
-    toggleDescription.Text = description
-    toggleDescription.TextColor3 = colors.textDim
-    toggleDescription.TextSize = 14
-    toggleDescription.TextWrapped = true
-    toggleDescription.TextXAlignment = Enum.TextXAlignment.Left
-    toggleDescription.ZIndex = 4
+    toggleDesc.Name = "Description"
+    toggleDesc.Parent = toggleFrame
+    toggleDesc.BackgroundTransparency = 1
+    toggleDesc.Position = UDim2.new(0, 0, 0, 24)
+    toggleDesc.Size = UDim2.new(1, -60, 0, 26)
+    toggleDesc.Font = Enum.Font.Gotham
+    toggleDesc.Text = description
+    toggleDesc.TextColor3 = colors.textDim
+    toggleDesc.TextSize = 12
+    toggleDesc.TextWrapped = true
+    toggleDesc.TextXAlignment = Enum.TextXAlignment.Left
     
-    toggleButton.Name = "ToggleButton"
+    toggleButton.Name = "Button"
     toggleButton.Parent = toggleFrame
-    toggleButton.BackgroundColor3 = default and colors.accent or colors.button
-    toggleButton.Position = UDim2.new(1, -50, 0, 15)
-    toggleButton.Size = UDim2.new(0, 40, 0, 20)
+    toggleButton.BackgroundColor3 = default and colors[config.accentColor] or colors.uiBackground
+    toggleButton.BorderSizePixel = 0
+    toggleButton.Position = UDim2.new(1, -50, 0, 10)
+    toggleButton.Size = UDim2.new(0, 44, 0, 22)
     toggleButton.Text = ""
-    toggleButton.ZIndex = 4
+    toggleButton.AutoButtonColor = false
     
+    local toggleCorner = Instance.new("UICorner")
     toggleCorner.CornerRadius = UDim.new(1, 0)
     toggleCorner.Parent = toggleButton
     
     toggleInner.Name = "Inner"
     toggleInner.Parent = toggleButton
     toggleInner.BackgroundColor3 = colors.text
-    toggleInner.Position = default 
-        and UDim2.new(1, -18, 0.5, -8) 
-        or UDim2.new(0, 2, 0.5, -8)
-    toggleInner.Size = UDim2.new(0, 16, 0, 16)
-    toggleInner.ZIndex = 5
+    toggleInner.BorderSizePixel = 0
+    toggleInner.Position = default and 
+        UDim2.new(1, -20, 0.5, -9) or 
+        UDim2.new(0, 2, 0.5, -9)
+    toggleInner.Size = UDim2.new(0, 18, 0, 18)
     
+    local innerCorner = Instance.new("UICorner")
     innerCorner.CornerRadius = UDim.new(1, 0)
     innerCorner.Parent = toggleInner
     
-    -- Toggle the switch
+    -- Toggle state and animations
     local enabled = default
-    local function updateToggle()
-        TweenService:Create(toggleInner, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Position = enabled 
-                and UDim2.new(1, -18, 0.5, -8) 
-                or UDim2.new(0, 2, 0.5, -8)
-        }):Play()
-        
-        TweenService:Create(toggleButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = enabled and colors.accent or colors.button
-        }):Play()
-        
-        if callback then
-            callback(enabled)
-        end
-    end
-    
     toggleButton.MouseButton1Click:Connect(function()
         enabled = not enabled
-        updateToggle()
+        
+        TweenService:Create(toggleButton, TweenInfo.new(0.3), {
+            BackgroundColor3 = enabled and colors[config.accentColor] or colors.uiBackground
+        }):Play()
+        
+        TweenService:Create(toggleInner, TweenInfo.new(0.3), {
+            Position = enabled and 
+                UDim2.new(1, -20, 0.5, -9) or 
+                UDim2.new(0, 2, 0.5, -9)
+        }):Play()
+        
+        if callback then callback(enabled) end
     end)
     
-    -- Add separator line
-    local separator = Instance.new("Frame")
-    separator.Name = "Separator"
-    separator.Parent = toggleFrame
-    separator.BackgroundColor3 = colors.separator
-    separator.BorderSizePixel = 0
-    separator.Position = UDim2.new(0, 0, 1, -2)
-    separator.Size = UDim2.new(1, 0, 0, 1)
-    separator.ZIndex = 3
-    
-    return toggleButton, enabled
+    return toggleFrame, enabled
 end
 
--- Function to create a dropdown
+-- Function to create a dropdown menu
 local function CreateDropdown(parent, text, options, default, callback)
     local dropFrame = Instance.new("Frame")
     local dropTitle = Instance.new("TextLabel")
     local dropButton = Instance.new("TextButton")
-    local dropCorner = Instance.new("UICorner")
+    local buttonCorner = Instance.new("UICorner")
     local dropIcon = Instance.new("ImageLabel")
     local dropList = Instance.new("Frame")
-    local listCorner = Instance.new("UICorner")
     local listLayout = Instance.new("UIListLayout")
+    local listCorner = Instance.new("UICorner")
     
     dropFrame.Name = text .. "Dropdown"
     dropFrame.Parent = parent
     dropFrame.BackgroundTransparency = 1
-    dropFrame.Size = UDim2.new(1, -40, 0, 60)
-    dropFrame.Position = UDim2.new(0, 20, 0, 0) -- Will be positioned by UI layout
-    dropFrame.ZIndex = 3
+    dropFrame.Size = UDim2.new(1, 0, 0, 60)
     
     dropTitle.Name = "Title"
     dropTitle.Parent = dropFrame
     dropTitle.BackgroundTransparency = 1
     dropTitle.Position = UDim2.new(0, 0, 0, 0)
-    dropTitle.Size = UDim2.new(1, 0, 0, 25)
+    dropTitle.Size = UDim2.new(1, 0, 0, 20)
     dropTitle.Font = Enum.Font.GothamBold
     dropTitle.Text = text
     dropTitle.TextColor3 = colors.text
-    dropTitle.TextSize = 16
+    dropTitle.TextSize = 14
     dropTitle.TextXAlignment = Enum.TextXAlignment.Left
-    dropTitle.ZIndex = 4
     
     dropButton.Name = "Button"
     dropButton.Parent = dropFrame
-    dropButton.BackgroundColor3 = colors.button
-    dropButton.Position = UDim2.new(0, 0, 0, 30)
-    dropButton.Size = UDim2.new(1, 0, 0, 30)
+    dropButton.BackgroundColor3 = colors.uiBackground
+    dropButton.BorderSizePixel = 0
+    dropButton.Position = UDim2.new(0, 0, 0, 25)
+    dropButton.Size = UDim2.new(1, 0, 0, 32)
     dropButton.Font = Enum.Font.Gotham
     dropButton.Text = "  " .. (default or "Select option...")
     dropButton.TextColor3 = colors.text
     dropButton.TextSize = 14
     dropButton.TextXAlignment = Enum.TextXAlignment.Left
-    dropButton.ZIndex = 4
+    dropButton.AutoButtonColor = false
     
-    dropCorner.CornerRadius = UDim.new(0, 6)
-    dropCorner.Parent = dropButton
+    buttonCorner.CornerRadius = UDim.new(0, config.cornerRadius)
+    buttonCorner.Parent = dropButton
     
     dropIcon.Name = "Icon"
     dropIcon.Parent = dropButton
     dropIcon.BackgroundTransparency = 1
-    dropIcon.Position = UDim2.new(1, -25, 0.5, -8)
+    dropIcon.Position = UDim2.new(1, -30, 0.5, -8)
     dropIcon.Size = UDim2.new(0, 16, 0, 16)
-    dropIcon.Image = "rbxassetid://9114291657" -- Dropdown arrow
+    dropIcon.Image = "rbxassetid://9114170143" -- Dropdown arrow
     dropIcon.ImageColor3 = colors.text
-    dropIcon.ZIndex = 5
+    dropIcon.ZIndex = 2
     
     dropList.Name = "List"
     dropList.Parent = dropFrame
-    dropList.BackgroundColor3 = colors.backgroundAlt
+    dropList.BackgroundColor3 = colors.primaryLight
     dropList.BorderSizePixel = 0
-    dropList.Position = UDim2.new(0, 0, 1, 0)
-    dropList.Size = UDim2.new(1, 0, 0, 0) -- Will resize based on content
+    dropList.Position = UDim2.new(0, 0, 0, 60)
+    dropList.Size = UDim2.new(1, 0, 0, 0) -- Will be sized by content
     dropList.Visible = false
     dropList.ZIndex = 10
     dropList.ClipsDescendants = true
     
-    listCorner.CornerRadius = UDim.new(0, 6)
+    listCorner.CornerRadius = UDim.new(0, config.cornerRadius)
     listCorner.Parent = dropList
     
     listLayout.Parent = dropList
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Padding = UDim.new(0, 2)
     
-    -- Create the options
-    local selected = default
-    local maxHeight = 150 -- Maximum dropdown height
+    -- Create option buttons
+    local selectedOption = default
+    local dropOpen = false
+    local maxHeight = 150
     
-    for _, option in ipairs(options) do
+    for i, option in ipairs(options) do
         local optionButton = Instance.new("TextButton")
-        optionButton.Name = option
+        optionButton.Name = option .. "Option"
         optionButton.Parent = dropList
-        optionButton.BackgroundColor3 = colors.button
-        optionButton.Size = UDim2.new(1, -4, 0, 30)
-        optionButton.Position = UDim2.new(0, 2, 0, 0) -- Will be positioned by layout
+        optionButton.BackgroundColor3 = colors.uiBackground
+        optionButton.BorderSizePixel = 0
+        optionButton.Size = UDim2.new(1, 0, 0, 30)
         optionButton.Font = Enum.Font.Gotham
         optionButton.Text = "  " .. option
         optionButton.TextColor3 = colors.text
         optionButton.TextSize = 14
         optionButton.TextXAlignment = Enum.TextXAlignment.Left
         optionButton.ZIndex = 11
+        optionButton.AutoButtonColor = false
         
         local optionCorner = Instance.new("UICorner")
-        optionCorner.CornerRadius = UDim.new(0, 4)
+        optionCorner.CornerRadius = UDim.new(0, config.cornerRadius)
         optionCorner.Parent = optionButton
         
         -- Hover effect
         optionButton.MouseEnter:Connect(function()
             TweenService:Create(optionButton, TweenInfo.new(0.1), {
-                BackgroundColor3 = colors.buttonHover
+                BackgroundColor3 = colors.uiBackground:Lerp(colors[config.accentColor], 0.2)
             }):Play()
         end)
         
         optionButton.MouseLeave:Connect(function()
             TweenService:Create(optionButton, TweenInfo.new(0.1), {
-                BackgroundColor3 = colors.button
+                BackgroundColor3 = colors.uiBackground
             }):Play()
         end)
         
-        -- Select option
+        -- Selection
         optionButton.MouseButton1Click:Connect(function()
-            selected = option
+            selectedOption = option
             dropButton.Text = "  " .. option
             
             -- Close the dropdown
@@ -937,34 +1033,28 @@ local function CreateDropdown(parent, text, options, default, callback)
             
             wait(0.2)
             dropList.Visible = false
+            dropOpen = false
             
-            -- Update dropdown icon
             TweenService:Create(dropIcon, TweenInfo.new(0.2), {
                 Rotation = 0
             }):Play()
             
-            if callback then
-                callback(option)
-            end
+            if callback then callback(option) end
         end)
     end
     
-    -- Toggle dropdown
-    local dropOpen = false
+    -- Toggle dropdown visibility
     dropButton.MouseButton1Click:Connect(function()
         dropOpen = not dropOpen
         
         if dropOpen then
             dropList.Visible = true
-            
-            -- Calculate list height (capped at maxHeight)
             local listHeight = math.min(maxHeight, #options * 32)
             
             TweenService:Create(dropList, TweenInfo.new(0.2), {
                 Size = UDim2.new(1, 0, 0, listHeight)
             }):Play()
             
-            -- Rotate dropdown icon
             TweenService:Create(dropIcon, TweenInfo.new(0.2), {
                 Rotation = 180
             }):Play()
@@ -976,7 +1066,6 @@ local function CreateDropdown(parent, text, options, default, callback)
             wait(0.2)
             dropList.Visible = false
             
-            -- Update dropdown icon
             TweenService:Create(dropIcon, TweenInfo.new(0.2), {
                 Rotation = 0
             }):Play()
@@ -985,35 +1074,34 @@ local function CreateDropdown(parent, text, options, default, callback)
     
     -- Close dropdown when clicking elsewhere
     UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local position = UserInputService:GetMouseLocation()
-            local dropPosition = dropButton.AbsolutePosition
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and dropOpen then
+            local dropPos = dropButton.AbsolutePosition
             local dropSize = dropButton.AbsoluteSize
-            local listPosition = dropList.AbsolutePosition
+            local listPos = dropList.AbsolutePosition
             local listSize = dropList.AbsoluteSize
+            local mousePos = UserInputService:GetMouseLocation()
             
-            -- Check if click is outside dropdown
-            if dropOpen and not (
-                position.X >= dropPosition.X and
-                position.X <= dropPosition.X + dropSize.X and
-                position.Y >= dropPosition.Y and
-                position.Y <= dropPosition.Y + dropSize.Y
+            -- Check if click is outside dropdown and list
+            if not (
+                mousePos.X >= dropPos.X and 
+                mousePos.X <= dropPos.X + dropSize.X and 
+                mousePos.Y >= dropPos.Y and 
+                mousePos.Y <= dropPos.Y + dropSize.Y
             ) and not (
-                position.X >= listPosition.X and
-                position.X <= listPosition.X + listSize.X and
-                position.Y >= listPosition.Y and
-                position.Y <= listPosition.Y + listSize.Y
+                mousePos.X >= listPos.X and 
+                mousePos.X <= listPos.X + listSize.X and 
+                mousePos.Y >= listPos.Y and 
+                mousePos.Y <= listPos.Y + listSize.Y
             ) then
-                dropOpen = false
-                
+                -- Close the dropdown
                 TweenService:Create(dropList, TweenInfo.new(0.2), {
                     Size = UDim2.new(1, 0, 0, 0)
                 }):Play()
                 
                 wait(0.2)
                 dropList.Visible = false
+                dropOpen = false
                 
-                -- Update dropdown icon
                 TweenService:Create(dropIcon, TweenInfo.new(0.2), {
                     Rotation = 0
                 }):Play()
@@ -1021,239 +1109,136 @@ local function CreateDropdown(parent, text, options, default, callback)
         end
     end)
     
-    -- Add separator
-    local separator = Instance.new("Frame")
-    separator.Name = "Separator"
-    separator.Parent = dropFrame
-    separator.BackgroundColor3 = colors.separator
-    separator.BorderSizePixel = 0
-    separator.Position = UDim2.new(0, 0, 1, -2)
-    separator.Size = UDim2.new(1, 0, 0, 1)
-    separator.ZIndex = 4
-    
-    return dropButton, selected
+    return dropFrame, selectedOption
 end
 
--- Function to create a game script button
+-- Function to create a game button
 local function CreateGameButton(parent, name, description, scriptUrl, gameName, icon)
-    local gameButton = Instance.new("Frame")
-    local buttonBG = Instance.new("Frame")
-    local bgCorner = Instance.new("UICorner")
+    local card, content = CreateCard(parent, name, nil, true)
+    card.Size = UDim2.new(1, -40, 0, 80)
+    
+    -- Remove default title
+    card.Title:Destroy()
+    
+    -- Create custom game button content
     local gameIcon = Instance.new("ImageLabel")
-    local gameTitle = Instance.new("TextLabel")
-    local gameDesc = Instance.new("TextLabel")
-    local executeButton = Instance.new("TextButton")
-    local executeCorner = Instance.new("UICorner")
-    local executeGradient = Instance.new("UIGradient")
-    
-    gameButton.Name = gameName .. "Button"
-    gameButton.Parent = parent
-    gameButton.BackgroundTransparency = 1
-    gameButton.Size = UDim2.new(1, -40, 0, 80)
-    gameButton.Position = UDim2.new(0, 20, 0, 0) -- Positioned by UI layout
-    gameButton.ZIndex = 3
-    
-    buttonBG.Name = "Background"
-    buttonBG.Parent = gameButton
-    buttonBG.BackgroundColor3 = colors.backgroundLight
-    buttonBG.BorderSizePixel = 0
-    buttonBG.Size = UDim2.new(1, 0, 1, 0)
-    buttonBG.ZIndex = 3
-    
-    bgCorner.CornerRadius = UDim.new(0, 8)
-    bgCorner.Parent = buttonBG
-    
-    -- Add hover effect gradient
-    local bgGradient = Instance.new("UIGradient")
-    bgGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 45)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35))
-    })
-    bgGradient.Rotation = 45
-    bgGradient.Parent = buttonBG
-    
     gameIcon.Name = "Icon"
-    gameIcon.Parent = buttonBG
+    gameIcon.Parent = content
     gameIcon.BackgroundTransparency = 1
-    gameIcon.Position = UDim2.new(0, 15, 0.5, -15)
+    gameIcon.Position = UDim2.new(0, 0, 0, 0)
     gameIcon.Size = UDim2.new(0, 30, 0, 30)
-    gameIcon.Image = icon or getsynasset(9114138583) -- Game icon
-    gameIcon.ImageColor3 = colors.accent
-    gameIcon.ZIndex = 4
+    gameIcon.Image = icon or "rbxassetid://7743878966" -- Game icon
+    gameIcon.ImageColor3 = colors[config.accentColor]
     
+    local gameTitle = Instance.new("TextLabel")
     gameTitle.Name = "Title"
-    gameTitle.Parent = buttonBG
+    gameTitle.Parent = content
     gameTitle.BackgroundTransparency = 1
-    gameTitle.Position = UDim2.new(0, 60, 0, 15)
-    gameTitle.Size = UDim2.new(1, -170, 0, 20)
+    gameTitle.Position = UDim2.new(0, 40, 0, 0)
+    gameTitle.Size = UDim2.new(1, -150, 0, 20)
     gameTitle.Font = Enum.Font.GothamBold
     gameTitle.Text = name
     gameTitle.TextColor3 = colors.text
     gameTitle.TextSize = 16
     gameTitle.TextXAlignment = Enum.TextXAlignment.Left
-    gameTitle.ZIndex = 4
     
+    local gameDesc = Instance.new("TextLabel")
     gameDesc.Name = "Description"
-    gameDesc.Parent = buttonBG
+    gameDesc.Parent = content
     gameDesc.BackgroundTransparency = 1
-    gameDesc.Position = UDim2.new(0, 60, 0, 40)
-    gameDesc.Size = UDim2.new(1, -170, 0, 25)
+    gameDesc.Position = UDim2.new(0, 40, 0, 25)
+    gameDesc.Size = UDim2.new(1, -150, 0, 30)
     gameDesc.Font = Enum.Font.Gotham
-    gameDesc.Text = description or "Run this script for " .. gameName
+    gameDesc.Text = description or "Run script for " .. gameName
     gameDesc.TextColor3 = colors.textDim
-    gameDesc.TextSize = 14
+    gameDesc.TextSize = 12
     gameDesc.TextWrapped = true
     gameDesc.TextXAlignment = Enum.TextXAlignment.Left
-    gameDesc.ZIndex = 4
     
-    executeButton.Name = "ExecuteButton"
-    executeButton.Parent = buttonBG
-    executeButton.BackgroundColor3 = colors.accent
-    executeButton.Position = UDim2.new(1, -100, 0.5, -17)
-    executeButton.Size = UDim2.new(0, 85, 0, 34)
-    executeButton.Font = Enum.Font.GothamBold
-    executeButton.Text = "EXECUTE"
-    executeButton.TextColor3 = colors.background
-    executeButton.TextSize = 14
-    executeButton.ZIndex = 5
-    executeButton.AutoButtonColor = false
+    local executeButton = CreateButton(
+        content,
+        "EXECUTE",
+        function()
+            pcall(function()
+                loadstring(game:HttpGet(scriptUrl, true))()
+            end)
+            
+            Notify(gameName, "Script loaded successfully!", 3, "success")
+        end,
+        true,
+        UDim2.new(1, -100, 0, 0),
+        UDim2.new(0, 90, 0, 36)
+    )
     
-    executeCorner.CornerRadius = UDim.new(0, 6)
-    executeCorner.Parent = executeButton
-    
-    executeGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, colors.accent),
-        ColorSequenceKeypoint.new(1, colors.accentDark)
-    })
-    executeGradient.Rotation = 90
-    executeGradient.Parent = executeButton
-    
-    -- Add glow to execute button
-    local executeGlow = Instance.new("ImageLabel")
-    executeGlow.Name = "Glow"
-    executeGlow.Parent = executeButton
-    executeGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-    executeGlow.BackgroundTransparency = 1
-    executeGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    executeGlow.Size = UDim2.new(1, 10, 1, 10)
-    executeGlow.Image = "rbxassetid://7072718362" -- Glow effect
-    executeGlow.ImageColor3 = colors.accentGlow
-    executeGlow.ImageTransparency = 0.7
-    executeGlow.ZIndex = 4
-    
-    -- Hover effects
-    buttonBG.MouseEnter:Connect(function()
-        TweenService:Create(bgGradient, TweenInfo.new(0.2), {
-            Rotation = 135
+    -- Add hover effect
+    card.MouseEnter:Connect(function()
+        TweenService:Create(gameTitle, TweenInfo.new(0.3), {
+            Position = UDim2.new(0, 43, 0, 0)
         }):Play()
         
-        TweenService:Create(gameTitle, TweenInfo.new(0.2), {
-            Position = UDim2.new(0, 63, 0, 15)
+        TweenService:Create(gameIcon, TweenInfo.new(0.3), {
+            ImageColor3 = colors[config.accentColor]:Lerp(Color3.new(1,1,1), 0.2)
         }):Play()
     end)
     
-    buttonBG.MouseLeave:Connect(function()
-        TweenService:Create(bgGradient, TweenInfo.new(0.2), {
-            Rotation = 45
+    card.MouseLeave:Connect(function()
+        TweenService:Create(gameTitle, TweenInfo.new(0.3), {
+            Position = UDim2.new(0, 40, 0, 0)
         }):Play()
         
-        TweenService:Create(gameTitle, TweenInfo.new(0.2), {
-            Position = UDim2.new(0, 60, 0, 15)
+        TweenService:Create(gameIcon, TweenInfo.new(0.3), {
+            ImageColor3 = colors[config.accentColor]
         }):Play()
     end)
     
-    executeButton.MouseEnter:Connect(function()
-        TweenService:Create(executeButton, TweenInfo.new(0.2), {
-            Size = UDim2.new(0, 89, 0, 36),
-            Position = UDim2.new(1, -102, 0.5, -18)
-        }):Play()
-        
-        TweenService:Create(executeGlow, TweenInfo.new(0.2), {
-            ImageTransparency = 0.5,
-            Size = UDim2.new(1, 14, 1, 14)
-        }):Play()
-    end)
-    
-    executeButton.MouseLeave:Connect(function()
-        TweenService:Create(executeButton, TweenInfo.new(0.2), {
-            Size = UDim2.new(0, 85, 0, 34),
-            Position = UDim2.new(1, -100, 0.5, -17)
-        }):Play()
-        
-        TweenService:Create(executeGlow, TweenInfo.new(0.2), {
-            ImageTransparency = 0.7,
-            Size = UDim2.new(1, 10, 1, 10)
-        }):Play()
-    end)
-    
-    -- Button click event
-    executeButton.MouseButton1Click:Connect(function()
-        -- Add click effect
-        TweenService:Create(executeButton, TweenInfo.new(0.1), {
-            Size = UDim2.new(0, 81, 0, 32),
-            Position = UDim2.new(1, -98, 0.5, -16)
-        }):Play()
-        
-        wait(0.1)
-        
-        TweenService:Create(executeButton, TweenInfo.new(0.1), {
-            Size = UDim2.new(0, 85, 0, 34),
-            Position = UDim2.new(1, -100, 0.5, -17)
-        }):Play()
-        
-        -- Execute the script
-        pcall(function()
-            loadstring(game:HttpGet(scriptUrl, true))()
-        end)
-        
-        -- Show notification
-        Notify(gameName, "Script loaded successfully!", 3, "success")
-    end)
-    
-    -- Make the whole button clickable
-    buttonBG.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            executeButton.MouseButton1Click:Fire()
-        end
-    end)
-    
-    return gameButton
+    return card
 end
 
 -- Function to create a notification
 local function Notify(title, message, duration, notifType)
-    -- Define colors based on notification type
     local notifColors = {
         success = colors.success,
         error = colors.error,
         warning = colors.warning,
-        info = colors.highlight,
-        default = colors.accent
+        info = colors.accent2,
+        default = colors[config.accentColor]
     }
     
     local color = notifColors[notifType] or notifColors.default
     
-    -- Create notification elements
     local notification = Instance.new("Frame")
     local notifCorner = Instance.new("UICorner")
+    local notifGlow = Instance.new("ImageLabel")
     local notifHeader = Instance.new("Frame")
     local headerCorner = Instance.new("UICorner")
-    local headerGradient = Instance.new("UIGradient")
-    local headerTitle = Instance.new("TextLabel")
     local headerIcon = Instance.new("ImageLabel")
+    local headerTitle = Instance.new("TextLabel")
     local notifBody = Instance.new("TextLabel")
-    local notifGlow = Instance.new("ImageLabel")
+    local progressBar = Instance.new("Frame")
+    local progressFill = Instance.new("Frame")
+    local fillCorner = Instance.new("UICorner")
     
-    notification.Name = "Notification_" .. title
+    notification.Name = "Notification"
     notification.Parent = LAJHub
-    notification.BackgroundColor3 = colors.backgroundAlt
+    notification.BackgroundColor3 = colors.primaryDark
     notification.BorderSizePixel = 0
-    notification.Position = UDim2.new(1, 10, 0.75, -40)
-    notification.Size = UDim2.new(0, 250, 0, 80)
+    notification.Position = UDim2.new(1, 10, 0.75, -50)
+    notification.Size = UDim2.new(0, 280, 0, 100)
     notification.ZIndex = 100
     
-    notifCorner.CornerRadius = UDim.new(0, 8)
+    notifCorner.CornerRadius = UDim.new(0, config.cornerRadius)
     notifCorner.Parent = notification
+    
+    notifGlow.Name = "Glow"
+    notifGlow.Parent = notification
+    notifGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+    notifGlow.BackgroundTransparency = 1
+    notifGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    notifGlow.Size = UDim2.new(1, 20, 1, 20)
+    notifGlow.Image = "rbxassetid://5028857084" -- Glow effect
+    notifGlow.ImageColor3 = color
+    notifGlow.ImageTransparency = 0.7
+    notifGlow.ZIndex = 99
     
     notifHeader.Name = "Header"
     notifHeader.Parent = notification
@@ -1262,21 +1247,9 @@ local function Notify(title, message, duration, notifType)
     notifHeader.Size = UDim2.new(1, 0, 0, 30)
     notifHeader.ZIndex = 101
     
-    headerCorner.CornerRadius = UDim.new(0, 8)
+    headerCorner.CornerRadius = UDim.new(0, config.cornerRadius)
     headerCorner.Parent = notifHeader
     
-    headerGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, color),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(
-            math.max(0, color.R * 255 - 40),
-            math.max(0, color.G * 255 - 40),
-            math.max(0, color.B * 255 - 40)
-        ))
-    })
-    headerGradient.Rotation = 90
-    headerGradient.Parent = notifHeader
-    
-    -- Fix the header corners
     local headerFix = Instance.new("Frame")
     headerFix.Name = "Fix"
     headerFix.Parent = notifHeader
@@ -1286,10 +1259,6 @@ local function Notify(title, message, duration, notifType)
     headerFix.Size = UDim2.new(1, 0, 0.5, 0)
     headerFix.ZIndex = 101
     
-    local fixGradient = headerGradient:Clone()
-    fixGradient.Parent = headerFix
-    
-    -- Choose icon based on notification type
     local iconId
     if notifType == "success" then
         iconId = 9114169441 -- Checkmark
@@ -1315,8 +1284,8 @@ local function Notify(title, message, duration, notifType)
     headerTitle.Name = "Title"
     headerTitle.Parent = notifHeader
     headerTitle.BackgroundTransparency = 1
-    headerTitle.Position = UDim2.new(0, 30, 0, 0)
-    headerTitle.Size = UDim2.new(1, -35, 1, 0)
+    headerTitle.Position = UDim2.new(0, 32, 0, 0)
+    headerTitle.Size = UDim2.new(1, -40, 1, 0)
     headerTitle.Font = Enum.Font.GothamBold
     headerTitle.Text = title
     headerTitle.TextColor3 = colors.text
@@ -1327,8 +1296,8 @@ local function Notify(title, message, duration, notifType)
     notifBody.Name = "Body"
     notifBody.Parent = notification
     notifBody.BackgroundTransparency = 1
-    notifBody.Position = UDim2.new(0, 10, 0, 35)
-    notifBody.Size = UDim2.new(1, -20, 0, 40)
+    notifBody.Position = UDim2.new(0, 12, 0, 40)
+    notifBody.Size = UDim2.new(1, -24, 0, 40)
     notifBody.Font = Enum.Font.Gotham
     notifBody.Text = message
     notifBody.TextColor3 = colors.text
@@ -1336,47 +1305,63 @@ local function Notify(title, message, duration, notifType)
     notifBody.TextWrapped = true
     notifBody.ZIndex = 101
     
-    notifGlow.Name = "Glow"
-    notifGlow.Parent = notification
-    notifGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-    notifGlow.BackgroundTransparency = 1
-    notifGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    notifGlow.Size = UDim2.new(1, 20, 1, 20)
-    notifGlow.Image = "rbxassetid://7072718362" -- Glow effect
-    notifGlow.ImageColor3 = color
-    notifGlow.ImageTransparency = 0.7
-    notifGlow.ZIndex = 99
+    progressBar.Name = "ProgressBar"
+    progressBar.Parent = notification
+    progressBar.BackgroundColor3 = colors.uiBackground
+    progressBar.BorderSizePixel = 0
+    progressBar.Position = UDim2.new(0, 12, 1, -15)
+    progressBar.Size = UDim2.new(1, -24, 0, 5)
+    progressBar.ZIndex = 101
     
-    -- Animation
-    notification:TweenPosition(UDim2.new(1, -270, 0.75, -40), "Out", "Back", 0.5, true)
+    local progressCorner = Instance.new("UICorner")
+    progressCorner.CornerRadius = UDim.new(1, 0)
+    progressCorner.Parent = progressBar
     
-    -- Add subtle pulse effect
+    progressFill.Name = "Fill"
+    progressFill.Parent = progressBar
+    progressFill.BackgroundColor3 = color
+    progressFill.BorderSizePixel = 0
+    progressFill.Size = UDim2.new(1, 0, 1, 0)
+    progressFill.ZIndex = 102
+    
+    fillCorner.CornerRadius = UDim.new(1, 0)
+    fillCorner.Parent = progressFill
+    
+    -- Slide-in animation
+    notification:TweenPosition(UDim2.new(1, -300, 0.75, -50), "Out", "Quart", 0.5, true)
+    
+    -- Progress bar animation
+    TweenService:Create(progressFill, TweenInfo.new(duration or 3, Enum.EasingStyle.Linear), {
+        Size = UDim2.new(0, 0, 1, 0)
+    }):Play()
+    
+    -- Pulse glow effect
     spawn(function()
-        for i = 1, 2 do
+        for i = 1, 3 do
             if not notification or not notification.Parent then break end
             
-            TweenService:Create(notifGlow, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-                ImageTransparency = 0.6,
+            TweenService:Create(notifGlow, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
+                ImageTransparency = 0.5,
                 Size = UDim2.new(1, 30, 1, 30)
             }):Play()
             
-            wait(1)
+            wait(0.8)
             
             if not notification or not notification.Parent then break end
             
-            TweenService:Create(notifGlow, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
+            TweenService:Create(notifGlow, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
                 ImageTransparency = 0.7,
                 Size = UDim2.new(1, 20, 1, 20)
             }):Play()
             
-            wait(1)
+            wait(0.8)
         end
     end)
     
     -- Auto close after duration
     delay(duration or 3, function()
         if notification and notification.Parent then
-            notification:TweenPosition(UDim2.new(1, 10, 0.75, -40), "In", "Back", 0.5, true, function()
+            notification:TweenPosition(UDim2.new(1, 10, 0.75, -50), "In", "Quart", 0.5, true, function()
                 notification:Destroy()
             end)
         end
@@ -1385,247 +1370,260 @@ local function Notify(title, message, duration, notifType)
     return notification
 end
 
---[[ BUILDING THE UI CONTENT ]]--
+-- BUILDING THE UI CONTENT
 
--- Create home tab content
-local homeHeader = CreateHeader(HomeTab, "LAJ HUB Premium", UDim2.new(0, 0, 0, 0))
-
--- Welcome card
-local welcomeCard = CreateCard(
-    HomeTab, 
-    "Welcome to LAJ HUB", 
-    "Your premium script hub for Roblox games. Select a script from the Games tab to get started.",
-    UDim2.new(1, -40, 0, 100)
+-- Create navigation buttons
+local homeBtn, homeIndicator = CreateNavButton(
+    "Home", 
+    "rbxassetid://9114126333", -- Home icon
+    "Home"
 )
-welcomeCard.LayoutOrder = 1
+homeBtn.LayoutOrder = 1
+homeIndicator.Visible = true
+homeBtn.ImageColor3 = colors.text
+homeBtn.BackgroundTransparency = 0.7
 
--- Create a logo display
-local logoFrame = Instance.new("Frame")
-logoFrame.Name = "LogoFrame"
-logoFrame.Parent = HomeTab
-logoFrame.BackgroundTransparency = 1
-logoFrame.Size = UDim2.new(1, -40, 0, 120)
-logoFrame.Position = UDim2.new(0, 20, 0, 0)
-logoFrame.LayoutOrder = 2
+local gamesBtn, gamesIndicator = CreateNavButton(
+    "Games", 
+    "rbxassetid://9114138583", -- Controller icon
+    "Game Scripts"
+)
+gamesBtn.LayoutOrder = 2
 
-local logoImage = Instance.new("ImageLabel")
-logoImage.Name = "Logo"
-logoImage.Parent = logoFrame
-logoImage.BackgroundTransparency = 1
-logoImage.Position = UDim2.new(0.5, -50, 0, 10)
-logoImage.Size = UDim2.new(0, 100, 0, 100)
-logoImage.Image = "rbxassetid://7743878358" -- Shark logo (change to your logo)
-logoImage.ImageColor3 = colors.accent
-logoImage.ZIndex = 4
+local teleportBtn, teleportIndicator = CreateNavButton(
+    "Teleport", 
+    "rbxassetid://9114172721", -- Location icon
+    "Teleport Options"
+)
+teleportBtn.LayoutOrder = 3
 
--- Add glow to logo
-local logoGlow = Instance.new("ImageLabel")
-logoGlow.Name = "Glow"
-logoGlow.Parent = logoImage
-logoGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-logoGlow.BackgroundTransparency = 1
-logoGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-logoGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
-logoGlow.Image = "rbxassetid://7072718362" -- Glow effect
-logoGlow.ImageColor3 = colors.accentGlow
-logoGlow.ImageTransparency = 0.5
-logoGlow.ZIndex = 3
+local settingsBtn, settingsIndicator = CreateNavButton(
+    "Settings", 
+    "rbxassetid://9114159200", -- Settings icon
+    "Settings"
+)
+settingsBtn.LayoutOrder = 4
 
--- Add subtle animation to logo
+-- HOME TAB CONTENT
+-- Welcome section
+local welcomeHeader = CreateSectionHeader(HomePanel, "Welcome to LAJ HUB ELITE", 1)
+
+-- Welcome card with logo
+local welcomeCard, welcomeContent = CreateCard(HomePanel, "Premium Exploit Hub", 2)
+welcomeCard.Size = UDim2.new(1, -40, 0, 200)
+
+-- Create a centered logo
+local centerLogo = Instance.new("ImageLabel")
+centerLogo.Name = "CenterLogo"
+centerLogo.Parent = welcomeContent
+centerLogo.BackgroundTransparency = 1
+centerLogo.Position = UDim2.new(0.5, -60, 0, 0)
+centerLogo.Size = UDim2.new(0, 120, 0, 120)
+centerLogo.Image = "rbxassetid://7743878358" -- Your logo
+centerLogo.ImageColor3 = colors[config.accentColor]
+
+-- Add glow to center logo
+local centerGlow = Instance.new("ImageLabel")
+centerGlow.Name = "Glow"
+centerGlow.Parent = centerLogo
+centerGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+centerGlow.BackgroundTransparency = 1
+centerGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+centerGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+centerGlow.Image = "rbxassetid://5028857084" -- Glow effect
+centerGlow.ImageColor3 = colors[config.accentColor]
+centerGlow.ImageTransparency = 0.4
+centerGlow.ZIndex = 1
+
+-- Add subtle float animation to logo
 spawn(function()
-    while logoImage and logoImage.Parent do
-        TweenService:Create(logoImage, TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-            Rotation = 5
+    while centerLogo and centerLogo.Parent do
+        TweenService:Create(centerLogo, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Position = UDim2.new(0.5, -60, 0, 5)
         }):Play()
         
         wait(2)
         
-        if not logoImage or not logoImage.Parent then break end
+        if not centerLogo or not centerLogo.Parent then break end
         
-        TweenService:Create(logoImage, TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-            Rotation = -5
+        TweenService:Create(centerLogo, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Position = UDim2.new(0.5, -60, 0, -5)
         }):Play()
         
         wait(2)
     end
 end)
 
--- Quick access buttons
-local quickAccessFrame = Instance.new("Frame")
-quickAccessFrame.Name = "QuickAccess"
-quickAccessFrame.Parent = HomeTab
-quickAccessFrame.BackgroundTransparency = 1
-quickAccessFrame.Size = UDim2.new(1, -40, 0, 80)
-quickAccessFrame.Position = UDim2.new(0, 20, 0, 0)
-quickAccessFrame.LayoutOrder = 3
+-- Description text
+local descText = Instance.new("TextLabel")
+descText.Name = "Description"
+descText.Parent = welcomeContent
+descText.BackgroundTransparency = 1
+descText.Position = UDim2.new(0, 0, 0, 130)
+descText.Size = UDim2.new(1, 0, 0, 40)
+descText.Font = Enum.Font.Gotham
+descText.Text = "Your premium script hub for Roblox exploits. Select a game from the Games tab to get started with powerful scripts."
+descText.TextColor3 = colors.textDim
+descText.TextSize = 14
+descText.TextWrapped = true
 
-local quickTitle = Instance.new("TextLabel")
-quickTitle.Name = "Title"
-quickTitle.Parent = quickAccessFrame
-quickTitle.BackgroundTransparency = 1
-quickTitle.Position = UDim2.new(0, 0, 0, 0)
-quickTitle.Size = UDim2.new(1, 0, 0, 30)
-quickTitle.Font = Enum.Font.GothamBold
-quickTitle.Text = "Quick Access"
-quickTitle.TextColor3 = colors.text
-quickTitle.TextSize = 16
-quickTitle.TextXAlignment = Enum.TextXAlignment.Left
-quickTitle.ZIndex = 4
+-- Quick access section
+local quickHeader = CreateSectionHeader(HomePanel, "Quick Access", 3)
 
-local quickButtonsFrame = Instance.new("Frame")
-quickButtonsFrame.Name = "Buttons"
-quickButtonsFrame.Parent = quickAccessFrame
-quickButtonsFrame.BackgroundTransparency = 1
-quickButtonsFrame.Position = UDim2.new(0, 0, 0, 35)
-quickButtonsFrame.Size = UDim2.new(1, 0, 0, 40)
+-- Quick access buttons container
+local quickAccessCard, quickContent = CreateCard(HomePanel, "Popular Scripts", 4)
+quickAccessCard.Size = UDim2.new(1, -40, 0, 100)
 
-local quickLayout = Instance.new("UIListLayout")
-quickLayout.Parent = quickButtonsFrame
-quickLayout.FillDirection = Enum.FillDirection.Horizontal
-quickLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-quickLayout.SortOrder = Enum.SortOrder.LayoutOrder
-quickLayout.Padding = UDim.new(0, 10)
+-- Create a grid layout for quick buttons
+local quickGrid = Instance.new("UIGridLayout")
+quickGrid.Parent = quickContent
+quickGrid.CellPadding = UDim2.new(0, 10, 0, 10)
+quickGrid.CellSize = UDim2.new(0.5, -5, 0, 36)
+quickGrid.SortOrder = Enum.SortOrder.LayoutOrder
 
 -- Quick access buttons
 local bloxFruitsBtn = CreateButton(
-    quickButtonsFrame, 
-    "Blox Fruits", 
+    quickContent,
+    "Blox Fruits",
     function()
-        -- Switch to games tab
-        SwitchTab("GamesButton")
+        -- Execute Blox Fruits script
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        end)
         
-        -- Execute script
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        
-        -- Show notification
         Notify("Blox Fruits", "Script loaded successfully!", 3, "success")
-    }, 
-    UDim2.new(0, 0, 0, 0), 
-    UDim2.new(0, 120, 0, 40), 
-    true -- Use accent color
+    end,
+    true
 )
 bloxFruitsBtn.LayoutOrder = 1
 
 local deadRailsBtn = CreateButton(
-    quickButtonsFrame, 
-    "Dead Rails", 
+    quickContent,
+    "Dead Rails",
     function()
-        -- Switch to games tab
-        SwitchTab("GamesButton")
+        -- Execute Dead Rails script
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        end)
         
-        -- Execute script
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-        
-        -- Show notification
         Notify("Dead Rails", "Script loaded successfully!", 3, "success")
-    }, 
-    UDim2.new(0, 0, 0, 0), 
-    UDim2.new(0, 120, 0, 40), 
-    false -- Use regular color
+    end,
+    false
 )
 deadRailsBtn.LayoutOrder = 2
 
--- Status section
-local statusCard = CreateCard(
-    HomeTab, 
-    "Status", 
-    "Ready to use",
-    UDim2.new(1, -40, 0, 60)
+local muscleLegendsBtn = CreateButton(
+    quickContent,
+    "Muscle Legends",
+    function()
+        -- Execute Muscle Legends script
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        end)
+        
+        Notify("Muscle Legends", "Script loaded successfully!", 3, "success")
+    end,
+    true
 )
-statusCard.LayoutOrder = 4
+muscleLegendsBtn.LayoutOrder = 3
+
+local animeBtn = CreateButton(
+    quickContent,
+    "Anime Scripts",
+    function()
+        -- Show the games tab with Anime scripts
+        SwitchTab("GamesButton")
+    end,
+    false
+)
+animeBtn.LayoutOrder = 4
+
+-- Status card
+local statusCard, statusContent = CreateCard(HomePanel, "Status", 5)
+statusCard.Size = UDim2.new(1, -40, 0, 80)
+
+local statusText = Instance.new("TextLabel")
+statusText.Name = "StatusText"
+statusText.Parent = statusContent
+statusText.BackgroundTransparency = 1
+statusText.Position = UDim2.new(0, 0, 0, 0)
+statusText.Size = UDim2.new(1, -40, 0, 30)
+statusText.Font = Enum.Font.Gotham
+statusText.Text = "Ready to use"
+statusText.TextColor3 = colors.success
+statusText.TextSize = 16
+statusText.TextXAlignment = Enum.TextXAlignment.Left
+
+local gameDetectText = Instance.new("TextLabel")
+gameDetectText.Name = "GameDetectText"
+gameDetectText.Parent = statusContent
+gameDetectText.BackgroundTransparency = 1
+gameDetectText.Position = UDim2.new(0, 0, 0, 30)
+gameDetectText.Size = UDim2.new(1, 0, 0, 20)
+gameDetectText.Font = Enum.Font.Gotham
+gameDetectText.Text = "Auto-detect: Enabled"
+gameDetectText.TextColor3 = colors.textDim
+gameDetectText.TextSize = 14
+gameDetectText.TextXAlignment = Enum.TextXAlignment.Left
 
 local statusIndicator = Instance.new("Frame")
 statusIndicator.Name = "Indicator"
-statusIndicator.Parent = statusCard
+statusIndicator.Parent = statusContent
 statusIndicator.BackgroundColor3 = colors.success
 statusIndicator.BorderSizePixel = 0
-statusIndicator.Position = UDim2.new(1, -30, 0, 15)
-statusIndicator.Size = UDim2.new(0, 15, 0, 15)
-statusIndicator.ZIndex = 5
+statusIndicator.Position = UDim2.new(1, -30, 0, 5)
+statusIndicator.Size = UDim2.new(0, 20, 0, 20)
+statusIndicator.ZIndex = 2
 
 local indicatorCorner = Instance.new("UICorner")
 indicatorCorner.CornerRadius = UDim.new(1, 0)
 indicatorCorner.Parent = statusIndicator
 
--- Pulsing animation for status indicator
+-- Add pulse animation to indicator
 spawn(function()
     while statusIndicator and statusIndicator.Parent do
-        TweenService:Create(statusIndicator, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-            Size = UDim2.new(0, 12, 0, 12),
-            Position = UDim2.new(1, -28.5, 0, 16.5)
+        TweenService:Create(statusIndicator, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Size = UDim2.new(0, 16, 0, 16),
+            Position = UDim2.new(1, -28, 0, 7)
         }):Play()
         
         wait(1)
         
         if not statusIndicator or not statusIndicator.Parent then break end
         
-        TweenService:Create(statusIndicator, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-            Size = UDim2.new(0, 15, 0, 15),
-            Position = UDim2.new(1, -30, 0, 15)
+        TweenService:Create(statusIndicator, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            Size = UDim2.new(0, 20, 0, 20),
+            Position = UDim2.new(1, -30, 0, 5)
         }):Play()
         
         wait(1)
     end
 end)
 
--- Version info
-local versionFrame = Instance.new("Frame")
-versionFrame.Name = "VersionFrame"
-versionFrame.Parent = HomeTab
-versionFrame.BackgroundTransparency = 1
-versionFrame.Size = UDim2.new(1, -40, 0, 30)
-versionFrame.Position = UDim2.new(0, 20, 0, 0)
-versionFrame.LayoutOrder = 100 -- Keep at bottom
+-- GAMES TAB CONTENT
+-- Header
+local gamesHeader = CreateSectionHeader(GamesPanel, "Game Scripts", 1)
 
-local versionText = Instance.new("TextLabel")
-versionText.Name = "Version"
-versionText.Parent = versionFrame
-versionText.BackgroundTransparency = 1
-versionText.Position = UDim2.new(0, 0, 0, 0)
-versionText.Size = UDim2.new(1, 0, 1, 0)
-versionText.Font = Enum.Font.Gotham
-versionText.Text = "LAJ HUB v2.0 Premium | discord.gg/lajhub"
-versionText.TextColor3 = colors.textDim
-versionText.TextSize = 12
-versionText.TextXAlignment = Enum.TextXAlignment.Left
-versionText.ZIndex = 3
-
--- Games tab
-local gamesHeader = CreateHeader(GamesTab, "Game Scripts", UDim2.new(0, 0, 0, 0))
-gamesHeader.LayoutOrder = 0
-
--- Create a search bar
-local searchFrame = Instance.new("Frame")
-searchFrame.Name = "SearchFrame"
-searchFrame.Parent = GamesTab
-searchFrame.BackgroundTransparency = 1
-searchFrame.Size = UDim2.new(1, -40, 0, 50)
-searchFrame.Position = UDim2.new(0, 20, 0, 0)
-searchFrame.LayoutOrder = 1
+-- Search bar
+local searchCard, searchContent = CreateCard(GamesPanel, "Search", 2)
+searchCard.Size = UDim2.new(1, -40, 0, 80)
 
 local searchBar = Instance.new("TextBox")
 searchBar.Name = "SearchBar"
-searchBar.Parent = searchFrame
-searchBar.BackgroundColor3 = colors.backgroundAlt
+searchBar.Parent = searchContent
+searchBar.BackgroundColor3 = colors.primaryDark
 searchBar.BorderSizePixel = 0
-searchBar.Position = UDim2.new(0, 0, 0, 10)
-searchBar.Size = UDim2.new(1, 0, 0, 40)
+searchBar.Position = UDim2.new(0, 0, 0, 5)
+searchBar.Size = UDim2.new(1, 0, 0, 36)
 searchBar.Font = Enum.Font.Gotham
-searchBar.PlaceholderText = "Search scripts..."
+searchBar.PlaceholderText = "Search games..."
 searchBar.Text = ""
 searchBar.TextColor3 = colors.text
 searchBar.TextSize = 14
-searchBar.TextXAlignment = Enum.TextXAlignment.Left
 searchBar.ClearTextOnFocus = false
-searchBar.ZIndex = 4
-
-local searchPadding = Instance.new("UIPadding")
-searchPadding.Parent = searchBar
-searchPadding.PaddingLeft = UDim.new(0, 40)
-searchPadding.PaddingRight = UDim.new(0, 10)
 
 local searchCorner = Instance.new("UICorner")
-searchCorner.CornerRadius = UDim.new(0, 8)
+searchCorner.CornerRadius = UDim.new(0, config.cornerRadius)
 searchCorner.Parent = searchBar
 
 local searchIcon = Instance.new("ImageLabel")
@@ -1636,31 +1634,15 @@ searchIcon.Position = UDim2.new(0, 10, 0.5, -8)
 searchIcon.Size = UDim2.new(0, 16, 0, 16)
 searchIcon.Image = "rbxassetid://9114169121" -- Search icon
 searchIcon.ImageColor3 = colors.textDim
-searchIcon.ZIndex = 5
 
--- Game scripts section
-local scriptsSection = Instance.new("Frame")
-scriptsSection.Name = "ScriptsSection"
-scriptsSection.Parent = GamesTab
-scriptsSection.BackgroundTransparency = 1
-scriptsSection.Size = UDim2.new(1, 0, 0, 30)
-scriptsSection.Position = UDim2.new(0, 0, 0, 0)
-scriptsSection.LayoutOrder = 2
+local searchPadding = Instance.new("UIPadding")
+searchPadding.Parent = searchBar
+searchPadding.PaddingLeft = UDim.new(0, 36)
 
-local sectionTitle = Instance.new("TextLabel")
-sectionTitle.Name = "Title"
-sectionTitle.Parent = scriptsSection
-sectionTitle.BackgroundTransparency = 1
-sectionTitle.Position = UDim2.new(0, 20, 0, 5)
-sectionTitle.Size = UDim2.new(1, -40, 0, 20)
-sectionTitle.Font = Enum.Font.GothamBold
-sectionTitle.Text = "Speed Hub X Scripts"
-sectionTitle.TextColor3 = colors.text
-sectionTitle.TextSize = 16
-sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
-sectionTitle.ZIndex = 4
+-- Popular scripts section
+local popularHeader = CreateSectionHeader(GamesPanel, "Popular Scripts", 3)
 
--- Game script buttons data
+-- Game scripts data
 local gameScripts = {
     {
         name = "Speed Hub X - Blox Fruits",
@@ -1688,7 +1670,7 @@ local gameScripts = {
         description = "Teleports, auto-farm, and more for Fisch",
         url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
         game = "Fisch",
-        icon = getsynasset(7743878358) -- Shark icon for Fisch (shown in reference)
+        icon = getsynasset(7743878358) -- Shark icon for Fisch
     },
     {
         name = "Speed Hub X - Strongest Battlegrounds",
@@ -1730,267 +1712,414 @@ local gameScripts = {
 -- Create game buttons
 for i, script in ipairs(gameScripts) do
     local gameBtn = CreateGameButton(
-        GamesTab,
+        GamesPanel,
         script.name,
         script.description,
         script.url,
         script.game,
         script.icon
     )
-    gameBtn.LayoutOrder = i + 2 -- Start after header and search
+    gameBtn.LayoutOrder = i + 3 -- After headers and search
 end
 
--- Implement search functionality
-searchBar:GetPropertyChangedSignal("Text"):Connect(function()
-    local searchText = string.lower(searchBar.Text)
-    
-    for _, v in ipairs(GamesTab:GetChildren()) do
-        if v:IsA("Frame") and v.Name:match("Button$") then
-            local titleText = string.lower(v.Background.Title.Text)
-            local descText = string.lower(v.Background.Description.Text)
-            
-            if searchText == "" or string.find(titleText, searchText) or string.find(descText, searchText) then
-                v.Visible = true
-            else
-                v.Visible = false
-            end
-        end
-    end
-    
-    -- Update canvas size
-    UpdateCanvasSizes()
-end)
+-- TELEPORT TAB CONTENT (similar to the Ronix Hub in reference)
+-- Header
+local teleportHeader = CreateSectionHeader(TeleportPanel, "Teleport Options", 1)
 
--- Teleport tab (similar to the Ronix Hub in the image)
-local teleportHeader = CreateHeader(TeleportTab, "Teleport Options", UDim2.new(0, 0, 0, 0))
-teleportHeader.LayoutOrder = 0
+-- Create teleport section
+local locationCard, locationContent = CreateCard(TeleportPanel, "Teleport To Location", 2)
+locationCard.Size = UDim2.new(1, -40, 0, 130)
 
--- Create teleport section like in the image
-local teleportCard = CreateCard(
-    TeleportTab,
-    "Teleport To Location",
-    "Click to teleport to the selected location.",
-    UDim2.new(1, -40, 0, 120)
-)
-teleportCard.LayoutOrder = 1
+local locationDesc = Instance.new("TextLabel")
+locationDesc.Name = "Description"
+locationDesc.Parent = locationContent
+locationDesc.BackgroundTransparency = 1
+locationDesc.Position = UDim2.new(0, 0, 0, 0)
+locationDesc.Size = UDim2.new(1, 0, 0, 20)
+locationDesc.Font = Enum.Font.Gotham
+locationDesc.Text = "Click to teleport to the selected location."
+locationDesc.TextColor3 = colors.textDim
+locationDesc.TextSize = 14
+locationDesc.TextXAlignment = Enum.TextXAlignment.Left
 
--- Add dropdown and teleport button
+-- Location dropdown
 local locationDropdown, selectedLocation = CreateDropdown(
-    teleportCard,
+    locationContent,
     "Select Location",
     {"Spawn", "Shop", "Boss Area", "Training Area", "Event Area"},
     nil,
     function(option)
-        -- Will be called when an option is selected
+        -- Will be called when location is selected
         selectedLocation = option
     end
 )
-locationDropdown.Position = UDim2.new(0, 15, 0, 70)
-locationDropdown.Size = UDim2.new(1, -105, 0, 35)
+locationDropdown.Position = UDim2.new(0, 0, 0, 30)
+locationDropdown.Size = UDim2.new(1, 0, 0, 60)
 
-local teleportBtn = CreateButton(
-    teleportCard,
-    "GO",
+-- Teleport button
+local teleportActionBtn = CreateButton(
+    locationContent,
+    "TELEPORT",
     function()
-        -- This is just a placeholder since it's not a real game
+        -- This is just a placeholder
         Notify("Teleport", "Teleporting to " .. (selectedLocation or "selected location") .. "...", 3, "info")
     end,
-    UDim2.new(1, -80, 0, 70),
-    UDim2.new(0, 65, 0, 35),
-    true -- Use accent color
+    true,
+    UDim2.new(0, 0, 0, 95),
+    UDim2.new(1, 0, 0, 36)
 )
 
--- World Events section (similar to the Ronix Hub)
-local eventsCard = CreateCard(
-    TeleportTab,
-    "World Events",
-    "Select and teleport to world events.",
-    UDim2.new(1, -40, 0, 120)
-)
-eventsCard.LayoutOrder = 2
+-- World Events section
+local eventsCard, eventsContent = CreateCard(TeleportPanel, "World Events", 3)
+eventsCard.Size = UDim2.new(1, -40, 0, 130)
 
--- Add dropdown and teleport button for events
+local eventsDesc = Instance.new("TextLabel")
+eventsDesc.Name = "Description"
+eventsDesc.Parent = eventsContent
+eventsDesc.BackgroundTransparency = 1
+eventsDesc.Position = UDim2.new(0, 0, 0, 0)
+eventsDesc.Size = UDim2.new(1, 0, 0, 20)
+eventsDesc.Font = Enum.Font.Gotham
+eventsDesc.Text = "Select and teleport to world events."
+eventsDesc.TextColor3 = colors.textDim
+eventsDesc.TextSize = 14
+eventsDesc.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Events dropdown
 local eventsDropdown, selectedEvent = CreateDropdown(
-    eventsCard,
+    eventsContent,
     "Select World Event",
     {"Raid Boss", "Meteor Shower", "Special Event", "Limited Time Event"},
     nil,
     function(option)
-        -- Will be called when an option is selected
+        -- Will be called when event is selected
         selectedEvent = option
     end
 )
-eventsDropdown.Position = UDim2.new(0, 15, 0, 70)
-eventsDropdown.Size = UDim2.new(1, -105, 0, 35)
+eventsDropdown.Position = UDim2.new(0, 0, 0, 30)
+eventsDropdown.Size = UDim2.new(1, 0, 0, 60)
 
+-- Event teleport button
 local eventTpBtn = CreateButton(
-    eventsCard,
-    "GO",
+    eventsContent,
+    "TELEPORT",
     function()
-        -- This is just a placeholder since it's not a real game
+        -- This is just a placeholder
         Notify("Event", "Teleporting to " .. (selectedEvent or "selected event") .. "...", 3, "info")
     end,
-    UDim2.new(1, -80, 0, 70),
-    UDim2.new(0, 65, 0, 35),
-    true -- Use accent color
+    true,
+    UDim2.new(0, 0, 0, 95),
+    UDim2.new(1, 0, 0, 36)
 )
 
--- Totem section (from the Ronix Hub image)
-local totemCard = CreateCard(
-    TeleportTab,
-    "Totem",
-    "Select and teleport to a totem.",
-    UDim2.new(1, -40, 0, 120)
-)
-totemCard.LayoutOrder = 3
+-- Totem section
+local totemCard, totemContent = CreateCard(TeleportPanel, "Totem", 4)
+totemCard.Size = UDim2.new(1, -40, 0, 130)
 
--- Add dropdown and teleport button for totems
+local totemDesc = Instance.new("TextLabel")
+totemDesc.Name = "Description"
+totemDesc.Parent = totemContent
+totemDesc.BackgroundTransparency = 1
+totemDesc.Position = UDim2.new(0, 0, 0, 0)
+totemDesc.Size = UDim2.new(1, 0, 0, 20)
+totemDesc.Font = Enum.Font.Gotham
+totemDesc.Text = "Select and teleport to a totem."
+totemDesc.TextColor3 = colors.textDim
+totemDesc.TextSize = 14
+totemDesc.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Totem dropdown
 local totemDropdown, selectedTotem = CreateDropdown(
-    totemCard,
+    totemContent,
     "Select A Totem",
     {"Fire Totem", "Water Totem", "Earth Totem", "Air Totem"},
     nil,
     function(option)
-        -- Will be called when an option is selected
+        -- Will be called when totem is selected
         selectedTotem = option
     end
 )
-totemDropdown.Position = UDim2.new(0, 15, 0, 70)
-totemDropdown.Size = UDim2.new(1, -105, 0, 35)
+totemDropdown.Position = UDim2.new(0, 0, 0, 30)
+totemDropdown.Size = UDim2.new(1, 0, 0, 60)
 
+-- Totem teleport button
 local totemTpBtn = CreateButton(
-    totemCard,
-    "GO",
+    totemContent,
+    "TELEPORT",
     function()
-        -- This is just a placeholder since it's not a real game
+        -- This is just a placeholder
         Notify("Totem", "Teleporting to " .. (selectedTotem or "selected totem") .. "...", 3, "info")
     end,
-    UDim2.new(1, -80, 0, 70),
-    UDim2.new(0, 65, 0, 35),
-    true -- Use accent color
+    true,
+    UDim2.new(0, 0, 0, 95),
+    UDim2.new(1, 0, 0, 36)
 )
 
--- Settings tab content
-local settingsHeader = CreateHeader(SettingsTab, "Settings", UDim2.new(0, 0, 0, 0))
-settingsHeader.LayoutOrder = 0
+-- SETTINGS TAB CONTENT
+-- Header
+local settingsHeader = CreateSectionHeader(SettingsPanel, "Settings", 1)
 
 -- UI Settings section
-local uiSettingsLabel = Instance.new("TextLabel")
-uiSettingsLabel.Name = "UISettingsLabel"
-uiSettingsLabel.Parent = SettingsTab
-uiSettingsLabel.BackgroundTransparency = 1
-uiSettingsLabel.Position = UDim2.new(0, 20, 0, 0)
-uiSettingsLabel.Size = UDim2.new(1, -40, 0, 30)
-uiSettingsLabel.Font = Enum.Font.GothamBold
-uiSettingsLabel.Text = "UI Settings"
-uiSettingsLabel.TextColor3 = colors.accent
-uiSettingsLabel.TextSize = 16
-uiSettingsLabel.TextXAlignment = Enum.TextXAlignment.Left
-uiSettingsLabel.ZIndex = 4
-uiSettingsLabel.LayoutOrder = 1
+local uiSettingsCard, uiContent = CreateCard(SettingsPanel, "UI Settings", 2)
+uiSettingsCard.Size = UDim2.new(1, -40, 0, 220)
 
--- Create toggles for settings
+-- Create toggle switches
 local topMostToggle, topMostEnabled = CreateToggle(
-    SettingsTab,
+    uiContent,
     "Keep UI On Top",
     "Keep the UI visible and on top of other elements at all times.",
     true,
     function(enabled)
-        -- Update the display order
+        -- Update display order
         LAJHub.DisplayOrder = enabled and 999 or 0
     end
 )
-topMostToggle.LayoutOrder = 2
+
+local blurToggle, blurEnabled = CreateToggle(
+    uiContent,
+    "Background Blur",
+    "Apply a blur effect to the game when the UI is open.",
+    config.enableBlur,
+    function(enabled)
+        -- Toggle blur effect
+        config.enableBlur = enabled
+        BlurEffect.Enabled = enabled
+        BlurEffect.Size = enabled and config.blurIntensity or 0
+    end
+)
+blurToggle.Position = UDim2.new(0, 0, 0, 60)
 
 local notificationsToggle, notificationsEnabled = CreateToggle(
-    SettingsTab,
+    uiContent,
     "Show Notifications",
     "Display notifications when scripts are loaded or actions completed.",
     true,
     function(enabled)
-        -- Will be checked before showing notifications
+        -- Toggle notifications
     end
 )
-notificationsToggle.LayoutOrder = 3
+notificationsToggle.Position = UDim2.new(0, 0, 0, 120)
 
-local autoDetectToggle, autoDetectEnabled = CreateToggle(
-    SettingsTab,
-    "Auto-Detect Game",
-    "Automatically detect the current game and load the appropriate script.",
-    true,
+local particlesToggle, particlesEnabled = CreateToggle(
+    uiContent,
+    "UI Particles",
+    "Show ambient particles in the UI background for enhanced visual effect.",
+    config.enableParticles,
     function(enabled)
-        -- Will be used when checking for auto-detect
+        -- Toggle particles
+        config.enableParticles = enabled
+        if Particles then
+            Particles.Visible = enabled
+        end
     end
 )
-autoDetectToggle.LayoutOrder = 4
+particlesToggle.Position = UDim2.new(0, 0, 0, 180)
 
 -- Appearance section
-local appearanceLabel = Instance.new("TextLabel")
-appearanceLabel.Name = "AppearanceLabel"
-appearanceLabel.Parent = SettingsTab
-appearanceLabel.BackgroundTransparency = 1
-appearanceLabel.Position = UDim2.new(0, 20, 0, 0)
-appearanceLabel.Size = UDim2.new(1, -40, 0, 30)
-appearanceLabel.Font = Enum.Font.GothamBold
-appearanceLabel.Text = "Appearance"
-appearanceLabel.TextColor3 = colors.accent
-appearanceLabel.TextSize = 16
-appearanceLabel.TextXAlignment = Enum.TextXAlignment.Left
-appearanceLabel.ZIndex = 4
-appearanceLabel.LayoutOrder = 5
+local appearanceCard, appearanceContent = CreateCard(SettingsPanel, "Appearance", 3)
+appearanceCard.Size = UDim2.new(1, -40, 0, 180)
 
 -- Theme selector
 local themeDropdown, selectedTheme = CreateDropdown(
-    SettingsTab,
+    appearanceContent,
     "Theme",
-    {"Dark Purple (Default)", "Dark Blue", "Dark Red", "Dark Green"},
-    "Dark Purple (Default)",
+    {"Elite Purple", "Cyan Tech", "Hot Pink"},
+    "Elite Purple",
     function(option)
-        -- Could implement theme changing functionality here
-        Notify("Theme", "Changed theme to " .. option, 3, "info")
+        -- Change theme
+        local themeIndex = 1
+        for i, theme in ipairs(config.themePresets) do
+            if theme.name == option then
+                themeIndex = i
+                break
+            end
+        end
+        
+        -- Apply theme
+        local theme = config.themePresets[themeIndex]
+        config.accentColor = theme.primary
+        config.currentTheme = themeIndex
+        
+        -- Update UI elements with new color
+        local elements = {
+            OuterBorder, InnerBorder, GlowEffect, BackgroundPattern, LogoGlow, Logo, 
+            TitleText, HomeIndicator, GamesIndicator, TeleportIndicator, SettingsIndicator
+        }
+        
+        for _, element in ipairs(elements) do
+            if element.Visible ~= false then -- Only update visible indicators
+                TweenService:Create(element, TweenInfo.new(0.5), {
+                    Color = colors[config.accentColor]
+                }):Play()
+            end
+        end
+        
+        -- Update the minimized UI
+        TweenService:Create(MinimizedUIStroke, TweenInfo.new(0.5), {
+            Color = colors[config.accentColor]
+        }):Play()
+        
+        TweenService:Create(MinimizedLogo, TweenInfo.new(0.5), {
+            ImageColor3 = colors[config.accentColor]
+        }):Play()
+        
+        TweenService:Create(MinimizedText, TweenInfo.new(0.5), {
+            TextColor3 = colors[config.accentColor]
+        }):Play()
+        
+        TweenService:Create(MinimizedGlow, TweenInfo.new(0.5), {
+            ImageColor3 = colors[config.accentColor]
+        }):Play()
+        
+        Notify("Theme", "Changed to " .. option .. " theme", 3, "success")
     end
 )
-themeDropdown.LayoutOrder = 6
+themeDropdown.Position = UDim2.new(0, 0, 0, 0)
 
--- Animation toggle
-local animationsToggle, animationsEnabled = CreateToggle(
-    SettingsTab,
-    "UI Animations",
-    "Enable or disable UI animations and effects.",
-    true,
-    function(enabled)
-        -- Could implement animation toggling
+-- UI Scale slider
+local scaleLabel = Instance.new("TextLabel")
+scaleLabel.Name = "ScaleLabel"
+scaleLabel.Parent = appearanceContent
+scaleLabel.BackgroundTransparency = 1
+scaleLabel.Position = UDim2.new(0, 0, 0, 70)
+scaleLabel.Size = UDim2.new(1, 0, 0, 20)
+scaleLabel.Font = Enum.Font.GothamBold
+scaleLabel.Text = "UI Scale: " .. config.uiScale
+scaleLabel.TextColor3 = colors.text
+scaleLabel.TextSize = 14
+scaleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local scaleFrame = Instance.new("Frame")
+scaleFrame.Name = "ScaleFrame"
+scaleFrame.Parent = appearanceContent
+scaleFrame.BackgroundColor3 = colors.uiBackground
+scaleFrame.BorderSizePixel = 0
+scaleFrame.Position = UDim2.new(0, 0, 0, 95)
+scaleFrame.Size = UDim2.new(1, 0, 0, 10)
+
+local scaleCorner = Instance.new("UICorner")
+scaleCorner.CornerRadius = UDim.new(1, 0)
+scaleCorner.Parent = scaleFrame
+
+local scaleBar = Instance.new("Frame")
+scaleBar.Name = "ScaleBar"
+scaleBar.Parent = scaleFrame
+scaleBar.BackgroundColor3 = colors[config.accentColor]
+scaleBar.BorderSizePixel = 0
+scaleBar.Position = UDim2.new(0, 0, 0, 0)
+scaleBar.Size = UDim2.new(config.uiScale, 0, 1, 0)
+
+local scaleBarCorner = Instance.new("UICorner")
+scaleBarCorner.CornerRadius = UDim.new(1, 0)
+scaleBarCorner.Parent = scaleBar
+
+local scaleKnob = Instance.new("Frame")
+scaleKnob.Name = "ScaleKnob"
+scaleKnob.Parent = scaleFrame
+scaleKnob.BackgroundColor3 = colors.text
+scaleKnob.BorderSizePixel = 0
+scaleKnob.Position = UDim2.new(config.uiScale, -10, 0.5, -10)
+scaleKnob.Size = UDim2.new(0, 20, 0, 20)
+scaleKnob.ZIndex = 2
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 0)
+knobCorner.Parent = scaleKnob
+
+local knobGlow = Instance.new("ImageLabel")
+knobGlow.Name = "Glow"
+knobGlow.Parent = scaleKnob
+knobGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+knobGlow.BackgroundTransparency = 1
+knobGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+knobGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
+knobGlow.Image = "rbxassetid://5028857084" -- Glow effect
+knobGlow.ImageColor3 = colors[config.accentColor]
+knobGlow.ImageTransparency = 0.7
+knobGlow.ZIndex = 1
+
+-- Make scale slider draggable
+local isDraggingScale = false
+scaleFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDraggingScale = true
     end
+end)
+
+scaleFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDraggingScale = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if isDraggingScale and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local scale = math.clamp((input.Position.X - scaleFrame.AbsolutePosition.X) / scaleFrame.AbsoluteSize.X, 0.5, 1.5)
+        
+        -- Update UI scale
+        config.uiScale = scale
+        scaleLabel.Text = "UI Scale: " .. string.format("%.2f", scale)
+        
+        -- Update slider visuals
+        scaleBar.Size = UDim2.new(scale, 0, 1, 0)
+        scaleKnob.Position = UDim2.new(scale, -10, 0.5, -10)
+        
+        -- Apply scale to UI elements
+        HomeUIScale.Scale = scale
+        GamesUIScale.Scale = scale
+        TeleportUIScale.Scale = scale
+        SettingsUIScale.Scale = scale
+    end
+end)
+
+-- Reset button
+local resetBtn = CreateButton(
+    appearanceContent,
+    "Reset to Default",
+    function()
+        -- Reset UI settings
+        config.uiScale = 1
+        config.accentColor = "accent1"
+        config.currentTheme = 1
+        
+        -- Update UI
+        HomeUIScale.Scale = 1
+        GamesUIScale.Scale = 1
+        TeleportUIScale.Scale = 1
+        SettingsUIScale.Scale = 1
+        
+        -- Update slider
+        scaleLabel.Text = "UI Scale: 1.00"
+        scaleBar.Size = UDim2.new(1, 0, 1, 0)
+        scaleKnob.Position = UDim2.new(1, -10, 0.5, -10)
+        
+        Notify("Settings", "Reset UI to default settings", 3, "info")
+    end,
+    false,
+    UDim2.new(0, 0, 0, 120),
+    UDim2.new(1, 0, 0, 36)
 )
-animationsToggle.LayoutOrder = 7
 
 -- About section
-local aboutLabel = Instance.new("TextLabel")
-aboutLabel.Name = "AboutLabel"
-aboutLabel.Parent = SettingsTab
-aboutLabel.BackgroundTransparency = 1
-aboutLabel.Position = UDim2.new(0, 20, 0, 0)
-aboutLabel.Size = UDim2.new(1, -40, 0, 30)
-aboutLabel.Font = Enum.Font.GothamBold
-aboutLabel.Text = "About"
-aboutLabel.TextColor3 = colors.accent
-aboutLabel.TextSize = 16
-aboutLabel.TextXAlignment = Enum.TextXAlignment.Left
-aboutLabel.ZIndex = 4
-aboutLabel.LayoutOrder = 8
+local aboutCard, aboutContent = CreateCard(SettingsPanel, "About", 4)
+aboutCard.Size = UDim2.new(1, -40, 0, 150)
 
--- About info card
-local aboutCard = CreateCard(
-    SettingsTab,
-    "LAJ HUB Premium",
-    "Version 2.0\nDeveloped by LAJ HUB Team\ndiscord.gg/lajhub",
-    UDim2.new(1, -40, 0, 100)
-)
-aboutCard.LayoutOrder = 9
+local aboutText = Instance.new("TextLabel")
+aboutText.Name = "AboutText"
+aboutText.Parent = aboutContent
+aboutText.BackgroundTransparency = 1
+aboutText.Position = UDim2.new(0, 0, 0, 0)
+aboutText.Size = UDim2.new(1, 0, 0, 60)
+aboutText.Font = Enum.Font.Gotham
+aboutText.Text = "LAJ HUB ELITE " .. config.version .. "\nDeveloped by LAJ HUB Team\ndiscord.gg/lajhub"
+aboutText.TextColor3 = colors.textDim
+aboutText.TextSize = 14
+aboutText.TextXAlignment = Enum.TextXAlignment.Left
+aboutText.TextYAlignment = Enum.TextYAlignment.Top
 
 -- Discord button
 local discordBtn = CreateButton(
-    aboutCard,
+    aboutContent,
     "Join Discord",
     function()
         if setclipboard then
@@ -2000,19 +2129,30 @@ local discordBtn = CreateButton(
             Notify("Discord", "Copy to clipboard not supported", 3, "error")
         end
     end,
-    UDim2.new(0, 15, 0, 65),
-    UDim2.new(1, -30, 0, 30),
-    true -- Use accent color
+    true,
+    UDim2.new(0, 0, 0, 70),
+    UDim2.new(1, 0, 0, 36)
 )
 
---[[ UI FUNCTIONALITY ]]--
+-- Support button
+local supportBtn = CreateButton(
+    aboutContent,
+    "Support Development",
+    function()
+        Notify("Support", "Thank you for supporting LAJ HUB development!", 3, "success")
+    end,
+    false,
+    UDim2.new(0, 0, 0, 116),
+    UDim2.new(1, 0, 0, 36)
+)
 
+-- UI FUNCTIONALITY
 -- Function to update canvas sizes
-function UpdateCanvasSizes()
-    HomeTab.CanvasSize = UDim2.new(0, 0, 0, HomeUILayout.AbsoluteContentSize.Y + 20)
-    GamesTab.CanvasSize = UDim2.new(0, 0, 0, GamesUILayout.AbsoluteContentSize.Y + 20)
-    TeleportTab.CanvasSize = UDim2.new(0, 0, 0, TeleportUILayout.AbsoluteContentSize.Y + 20)
-    SettingsTab.CanvasSize = UDim2.new(0, 0, 0, SettingsUILayout.AbsoluteContentSize.Y + 20)
+local function UpdateCanvasSizes()
+    HomePanel.CanvasSize = UDim2.new(0, 0, 0, HomeUILayout.AbsoluteContentSize.Y + 20)
+    GamesPanel.CanvasSize = UDim2.new(0, 0, 0, GamesUILayout.AbsoluteContentSize.Y + 20)
+    TeleportPanel.CanvasSize = UDim2.new(0, 0, 0, TeleportUILayout.AbsoluteContentSize.Y + 20)
+    SettingsPanel.CanvasSize = UDim2.new(0, 0, 0, SettingsUILayout.AbsoluteContentSize.Y + 20)
 end
 
 -- Update canvas sizes when content changes
@@ -2021,33 +2161,33 @@ GamesUILayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanv
 TeleportUILayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvasSizes)
 SettingsUILayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvasSizes)
 
--- Tab switching logic
+-- Tab switching
 local tabs = {
-    HomeButton = HomeTab,
-    GamesButton = GamesTab,
-    TeleportButton = TeleportTab,
-    SettingsButton = SettingsTab
+    HomeButton = HomePanel,
+    GamesButton = GamesPanel,
+    TeleportButton = TeleportPanel,
+    SettingsButton = SettingsPanel
 }
 
 local indicators = {
-    HomeButton = HomeIndicator,
-    GamesButton = GamesIndicator,
-    TeleportButton = TeleportIndicator,
-    SettingsButton = SettingsIndicator
+    HomeButton = homeIndicator,
+    GamesButton = gamesIndicator,
+    TeleportButton = teleportIndicator,
+    SettingsButton = settingsIndicator
 }
 
 local icons = {
-    HomeButton = HomeIcon,
-    GamesButton = GamesIcon,
-    TeleportButton = TeleportIcon,
-    SettingsButton = SettingsIcon
+    HomeButton = homeBtn:FindFirstChild("Icon"),
+    GamesButton = gamesBtn:FindFirstChild("Icon"),
+    TeleportButton = teleportBtn:FindFirstChild("Icon"),
+    SettingsButton = settingsBtn:FindFirstChild("Icon")
 }
 
 -- Function to switch tabs
-function SwitchTab(buttonName)
+local function SwitchTab(buttonName)
     local button
     if type(buttonName) == "string" then
-        button = SideBar:FindFirstChild(buttonName)
+        button = NavButtonsContainer:FindFirstChild(buttonName)
     else
         button = buttonName
     end
@@ -2055,122 +2195,141 @@ function SwitchTab(buttonName)
     if not button then return end
     
     -- Hide all tabs
-    for _, tab in pairs(tabs) do
+    for name, tab in pairs(tabs) do
         tab.Visible = false
     end
     
-    -- Hide all indicators
-    for _, indicator in pairs(indicators) do
+    -- Hide all indicators and reset icon colors
+    for name, indicator in pairs(indicators) do
         indicator.Visible = false
-    end
-    
-    -- Reset all icon colors
-    for _, icon in pairs(icons) do
-        icon.ImageColor3 = colors.textDim
+        
+        if name ~= button.Name then
+            -- Reset non-selected buttons
+            local btn = NavButtonsContainer:FindFirstChild(name)
+            if btn then
+                TweenService:Create(btn, TweenInfo.new(0.3), {
+                    BackgroundTransparency = 0.9,
+                    ImageColor3 = colors.textDim
+                }):Play()
+                
+                local glow = btn:FindFirstChild("Glow")
+                if glow then
+                    TweenService:Create(glow, TweenInfo.new(0.3), {
+                        ImageTransparency = 1
+                    }):Play()
+                end
+            end
+        end
     end
     
     -- Show selected tab
     tabs[button.Name].Visible = true
     
-    -- Show selected indicator
+    -- Show selected indicator and highlight button
     indicators[button.Name].Visible = true
     
-    -- Highlight selected icon
-    icons[button.Name].ImageColor3 = colors.accent
+    TweenService:Create(button, TweenInfo.new(0.3), {
+        BackgroundTransparency = 0.7,
+        ImageColor3 = colors.text
+    }):Play()
+    
+    local buttonGlow = button:FindFirstChild("Glow")
+    if buttonGlow then
+        TweenService:Create(buttonGlow, TweenInfo.new(0.3), {
+            ImageTransparency = 0.7
+        }):Play()
+    end
     
     -- Update canvas sizes
     UpdateCanvasSizes()
 }
 
--- Set up button click events
-HomeButton.MouseButton1Click:Connect(function()
-    SwitchTab(HomeButton)
+-- Set up tab buttons
+homeBtn.MouseButton1Click:Connect(function()
+    SwitchTab(homeBtn)
 end)
 
-GamesButton.MouseButton1Click:Connect(function()
-    SwitchTab(GamesButton)
+gamesBtn.MouseButton1Click:Connect(function()
+    SwitchTab(gamesBtn)
 end)
 
-TeleportButton.MouseButton1Click:Connect(function()
-    SwitchTab(TeleportButton)
+teleportBtn.MouseButton1Click:Connect(function()
+    SwitchTab(teleportBtn)
 end)
 
-SettingsButton.MouseButton1Click:Connect(function()
-    SwitchTab(SettingsButton)
+settingsBtn.MouseButton1Click:Connect(function()
+    SwitchTab(settingsBtn)
+end)
+
+-- Implement game search functionality
+searchBar:GetPropertyChangedSignal("Text"):Connect(function()
+    local searchText = string.lower(searchBar.Text)
+    
+    for _, v in ipairs(GamesPanel:GetChildren()) do
+        if v:IsA("Frame") and v.Name:match("Card$") and v:FindFirstChild("Content") then
+            local content = v:FindFirstChild("Content")
+            local title = content:FindFirstChild("Title")
+            local desc = content:FindFirstChild("Description")
+            
+            if title and desc then
+                local titleText = string.lower(title.Text)
+                local descText = string.lower(desc.Text)
+                
+                if searchText == "" or string.find(titleText, searchText) or string.find(descText, searchText) then
+                    v.Visible = true
+                else
+                    v.Visible = false
+                end
+            end
+        end
+    end
+    
+    -- Update canvas size
+    UpdateCanvasSizes()
 end)
 
 -- Minimize/maximize functionality
 MinimizeButton.MouseButton1Click:Connect(function()
-    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-        Position = UDim2.new(0.5, -275, 1.5, 0)
+    -- Minimize animation
+    TweenService:Create(MainContainer, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        Position = UDim2.new(1.5, 0, 0.5, -225)
     }):Play()
     
     wait(0.5)
-    MainFrame.Visible = false
-    MinimizedButton.Visible = true
+    MainContainer.Visible = false
     
-    -- Animate minimized button in
-    MinimizedButton.Position = UDim2.new(0, -150, 0, 20)
-    TweenService:Create(MinimizedButton, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    -- Show minimized button
+    MinimizedUI.Visible = true
+    MinimizedUI.Position = UDim2.new(0, -160, 0, 20)
+    
+    TweenService:Create(MinimizedUI, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Position = UDim2.new(0, 20, 0, 20)
     }):Play()
 end)
 
-MinimizedButton.MouseButton1Click:Connect(function()
-    MinimizedButton.Visible = false
-    MainFrame.Visible = true
-    MainFrame.Position = UDim2.new(0.5, -275, 1.5, 0)
+MinimizedUI.MouseButton1Click:Connect(function()
+    -- Hide minimized button with animation
+    TweenService:Create(MinimizedUI, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        Position = UDim2.new(0, -160, 0, 20)
+    }):Play()
     
-    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, -275, 0.5, -175)
+    wait(0.3)
+    MinimizedUI.Visible = false
+    
+    -- Show main UI with animation
+    MainContainer.Visible = true
+    MainContainer.Position = UDim2.new(1.5, 0, 0.5, -225)
+    
+    TweenService:Create(MainContainer, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, -400, 0.5, -225)
     }):Play()
 end)
 
--- Make the minimized button draggable
-local MinimizedDragging = false
-local MinimizedDragInput
-local MinimizedDragStart
-local MinimizedStartPos
-
-MinimizedButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        MinimizedDragging = true
-        MinimizedDragStart = input.Position
-        MinimizedStartPos = MinimizedButton.Position
-    end
-end)
-
-MinimizedButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        MinimizedDragging = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if MinimizedDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        MinimizedDragInput = input
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if MinimizedDragging and MinimizedDragInput then
-        local delta = MinimizedDragInput.Position - MinimizedDragStart
-        TweenService:Create(MinimizedButton, TweenInfo.new(0.2), {
-            Position = UDim2.new(
-                MinimizedStartPos.X.Scale,
-                MinimizedStartPos.X.Offset + delta.X,
-                MinimizedStartPos.Y.Scale,
-                MinimizedStartPos.Y.Offset + delta.Y
-            )
-        }):Play()
-    end
-end)
-
--- Close button functionality
+-- Close button
 CloseButton.MouseButton1Click:Connect(function()
-    -- Tween the UI out
-    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-        Position = UDim2.new(0.5, -275, -0.5, 0)
+    -- Fade out animation
+    TweenService:Create(MainContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        Position = UDim2.new(0.5, -400, 1.5, 0)
     }):Play()
     
     -- Fade out blur
@@ -2191,22 +2350,25 @@ local function AutoDetectGame()
     for _, script in ipairs(gameScripts) do
         local lowerName = string.lower(script.game)
         if string.find(gameName, lowerName) then
-            -- Show appropriate notification
+            -- Update status
+            statusText.Text = "Detected: " .. script.game
+            
+            -- Show notification
             Notify("Game Detected", "Found compatible game: " .. script.game, 3, "info")
             
-            -- Auto-load if enabled
-            if autoDetectEnabled then
-                wait(1)
-                SwitchTab("GamesButton")
-                
-                -- Find and execute the script
-                for _, v in ipairs(GamesTab:GetChildren()) do
-                    if v:IsA("Frame") and v.Name == script.game .. "Button" then
-                        -- Simulate clicking the execute button
-                        v.Background.ExecuteButton.MouseButton1Click:Fire()
-                        break
-                    end
-                end
+            -- Check if auto-load is enabled through toggle in settings
+            if topMostEnabled then
+                -- Execute after a short delay
+                delay(2, function()
+                    SwitchTab("GamesButton")
+                    
+                    -- Execute script
+                    pcall(function()
+                        loadstring(game:HttpGet(script.url, true))()
+                    end)
+                    
+                    Notify(script.game, "Script loaded successfully!", 3, "success")
+                end)
             end
             
             return true
@@ -2218,14 +2380,17 @@ end
 
 -- Initialize UI
 UpdateCanvasSizes()
-SwitchTab(HomeButton)
+SwitchTab(homeBtn)
 
 -- Show welcome notification
-Notify("LAJ HUB Premium", "Welcome to LAJ HUB Premium! Select a script to get started.", 4, "default")
+Notify("LAJ HUB ELITE", "Welcome to the most advanced script hub for Roblox exploits!", 4, "default")
 
 -- Try to auto-detect game
-wait(1)
-AutoDetectGame()
+delay(1, function()
+    if not AutoDetectGame() then
+        statusText.Text = "Ready to use"
+    end
+end)
 
--- Return the UI (for future reference)
+-- Return the hub for later access
 return LAJHub
