@@ -1,10 +1,20 @@
---[[
-    LAJ HUB Modern UI
-    A sleek, modern dark purple/black UI for script loading
-    Features easy game selection with automatic script loading
+0--[[
+    LAJ HUB Modern UI (Ronix Style)
+    Clean, minimalist UI inspired by Ronix Hub design
+    
+    Features:
+    - Simple, clean interface with dark theme
+    - Modern navigation with clear visual indicators
+    - Focused design for better usability
+    - Streamlined game script execution
 ]]
 
--- Create the UI
+-- Services
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- UI Elements
 local LAJHub = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local TopBar = Instance.new("Frame")
@@ -12,19 +22,17 @@ local TitleLabel = Instance.new("TextLabel")
 local CloseButton = Instance.new("TextButton")
 local Shadow = Instance.new("ImageLabel")
 local SideBar = Instance.new("Frame")
-local HomeButton = Instance.new("TextButton")
-local HomeIcon = Instance.new("ImageLabel")
-local GamesButton = Instance.new("TextButton")
-local GamesIcon = Instance.new("ImageLabel")
-local CreditsButton = Instance.new("TextButton")
-local CreditsIcon = Instance.new("ImageLabel")
-local SettingsButton = Instance.new("TextButton")
-local SettingsIcon = Instance.new("ImageLabel")
+local HomeButton = Instance.new("ImageButton")
+local HomeIndicator = Instance.new("Frame")
+local GamesButton = Instance.new("ImageButton")
+local GamesIndicator = Instance.new("Frame")
+local SettingsButton = Instance.new("ImageButton")
+local SettingsIndicator = Instance.new("Frame")
 local ContentFrame = Instance.new("Frame")
 
 -- Home Page
 local HomePage = Instance.new("Frame")
-local WelcomeLabel = Instance.new("TextLabel")
+local LogoContainer = Instance.new("Frame")
 local LogoImage = Instance.new("ImageLabel")
 local DescriptionLabel = Instance.new("TextLabel")
 local QuickAccessLabel = Instance.new("TextLabel")
@@ -33,56 +41,40 @@ local QuickBloxFruits = Instance.new("TextButton")
 local QuickDeadRails = Instance.new("TextButton")
 
 -- Games Page
-local GamesPage = Instance.new("Frame")
-local GamesList = Instance.new("ScrollingFrame")
+local GamesPage = Instance.new("ScrollingFrame")
 local GamesUIListLayout = Instance.new("UIListLayout")
-local GamesLabel = Instance.new("TextLabel")
-local GameSearchBar = Instance.new("TextBox")
-local SearchIcon = Instance.new("ImageLabel")
-
--- Credits Page
-local CreditsPage = Instance.new("Frame")
-local CreditsLabel = Instance.new("TextLabel")
-local DeveloperLabel = Instance.new("TextLabel")
-local DeveloperName = Instance.new("TextLabel")
-local DiscordLabel = Instance.new("TextLabel")
-local DiscordLink = Instance.new("TextLabel")
-local CopyDiscordButton = Instance.new("TextButton")
-local VersionLabel = Instance.new("TextLabel")
+local GamesUIPadding = Instance.new("UIPadding")
 
 -- Settings Page
 local SettingsPage = Instance.new("Frame")
-local SettingsLabel = Instance.new("TextLabel")
-local ThemeLabel = Instance.new("TextLabel")
-local ThemeDropdown = Instance.new("TextButton")
-local ThemeOptions = Instance.new("Frame")
+local SettingsTitle = Instance.new("TextLabel")
+local AutoLoadContainer = Instance.new("Frame")
 local AutoLoadLabel = Instance.new("TextLabel")
-local AutoLoadToggle = Instance.new("TextButton")
-local AutoLoadStatus = Instance.new("TextLabel")
+local AutoLoadToggle = Instance.new("Frame")
+local AutoLoadBall = Instance.new("Frame")
+local VersionLabel = Instance.new("TextLabel")
+local DiscordLabel = Instance.new("TextLabel")
 
--- Ultra Premium Modern UI Colors
+-- Animation settings
+local TweenInfo_Default = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local TweenInfo_Long = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+-- Clean Ronix-style UI Colors
 local colors = {
-    background = Color3.fromRGB(12, 6, 24),       -- Ultra dark background
-    sideBar = Color3.fromRGB(10, 4, 20),          -- Nearly black sidebar
-    topBar = Color3.fromRGB(18, 10, 32),          -- Slightly lighter top bar
-    accent = Color3.fromRGB(170, 60, 255),        -- Vibrant neon purple
-    accentLight = Color3.fromRGB(200, 120, 255),  -- Light purple for highlights
-    accentDark = Color3.fromRGB(110, 40, 190),    -- Deep purple for depth
-    accentSecondary = Color3.fromRGB(0, 210, 255),-- Cyan accent for contrast
-    accentTertiary = Color3.fromRGB(255, 60, 120),-- Pink accent for special elements
-    text = Color3.fromRGB(250, 250, 255),         -- Crisp white text
-    subText = Color3.fromRGB(190, 190, 220),      -- Soft purplish gray
-    button = Color3.fromRGB(24, 12, 45),          -- Deep button background
-    buttonHover = Color3.fromRGB(45, 22, 80),     -- Lighter button hover
-    buttonActive = Color3.fromRGB(70, 35, 120),   -- Bright active state
-    buttonGradientTop = Color3.fromRGB(40, 20, 70),-- Button gradient top
-    buttonGradientBottom = Color3.fromRGB(25, 10, 50),-- Button gradient bottom
-    success = Color3.fromRGB(20, 230, 120),       -- Neon green
-    warning = Color3.fromRGB(255, 200, 40),       -- Bright yellow
-    error = Color3.fromRGB(255, 50, 50),          -- Bright red
-    shadow = Color3.fromRGB(0, 0, 0),             -- Shadow color
-    glow = Color3.fromRGB(170, 70, 255),          -- Glow effect color
-    glowIntense = Color3.fromRGB(190, 90, 255)    -- Intense glow for highlights
+    background = Color3.fromRGB(25, 25, 35),       -- Dark background
+    sideBar = Color3.fromRGB(30, 30, 40),          -- Slightly lighter sidebar
+    topBar = Color3.fromRGB(30, 30, 40),           -- Same as sidebar for consistency
+    accent = Color3.fromRGB(115, 86, 209),         -- Purple accent
+    accentLight = Color3.fromRGB(135, 100, 235),   -- Light purple for highlights
+    accentDark = Color3.fromRGB(93, 68, 175),      -- Darker purple
+    text = Color3.fromRGB(255, 255, 255),          -- White text
+    subText = Color3.fromRGB(200, 200, 220),       -- Dimmed text
+    border = Color3.fromRGB(50, 50, 70),           -- Border color
+    button = Color3.fromRGB(45, 45, 65),           -- Button background
+    buttonHover = Color3.fromRGB(55, 55, 75),      -- Button hover
+    success = Color3.fromRGB(65, 190, 110),        -- Green
+    error = Color3.fromRGB(215, 65, 65),           -- Red
+    shadow = Color3.fromRGB(10, 10, 18)            -- Shadow color
 }
 
 -- Set properties
@@ -117,40 +109,27 @@ TopBar.BackgroundColor3 = colors.topBar
 TopBar.BorderSizePixel = 0
 TopBar.Size = UDim2.new(1, 0, 0, 30)
 
--- Enhanced Title with Gradient Effect
+-- Simple title (Ronix style)
 TitleLabel.Name = "TitleLabel"
 TitleLabel.Parent = TopBar
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Position = UDim2.new(0, 10, 0, 0)
 TitleLabel.Size = UDim2.new(1, -40, 1, 0)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "LAJ HUB PREMIUM"
-TitleLabel.TextColor3 = colors.accentLight
-TitleLabel.TextSize = 18
+TitleLabel.Text = "Welcome to LAJ HUB"
+TitleLabel.TextColor3 = colors.text
+TitleLabel.TextSize = 16
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Add title glow effect
-local TitleGlow = Instance.new("ImageLabel")
-TitleGlow.Name = "TitleGlow"
-TitleGlow.Parent = TitleLabel
-TitleGlow.BackgroundTransparency = 1
-TitleGlow.Position = UDim2.new(0, -5, 0, -5)
-TitleGlow.Size = UDim2.new(1, 10, 1, 10)
-TitleGlow.Image = "rbxassetid://5028857084" -- Glow texture
-TitleGlow.ImageColor3 = colors.accent
-TitleGlow.ImageTransparency = 0.8
-TitleGlow.ZIndex = 0
 
 CloseButton.Name = "CloseButton"
 CloseButton.Parent = TopBar
-CloseButton.BackgroundColor3 = colors.error
-CloseButton.BorderSizePixel = 0
-CloseButton.Position = UDim2.new(1, -25, 0.5, -7)
-CloseButton.Size = UDim2.new(0, 15, 0, 15)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Position = UDim2.new(1, -25, 0.5, -8)
+CloseButton.Size = UDim2.new(0, 16, 0, 16)
 CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Text = "X"
+CloseButton.Text = "✕"
 CloseButton.TextColor3 = colors.text
-CloseButton.TextSize = 12
+CloseButton.TextSize = 14
 CloseButton.MouseButton1Click:Connect(function()
     LAJHub:Destroy()
 end)
@@ -179,24 +158,12 @@ Shadow.ImageTransparency = 0.4
 Shadow.ScaleType = Enum.ScaleType.Slice
 Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
 
--- Add outer glow effect
-local OuterGlow = Instance.new("ImageLabel")
-OuterGlow.Name = "OuterGlow"
-OuterGlow.Parent = MainFrame
-OuterGlow.BackgroundTransparency = 1
-OuterGlow.Position = UDim2.new(0, -10, 0, -10)
-OuterGlow.Size = UDim2.new(1, 20, 1, 20)
-OuterGlow.ZIndex = -2
-OuterGlow.Image = "rbxassetid://5028857084" -- Soft glow
-OuterGlow.ImageColor3 = colors.glow
-OuterGlow.ImageTransparency = 0.7
-
--- Add UI Stroke for better borders
+-- Add simple border (Ronix style is cleaner, less glowy)
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Parent = MainFrame
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-MainStroke.Color = colors.accentLight
-MainStroke.Thickness = 1.5
+MainStroke.Color = colors.border
+MainStroke.Thickness = 1
 MainStroke.Transparency = 0.7
 
 -- Create Sidebar
