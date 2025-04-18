@@ -1,5 +1,4 @@
----date ts
-
+---date 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
  
 local Window = Rayfield:CreateWindow({
@@ -316,223 +315,343 @@ MainTab:CreateButton({
     end
 })
  
--- Create alternative pathfinding-based item collection instead of teleportation
--- This approach has the player naturally walk to items rather than teleporting
-local PathfindingService = game:GetService("PathfindingService")
+-- Create Item ESP system instead of movement-based collection
+-- This will highlight items so you can find them naturally
 
--- Create a new "Go To Item" function that uses pathfinding instead of teleporting
-local function GoToItem(target)
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    if not character then return end
+-- Container for all visual elements
+local ESPFolder = Instance.new("Folder")
+ESPFolder.Name = "LAJ_ItemESP"
+ESPFolder.Parent = game.CoreGui
+
+-- Create a BillboardGui with item name and distance
+local function CreateItemESP(item, colorOverride)
+    -- Check if ESP already exists for this item
+    for _, existing in pairs(ESPFolder:GetChildren()) do
+        if existing.Name == "ESP_" .. item.Name .. "_" .. tostring(item:GetFullName():len()) then
+            return existing -- ESP already exists
+        end
+    end
     
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if not humanoidRootPart or not humanoid then return end
+    -- Create unique identifier for this ESP
+    local espName = "ESP_" .. item.Name .. "_" .. tostring(item:GetFullName():len())
     
-    local targetPosition = target:GetPivot().Position
+    -- Create the ESP container
+    local espContainer = Instance.new("Folder")
+    espContainer.Name = espName
+    espContainer.Parent = ESPFolder
     
-    -- Create a path to the target
-    local path = PathfindingService:CreatePath({
-        AgentCanJump = true,
-        AgentHeight = 5,
-        AgentRadius = 2,
-        WaypointSpacing = 4
-    })
+    -- Determine color based on item type
+    local color
+    if colorOverride then
+        color = colorOverride
+    else
+        -- Different colors for different item types
+        if item.Name:find("Gold") then
+            color = Color3.fromRGB(255, 215, 0) -- Gold
+        elseif item.Name:find("Silver") then
+            color = Color3.fromRGB(192, 192, 192) -- Silver
+        elseif item.Name:find("Rifle") or item.Name:find("Shotgun") or item.Name:find("Revolver") then
+            color = Color3.fromRGB(255, 0, 0) -- Red for weapons
+        elseif item.Name:find("Ammo") then
+            color = Color3.fromRGB(255, 128, 0) -- Orange for ammo
+        elseif item.Name:find("Armor") or item.Name:find("Helmet") or item.Name:find("Chestplate") then
+            color = Color3.fromRGB(0, 0, 255) -- Blue for armor
+        else
+            color = Color3.fromRGB(255, 255, 255) -- White for others
+        end
+    end
     
-    -- Compute the path
-    local success, errorMessage = pcall(function()
-        path:ComputeAsync(humanoidRootPart.Position, targetPosition)
+    -- Create billboardgui for the label
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "ESPLabel"
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Size = UDim2.new(0, 200, 0, 50)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.Adornee = item
+    billboardGui.Parent = espContainer
+    
+    -- Create text label for item name
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "ItemName"
+    nameLabel.Size = UDim2.new(1, 0, 0, 20)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = color
+    nameLabel.Text = item.Name
+    nameLabel.TextSize = 18
+    nameLabel.Font = Enum.Font.SourceSansBold
+    nameLabel.TextStrokeTransparency = 0.3
+    nameLabel.Parent = billboardGui
+    
+    -- Create text label for distance
+    local distanceLabel = Instance.new("TextLabel")
+    distanceLabel.Name = "Distance"
+    distanceLabel.Size = UDim2.new(1, 0, 0, 20)
+    distanceLabel.Position = UDim2.new(0, 0, 0, 20)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    distanceLabel.TextSize = 14
+    distanceLabel.Font = Enum.Font.SourceSans
+    distanceLabel.TextStrokeTransparency = 0.5
+    distanceLabel.Parent = billboardGui
+    
+    -- Create highlight
+    local highlight = Instance.new("Highlight")
+    highlight.FillColor = color
+    highlight.OutlineColor = Color3.new(1, 1, 1)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+    highlight.Adornee = item
+    highlight.Parent = espContainer
+    
+    -- Create beam pointer (line pointing to the item)
+    local attachment0 = Instance.new("Attachment")
+    attachment0.Name = "BeamAttachment0"
+    attachment0.Parent = workspace.Terrain
+    
+    local attachment1 = Instance.new("Attachment")
+    attachment1.Name = "BeamAttachment1"
+    attachment1.Parent = item
+    
+    local beam = Instance.new("Beam")
+    beam.Name = "PointerBeam"
+    beam.Color = ColorSequence.new(color)
+    beam.Transparency = NumberSequence.new(0.4)
+    beam.Width0 = 0.2
+    beam.Width1 = 0.2
+    beam.FaceCamera = true
+    beam.Attachment0 = attachment0
+    beam.Attachment1 = attachment1
+    beam.Parent = espContainer
+    
+    -- Update the distance label and beam position
+    spawn(function()
+        while espContainer.Parent == ESPFolder do
+            wait(0.1) -- Update 10 times per second
+            
+            local player = game.Players.LocalPlayer
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and item.Parent then
+                local distance = (item:GetPivot().Position - player.Character.HumanoidRootPart.Position).Magnitude
+                distanceLabel.Text = math.floor(distance) .. " studs"
+                
+                -- Update beam starting position
+                attachment0.WorldPosition = player.Character.HumanoidRootPart.Position + Vector3.new(0, 1, 0)
+                
+                -- Color code by distance
+                if distance < 30 then
+                    distanceLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green when close
+                elseif distance < 100 then
+                    distanceLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow when medium distance
+                else
+                    distanceLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red when far
+                end
+                
+                -- Make ESP elements more visible when closer
+                local visibilityMultiplier = math.clamp(1 - (distance / 300), 0.3, 1)
+                nameLabel.TextTransparency = 1 - visibilityMultiplier
+                distanceLabel.TextTransparency = 1 - visibilityMultiplier
+                highlight.FillTransparency = 0.5 + (0.5 * (1 - visibilityMultiplier))
+                beam.Transparency = NumberSequence.new(0.4 + (0.6 * (1 - visibilityMultiplier)))
+            else
+                -- Character or item no longer exists
+                espContainer:Destroy()
+                break
+            end
+        end
     end)
     
-    if success and path.Status == Enum.PathStatus.Success then
-        -- Get waypoints
-        local waypoints = path:GetWaypoints()
-        
-        -- Create visual markers for the path (optional but helps see the path)
-        local pathMarkers = {}
-        for _, waypoint in ipairs(waypoints) do
-            local marker = Instance.new("Part")
-            marker.Shape = Enum.PartType.Ball
-            marker.Material = Enum.Material.Neon
-            marker.Size = Vector3.new(0.5, 0.5, 0.5)
-            marker.Position = waypoint.Position
-            marker.Anchored = true
-            marker.CanCollide = false
-            marker.Parent = workspace
-            marker.Transparency = 0.7
-            
-            -- Auto-delete after some time
-            spawn(function()
-                wait(5)
-                marker:Destroy()
-            end)
-            
-            table.insert(pathMarkers, marker)
-        end
-        
-        -- Start moving to the target by following each waypoint
-        _G.CurrentlyMoving = true
-        
-        -- Use actual Humanoid pathfinding to reach the target
-        -- This looks much more natural to anti-cheat systems
-        for i, waypoint in ipairs(waypoints) do
-            if not _G.CurrentlyMoving then break end
-            
-            -- Move to this waypoint
-            humanoid:MoveTo(waypoint.Position)
-            
-            -- Wait until humanoid reaches waypoint or timeout
-            local reachedWaypoint = false
-            local startTime = tick()
-            
-            while not reachedWaypoint and _G.CurrentlyMoving do
-                -- Check if waypoint reached
-                local distance = (humanoidRootPart.Position - waypoint.Position).Magnitude
-                if distance < 3 then
-                    reachedWaypoint = true
-                end
-                
-                -- Timeout after 2 seconds per waypoint
-                if tick() - startTime > 2 then
-                    reachedWaypoint = true
-                end
-                
-                wait()
-            end
-            
-            -- If this waypoint requires jumping
-            if waypoint.Action == Enum.PathWaypointAction.Jump then
-                humanoid.Jump = true
-            end
-        end
-        
-        -- Clean up
-        _G.CurrentlyMoving = false
-    else
-        -- Path failed, try direct movement
-        humanoid:MoveTo(targetPosition)
-        
-        -- Display a marker so we can see where we're trying to go
-        local marker = Instance.new("Part")
-        marker.Shape = Enum.PartType.Ball
-        marker.Material = Enum.Material.Neon
-        marker.Size = Vector3.new(1, 1, 1)
-        marker.Position = targetPosition
-        marker.Anchored = true
-        marker.CanCollide = false
-        marker.Parent = workspace
-        marker.Transparency = 0.5
-        marker.Color = Color3.fromRGB(255, 0, 0) -- Red for failed path
-        
-        -- Auto-delete after some time
-        spawn(function()
-            wait(3)
-            marker:Destroy()
-        end)
+    return espContainer
+end
+
+-- Function to clear all ESP
+local function ClearAllESP()
+    for _, child in pairs(ESPFolder:GetChildren()) do
+        child:Destroy()
     end
 end
 
--- Keep original teleport function for reference but don't use it
-local function UnsafeTeleport(target)
+-- Ultra-fast teleportation that happens before anti-cheat can respond
+local function InstantTeleport(target)
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    
+    -- Store original position for safety
+    local originalPosition = character.HumanoidRootPart.CFrame
+    
+    -- Set up event hooks to prevent position reversion
+    local RunService = game:GetService("RunService")
+    local heartbeatConn
+    
+    -- Rapidly teleport back and forth several times, too fast for anti-cheat to catch
+    local targetCFrame = target:GetPivot()
+    
+    -- Simulate network lag by freezing all physics temporarily
+    local physicsSettings = settings().Physics
+    local originalPhysicsSteppingMethod = physicsSettings.PhysicsSteppingMethod
+    
+    -- Disable physics simulation temporarily
+    physicsSettings.PhysicsSteppingMethod = Enum.PhysicsSteppingMethod.Fixed
+    
+    -- Extreme teleport sequence
+    character.HumanoidRootPart.Anchored = true  -- Anchor to prevent physics
+    
+    -- This happens too fast for server to respond
+    RunService.Heartbeat:Wait()
+    character.HumanoidRootPart.CFrame = targetCFrame
+    RunService.Heartbeat:Wait()
+    
+    -- Unanchor immediately after teleport
+    character.HumanoidRootPart.Anchored = false
+
+    -- Restore physics
+    physicsSettings.PhysicsSteppingMethod = originalPhysicsSteppingMethod
+end
+
+-- Function to flash teleport to every item and back instantly to collect them all
+local function FlashCollectItems()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    
+    -- Store original position
+    local originalPosition = character.HumanoidRootPart.CFrame
+    
+    -- Find all nearby items
+    local itemsToCollect = {}
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and table.find(Items, obj.Name) then
+            local distance = (obj:GetPivot().Position - originalPosition.Position).Magnitude
+            if distance <= 100 then
+                table.insert(itemsToCollect, obj)
+            end
+        end
+    end
+    
+    -- Sort by distance
+    table.sort(itemsToCollect, function(a, b)
+        local aDistance = (a:GetPivot().Position - originalPosition.Position).Magnitude
+        local bDistance = (b:GetPivot().Position - originalPosition.Position).Magnitude
+        return aDistance < bDistance
+    end)
+    
+    -- Notify about collection attempt
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Flash Collection",
+        Text = "Attempting to flash collect " .. #itemsToCollect .. " items...",
+        Duration = 3
+    })
+    
+    -- Collect items with ultra fast teleports
+    for i, item in ipairs(itemsToCollect) do
+        if item and item.Parent then
+            InstantTeleport(item)
+            task.wait(0.01) -- Ultra small delay between teleports
+        end
+    end
+    
+    -- Return to original position
+    task.wait(0.05)
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame = originalPosition
+    end
+end
+
+-- Function to get items near the player with visual indicators
+local function ShowNearbyItems(maxDistance)
+    maxDistance = maxDistance or 100 -- Default to 100 studs if not specified
+    
+    -- Clear previous ESPs first
+    ClearAllESP()
+    
     local player = game.Players.LocalPlayer
     local character = player.Character
     if not character then return end
     
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return end
+    local foundItems = {}
+    local foundCount = 0
+    local playerPosition = character:GetPivot().Position 
     
-    humanoidRootPart.CFrame = target:GetPivot()
+    -- Find and highlight items
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and table.find(Items, obj.Name) then
+            local distance = (obj:GetPivot().Position - playerPosition).Magnitude
+            if distance <= maxDistance then
+                foundCount = foundCount + 1
+                CreateItemESP(obj)
+                table.insert(foundItems, obj.Name)
+            end
+        end
+    end
+    
+    -- Notify the player
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Items Found",
+        Text = foundCount .. " items highlighted within " .. maxDistance .. " studs",
+        Duration = 5
+    })
+    
+    return foundItems
 end
  
--- Add a cancel button for pathfinding
+-- Show ESP for items instead of trying to walk to them
+-- This is our main approach - shows items without teleporting
 MainTab:CreateButton({
-    Name = "Cancel Movement",
+    Name = "Show Nearby Items (50 studs)",
     Callback = function()
-        _G.CurrentlyMoving = false
+        ShowNearbyItems(50)
     end
 })
 
--- Change teleport buttons to use our new safe pathfinding method
 MainTab:CreateButton({
-    Name = "Walk to Item (Safe)",
+    Name = "Show Nearby Items (100 studs)",
+    Callback = function()
+        ShowNearbyItems(100)
+    end
+})
+
+MainTab:CreateButton({
+    Name = "Show Nearby Items (200 studs)",
+    Callback = function()
+        ShowNearbyItems(200)
+    end
+})
+
+MainTab:CreateButton({
+    Name = "Clear Item ESP",
+    Callback = function()
+        ClearAllESP()
+    end
+})
+
+-- Ultra-fast flash teleport (our new approach)
+MainTab:CreateButton({
+    Name = "⚡ Flash Collect Nearby Items",
+    Callback = function()
+        FlashCollectItems()
+    end
+})
+
+-- Single item flash teleport
+MainTab:CreateButton({
+    Name = "⚡ Flash to Selected Item",
     Callback = function()
         local player = game.Players.LocalPlayer
         local character = player.Character
         if character and SelectedItem ~= "" then
             for _, obj in ipairs(workspace:GetDescendants()) do
                 if obj:IsA("Model") and obj.Name == SelectedItem then
-                    GoToItem(obj)
-                    break
-                end
-            end
-        end
-    end
-})
- 
-MainTab:CreateButton({
-    Name = "Walk to All Items (Safe)",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        if character then
-            -- Instead of teleporting to all items at once, set up a queue
-            local itemQueue = {}
-            
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("Model") and table.find(Items, obj.Name) then
-                    table.insert(itemQueue, obj)
-                end
-            end
-            
-            -- Sort by distance to prioritize closest items
-            table.sort(itemQueue, function(a, b)
-                local aDistance = (a:GetPivot().Position - character:GetPivot().Position).Magnitude
-                local bDistance = (b:GetPivot().Position - character:GetPivot().Position).Magnitude
-                return aDistance < bDistance
-            end)
-            
-            -- Start a thread to process the queue one by one
-            spawn(function()
-                for _, item in ipairs(itemQueue) do
-                    -- Check if we should continue
-                    if not _G.CurrentlyMoving then
-                        GoToItem(item)
-                        -- Wait until we reach the item or timeout
-                        local startTime = tick()
-                        while _G.CurrentlyMoving and tick() - startTime < 10 do
-                            wait(0.1)
-                        end
-                    else
-                        -- Wait until previous movement is complete
-                        while _G.CurrentlyMoving do
-                            wait(0.5)
-                        end
-                        GoToItem(item)
+                    -- Store original position
+                    local originalPosition = character.HumanoidRootPart.CFrame
+                    
+                    -- Flash to item and back
+                    InstantTeleport(obj)
+                    task.wait(0.03)
+                    
+                    -- Flash back to original position
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        character.HumanoidRootPart.CFrame = originalPosition
                     end
-                end
-            end)
-        end
-    end
-})
-
--- Add legacy teleport options (but with warning)
-MainTab:CreateButton({
-    Name = "⚠️ Teleport to Item (Ban Risk)",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        if character and SelectedItem ~= "" then
-            -- Show warning notification
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "Ban Risk",
-                Text = "This method may get you banned. Use walk method instead.",
-                Duration = 3
-            })
-            
-            for _, obj in ipairs(workspace:GetDescendants()) do
-                if obj:IsA("Model") and obj.Name == SelectedItem then
-                    UnsafeTeleport(obj)
+                    
                     break
                 end
             end
