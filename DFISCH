@@ -1,8 +1,9 @@
----date
+---date ts
+
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
  
 local Window = Rayfield:CreateWindow({
-    Name = "LAJ HUBss | Dead Rails [BETA] ",
+    Name = "LAJ HUBs | Dead Rails [BETA] ",
     LoadingTitle = "LAJ HUB | Loading...",
     LoadingSubtitle = "Please wait...",
     ConfigurationSaving = {
@@ -12,79 +13,58 @@ local Window = Rayfield:CreateWindow({
     }
 })
  
--- 🛡️ Advanced Anti-Ban & Anti-Detection System with Position Reversion Bypass
-local function AdvancedAntiBan()
+-- 🛡️ Stealth Anti-Ban & Anti-Detection System
+local function StealthAntiBan()
     local success, err = pcall(function()
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
         local RunService = game:GetService("RunService")
-        local PhysicsService = game:GetService("PhysicsService")
-        local NetworkSettings = settings():GetService("NetworkSettings")
         
-        -- Store the original position for the reversion system
-        _G.LastPosition = nil
-        _G.PositionBypass = true
+        -- Reset any previous state
+        _G.OriginalMethods = {}
+        _G.Protected = true
         
-        -- Force extreme network settings to ensure control
-        NetworkSettings.IncomingReplicationLag = 0
-        sethiddenproperty(game, "MaxChannelCount", 999999)
+        -- 1. Low-profile Anti-Detection
+        -- Instead of huge values, use slightly increased values that don't trigger detection
+        sethiddenproperty(LocalPlayer, "SimulationRadius", 30)
+        sethiddenproperty(LocalPlayer, "MaximumSimulationRadius", 35)
         
-        -- 1. Network Ownership Bypass - More aggressive to combat position reversion
-        for i = 1, 3 do -- Apply multiple times to ensure it takes effect
-            sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
-            sethiddenproperty(LocalPlayer, "MaximumSimulationRadius", math.huge)
-            sethiddenproperty(LocalPlayer, "PreSimulationRadius", math.huge)
-        end
+        -- 2. Advanced Anti-Kick/Ban (Silent version)
+        -- Store original methods to avoid detection
+        _G.OriginalMethods.Kick = LocalPlayer.Kick
+        _G.OriginalMethods.kick = LocalPlayer.kick
         
-        -- 2. Aggressive Physics Network Ownership
-        spawn(function()
-            while wait(0.5) do
-                -- Continuously claim network ownership of all physics parts
-                sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
-                
-                for _, part in pairs(workspace:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        if not part:IsGrounded() then
-                            part.Massless = true
-                            part.CanCollide = false
-                            part.Anchored = false
-                            
-                            if part:IsDescendantOf(LocalPlayer.Character) then
-                                part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-                            end
-                        end
-                    end
-                end
-            end
+        -- Silently replace kick methods
+        hookfunction(LocalPlayer.Kick, function(...)
+            print("Kick attempted - blocked")
+            return wait(9e9)
         end)
         
-        -- 3. Anti-Cheat Remote Block - More comprehensive to catch all reversion attempts
-        local oldNamecall = nil
-        oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-            local args = {...}
+        -- 3. Basic Remote Detection Block (Hidden approach)
+        local mt = getrawmetatable(game)
+        local oldNamecall = mt.__namecall
+        setreadonly(mt, false)
+        
+        mt.__namecall = newcclosure(function(self, ...)
             local method = getnamecallmethod()
+            local args = {...}
             
-            -- More extensive checking to block hidden remotes and network reversion events
-            if (method == "FireServer" or method == "InvokeServer") and typeof(self) == "Instance" then
-                local name = string.lower(tostring(self.Name))
+            if method == "FireServer" or method == "InvokeServer" then
+                -- Only block specific anti-cheat remotes we've identified
+                local name = self.Name and string.lower(self.Name) or ""
                 
-                -- Expanded list of keywords to block
-                if name:find("detect") or name:find("cheat") or name:find("ban") or 
-                   name:find("kick") or name:find("report") or name:find("violation") or
-                   name:find("check") or name:find("secure") or name:find("warp") or
-                   name:find("teleport") or name:find("position") or name:find("revert") or 
-                   name:find("security") or name:find("verify") or name:find("validate") then
+                -- Known anti-cheat remote patterns in Dead Rails
+                if name:find("security") or name:find("anti") or
+                   name:find("check") or name:find("detect") then
                     return nil
                 end
                 
-                -- Block position reversion attempts
-                if method == "FireServer" then
+                -- If it's teleporting someone, let it pass but monitor it
+                if method == "FireServer" and #args > 0 then
                     for _, arg in pairs(args) do
-                        if typeof(arg) == "Vector3" or typeof(arg) == "CFrame" then
-                            if _G.LastPosition and LocalPlayer.Character and 
-                               LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                return nil -- Block position sync events
-                            end
+                        if typeof(arg) == "CFrame" and _G.TeleportInProgress then
+                            -- This is likely our teleport, let it through
+                            return oldNamecall(self, ...)
                         end
                     end
                 end
@@ -93,162 +73,71 @@ local function AdvancedAntiBan()
             return oldNamecall(self, ...)
         end)
         
-        -- 4. Position Reversion Prevention
-        -- Track and restore position if the server tries to reset it
+        setreadonly(mt, true)
+        
+        -- 4. Silent Character Protection
+        -- This avoids detection by being selective about what we modify
         RunService.Heartbeat:Connect(function()
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and _G.PositionBypass then
-                local hrp = LocalPlayer.Character.HumanoidRootPart
-                
-                if _G.LastPosition then
-                    -- Detect position reversion attempts (sudden large changes)
-                    if (hrp.Position - _G.LastPosition).Magnitude > 5 and 
-                       not _G.IsTeleporting and not _G.IsChangingSpeed then
-                        -- Server tried to revert us - force our position back
-                        hrp.CFrame = CFrame.new(_G.LastPosition)
-                    end
-                end
-                
-                -- Update our last known good position
-                _G.LastPosition = hrp.Position
+            if not LocalPlayer.Character then return end
+            
+            -- Subtle network manipulation (less detectable)
+            pcall(function()
+                sethiddenproperty(LocalPlayer, "SimulationRadius", 30)
+            end)
+            
+            -- Only apply speed if we requested it
+            if LocalPlayer.Character:FindFirstChild("Humanoid") and _G.SpeedActive then
+                LocalPlayer.Character.Humanoid.WalkSpeed = _G.CurrentWalkSpeed or 16
             end
         end)
         
-        -- 5. Enhanced Humanoid Property Spoofer
-        local oldIndex = nil
-        oldIndex = hookmetamethod(game, "__index", function(self, key)
-            -- Spoof properties to appear legitimate to server checks
-            if not checkcaller() and LocalPlayer.Character and 
-               self:IsDescendantOf(LocalPlayer.Character) then
-                if key == "WalkSpeed" or key == "walkSpeed" then
-                    return 16 -- Default walk speed
-                elseif key == "JumpPower" or key == "jumpPower" then
-                    return 50 -- Default jump power
-                elseif key == "HipHeight" then
-                    return 0 -- Default hip height
-                elseif key == "Health" then
-                    -- Return a high value to prevent death from anti-cheat
-                    return 100
-                end
-            end
-            return oldIndex(self, key)
-        end)
-        
-        -- 6. Prevent anti-cheat from modifying character properties
-        local oldNewIndex = nil
-        oldNewIndex = hookmetamethod(game, "__newindex", function(self, key, value)
-            -- Block all attempts to modify our character properties by the server
-            if not checkcaller() and LocalPlayer.Character and self:IsDescendantOf(LocalPlayer.Character) then
-                -- Block server-side speed/position changes
-                if key == "WalkSpeed" or key == "JumpPower" or 
-                   key == "CFrame" or key == "Position" or
-                   key == "Velocity" or key == "RotVelocity" then
-                    if not _G.IsTeleporting and not _G.IsChangingSpeed then
-                        return -- Block the change
-                    end
-                end
-            end
-            return oldNewIndex(self, key, value)
-        end)
-        
-        -- 7. Comprehensive Anti-Kick/Ban System
-        -- Hook multiple functions that could be used to kick or ban
-        local oldKick = LocalPlayer.Kick
-        LocalPlayer.Kick = function() return end
-        
-        hookfunction(LocalPlayer.Kick, function() return wait(9e9) end) 
-        hookfunction(LocalPlayer.kick, function() return wait(9e9) end)
-        
-        local oldDestroy = game.Destroy
-        hookfunction(game.Destroy, function(self, ...)
-            if self == LocalPlayer then return wait(9e9) end
-            return oldDestroy(self, ...)
-        end)
-        
-        -- 8. Aggressive Character Protection on Respawn
+        -- 5. Character Added Protection (Quiet version)
         LocalPlayer.CharacterAdded:Connect(function(character)
-            task.wait(0.2) -- Wait for character to fully load
+            wait(1) -- Wait for anti-cheat to finish its checks
             
-            -- Reset tracking
-            _G.LastPosition = nil
-            
-            -- Apply extreme network settings for new character
-            sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
-            sethiddenproperty(LocalPlayer, "MaximumSimulationRadius", math.huge)
-            sethiddenproperty(LocalPlayer, "PreSimulationRadius", math.huge)
-            
-            -- Protect the new character
             if character:FindFirstChild("Humanoid") then
-                -- Make it appear standard initially
-                local humanoid = character:FindFirstChild("Humanoid")
-                humanoid.WalkSpeed = 16
-                humanoid.JumpPower = 50
+                -- This flag indicates we can safely modify the character
+                _G.CharacterReady = true
                 
-                -- Apply invulnerability
-                humanoid.BreakJointsOnDeath = false
-                humanoid.RequiresNeck = false
-                
-                wait(1) -- Give anti-cheat time to approve character
-                
-                -- Now restore our custom values to the new character
-                if _G.ActualWalkSpeed then
-                    humanoid.WalkSpeed = _G.ActualWalkSpeed
-                end
-                
-                if _G.ActualJumpPower then
-                    humanoid.JumpPower = _G.ActualJumpPower
+                -- If we had custom speed before, restore it
+                if _G.CurrentWalkSpeed and _G.SpeedActive then
+                    character.Humanoid.WalkSpeed = _G.CurrentWalkSpeed
                 end
             end
         end)
         
-        -- 9. Advanced Anti-Detection Cleaning System
+        -- 6. Periodic Silent Cleanup (Minimal detection footprint)
         spawn(function()
-            while wait(2) do -- Run more frequently
+            while wait(10) do
                 if LocalPlayer.Character then
-                    -- Destroy anti-cheat scripts
+                    -- Only remove obvious anti-cheat scripts
                     for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
-                        local lowerName = string.lower(v.Name)
-                        if v:IsA("Script") or v:IsA("LocalScript") then
-                            if lowerName:find("anti") or lowerName:find("detect") or 
-                               lowerName:find("check") or lowerName:find("secure") or
-                               lowerName:find("warp") or lowerName:find("verif") then
-                                v:Destroy()
-                            end
+                        if v:IsA("Script") and v.Name:lower():find("detect") then
+                            -- Instead of destroying, disable it to avoid detection
+                            pcall(function()
+                                v.Disabled = true
+                            end)
                         end
                     end
-                    
-                    -- Disable monitoring connections
-                    for _, connection in pairs(getconnections(LocalPlayer.Character.ChildAdded)) do
-                        connection:Disable()
-                    end
-                    
-                    for _, connection in pairs(getconnections(RunService.Stepped)) do
-                        if not connection.Function or not debug.info(connection.Function, "s") then
-                            connection:Disable()
-                        end
-                    end
-                    
-                    -- Clean teleport history
-                    game:GetService("TeleportService"):SetTeleportGui(nil)
-                    
-                    -- Refresh network ownership
-                    sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
                 end
             end
         end)
     end)
     
     if not success then
-        warn("Enhanced Anti-Ban system encountered a minor issue: " .. tostring(err))
+        warn("Stealth protection encountered an issue: " .. tostring(err))
     else
-        print("LAJ HUB Ultimate Anti-Ban system activated successfully")
+        print("LAJ HUB Stealth protection activated")
     end
 end
 
--- Initialize global variables for teleport/speed change tracking
-_G.IsTeleporting = false
-_G.IsChangingSpeed = false
+-- Initialize with safer globals
+_G.SpeedActive = false
+_G.CurrentWalkSpeed = 16
+_G.TeleportInProgress = false
+_G.CharacterReady = false
 
-AdvancedAntiBan()
+StealthAntiBan()
  
 -- 📌 Player Tab
 local PlayerTab = Window:CreateTab("Player")  
@@ -258,90 +147,96 @@ local PlayerSection = PlayerTab:CreateSection("Player Tab")
 _G.ActualWalkSpeed = 16
 _G.ActualJumpPower = 50
 
--- Undetectable speed slider
+-- Stealthy Speed System
 PlayerTab:CreateSlider({
-    Name = "Safe WalkSpeed",
-    Range = {16, 150},
+    Name = "Stealth WalkSpeed",
+    Range = {16, 50}, -- Lower range to stay under detection threshold
     Increment = 1,
     Suffix = "Speed",
     CurrentValue = 16,
     Callback = function(value)
-        _G.ActualWalkSpeed = value
+        _G.CurrentWalkSpeed = value -- Store in global for character respawn
+        _G.SpeedActive = true -- Flag for our stealth system to apply speed
         
-        -- Apply speed in a way that avoids detection
-        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            -- Using a separate thread for continuous updates to avoid detection patterns
-            if not _G.SpeedUpdateThread then
-                _G.SpeedUpdateThread = true
-                spawn(function()
-                    while _G.SpeedUpdateThread and wait() do
-                        -- Check if character still exists
-                        if game.Players.LocalPlayer.Character and 
-                           game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-                            -- Apply speed but make it look natural to anti-cheat
-                            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = _G.ActualWalkSpeed
-                        end
-                    end
-                end)
-            end
-        end
-    end
-})
- 
--- Undetectable jump power slider
-PlayerTab:CreateSlider({
-    Name = "Safe JumpPower",
-    Range = {50, 200},
-    Increment = 1,
-    Suffix = "Power",
-    CurrentValue = 50,
-    Callback = function(value)
-        _G.ActualJumpPower = value
-        
-        -- Apply jump power in a way that avoids detection
-        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-            -- Using a separate thread for continuous updates
-            if not _G.JumpUpdateThread then
-                _G.JumpUpdateThread = true
-                spawn(function()
-                    while _G.JumpUpdateThread and wait() do
-                        -- Check if character still exists
-                        if game.Players.LocalPlayer.Character and 
-                           game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-                            -- Apply jump power but make it look natural to anti-cheat
-                            game.Players.LocalPlayer.Character.Humanoid.JumpPower = _G.ActualJumpPower
-                        end
-                    end
-                end)
-            end
+        -- Apply speed modestly to avoid detection
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            -- Apply the speed, but don't be too aggressive
+            player.Character.Humanoid.WalkSpeed = value
         end
     end
 })
 
--- Original speed (for reference)
+-- Alternative speed system - uses velocity to move faster without changing WalkSpeed
 PlayerTab:CreateSlider({
-    Name = "High Risk WalkSpeed",
-    Range = {16, 300},
+    Name = "Velocity Boost",
+    Range = {0, 20}, -- Controls how much extra velocity to add
     Increment = 1,
-    Suffix = "Speed",
-    CurrentValue = 16,
+    Suffix = "Boost",
+    CurrentValue = 0,
     Callback = function(value)
-        if game.Players.LocalPlayer.Character then
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+        _G.VelocityBoost = value
+        
+        -- Use velocity to move faster without changing WalkSpeed
+        if value > 0 then
+            if not _G.BoostThread then
+                _G.BoostThread = true
+                spawn(function()
+                    while _G.BoostThread and wait() do
+                        local player = game.Players.LocalPlayer
+                        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                            local hrp = player.Character.HumanoidRootPart
+                            
+                            -- Only boost when moving
+                            if player.Character.Humanoid.MoveDirection.Magnitude > 0 then
+                                -- Calculate modest velocity boost in move direction
+                                local boost = player.Character.Humanoid.MoveDirection * _G.VelocityBoost
+                                
+                                -- Apply the boost gently - this is harder to detect than WalkSpeed
+                                hrp.Velocity = hrp.Velocity + Vector3.new(boost.X, 0, boost.Z)
+                            end
+                        end
+                    end
+                end)
+            end
+        else
+            _G.BoostThread = false
         end
     end
 })
- 
--- Original jump power (for reference)
+
+-- Jump Height Modifier (stealthy version)
 PlayerTab:CreateSlider({
-    Name = "High Risk JumpPower",
-    Range = {50, 500},
+    Name = "Stealth Jump Height",
+    Range = {50, 75}, -- Modest range to avoid detection
     Increment = 1,
-    Suffix = "Power",
+    Suffix = "Height",
     CurrentValue = 50,
     Callback = function(value)
-        if game.Players.LocalPlayer.Character then
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+        -- Apply jump power in a way that's harder to detect
+        local player = game.Players.LocalPlayer
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.JumpPower = value
+            
+            -- Use a user state change - this helps avoid detection
+            pcall(function()
+                player.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+            end)
+        end
+    end
+})
+
+-- Create toggle for speed system
+PlayerTab:CreateToggle({
+    Name = "Enable Speed Mods",
+    CurrentValue = false,
+    Callback = function(value)
+        _G.SpeedActive = value
+        
+        -- When disabled, reset to default to avoid detection
+        if not value and game.Players.LocalPlayer.Character and 
+           game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
         end
     end
 })
@@ -421,9 +316,12 @@ MainTab:CreateButton({
     end
 })
  
--- 🛡️ Safe Teleportation (Avoids Instant Ban)
--- Force teleport that bypasses position reversion
-local function SafeTeleport(target)
+-- Create alternative pathfinding-based item collection instead of teleportation
+-- This approach has the player naturally walk to items rather than teleporting
+local PathfindingService = game:GetService("PathfindingService")
+
+-- Create a new "Go To Item" function that uses pathfinding instead of teleporting
+local function GoToItem(target)
     local player = game.Players.LocalPlayer
     local character = player.Character
     if not character then return end
@@ -433,86 +331,138 @@ local function SafeTeleport(target)
     if not humanoidRootPart or not humanoid then return end
     
     local targetPosition = target:GetPivot().Position
-    local startPosition = humanoidRootPart.Position
-    local distance = (targetPosition - startPosition).Magnitude
     
-    -- Flag that we're teleporting to prevent position reversion
-    _G.IsTeleporting = true
+    -- Create a path to the target
+    local path = PathfindingService:CreatePath({
+        AgentCanJump = true,
+        AgentHeight = 5,
+        AgentRadius = 2,
+        WaypointSpacing = 4
+    })
     
-    -- For extremely short distances, just do it directly
-    if distance < 5 then
-        humanoidRootPart.CFrame = target:GetPivot()
-        task.wait(0.1)
-        _G.IsTeleporting = false
-        _G.LastPosition = targetPosition -- Update last position to prevent reversion
-        return
-    end
+    -- Compute the path
+    local success, errorMessage = pcall(function()
+        path:ComputeAsync(humanoidRootPart.Position, targetPosition)
+    end)
     
-    -- For longer distances, use network-manipulating teleport
-    -- First, maximize network ownership
-    for i = 1, 3 do
-        sethiddenproperty(player, "SimulationRadius", math.huge)
-        sethiddenproperty(player, "MaximumSimulationRadius", math.huge)
-    end
-    
-    -- Create steps but with network pausing between them
-    local steps = math.min(20, math.ceil(distance / 10))
-    for i = 1, steps do
-        if not character or not humanoidRootPart then
-            _G.IsTeleporting = false
-            return
-        end
+    if success and path.Status == Enum.PathStatus.Success then
+        -- Get waypoints
+        local waypoints = path:GetWaypoints()
         
-        -- Calculate the next position
-        local progress = i / steps
-        local newPosition = startPosition:Lerp(targetPosition, progress)
-        
-        -- Use a system that's harder to detect
-        humanoidRootPart.Anchored = true -- Anchor to prevent physics reversion
-        humanoidRootPart.CFrame = CFrame.new(newPosition)
-        task.wait() -- Wait one frame for physics to update
-        humanoidRootPart.Anchored = false -- Unanchor to allow movement again
-        
-        -- Network manipulation to prevent detection
-        if i % 3 == 0 then -- Every few steps
-            -- Force character to acknowledge the new position
-            humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-            task.wait()
-            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-            task.wait()
+        -- Create visual markers for the path (optional but helps see the path)
+        local pathMarkers = {}
+        for _, waypoint in ipairs(waypoints) do
+            local marker = Instance.new("Part")
+            marker.Shape = Enum.PartType.Ball
+            marker.Material = Enum.Material.Neon
+            marker.Size = Vector3.new(0.5, 0.5, 0.5)
+            marker.Position = waypoint.Position
+            marker.Anchored = true
+            marker.CanCollide = false
+            marker.Parent = workspace
+            marker.Transparency = 0.7
             
-            -- Update our last position in the anti-reversion system
-            _G.LastPosition = humanoidRootPart.Position
+            -- Auto-delete after some time
+            spawn(function()
+                wait(5)
+                marker:Destroy()
+            end)
+            
+            table.insert(pathMarkers, marker)
         end
         
-        task.wait(0.01) -- Shorter wait between steps
+        -- Start moving to the target by following each waypoint
+        _G.CurrentlyMoving = true
+        
+        -- Use actual Humanoid pathfinding to reach the target
+        -- This looks much more natural to anti-cheat systems
+        for i, waypoint in ipairs(waypoints) do
+            if not _G.CurrentlyMoving then break end
+            
+            -- Move to this waypoint
+            humanoid:MoveTo(waypoint.Position)
+            
+            -- Wait until humanoid reaches waypoint or timeout
+            local reachedWaypoint = false
+            local startTime = tick()
+            
+            while not reachedWaypoint and _G.CurrentlyMoving do
+                -- Check if waypoint reached
+                local distance = (humanoidRootPart.Position - waypoint.Position).Magnitude
+                if distance < 3 then
+                    reachedWaypoint = true
+                end
+                
+                -- Timeout after 2 seconds per waypoint
+                if tick() - startTime > 2 then
+                    reachedWaypoint = true
+                end
+                
+                wait()
+            end
+            
+            -- If this waypoint requires jumping
+            if waypoint.Action == Enum.PathWaypointAction.Jump then
+                humanoid.Jump = true
+            end
+        end
+        
+        -- Clean up
+        _G.CurrentlyMoving = false
+    else
+        -- Path failed, try direct movement
+        humanoid:MoveTo(targetPosition)
+        
+        -- Display a marker so we can see where we're trying to go
+        local marker = Instance.new("Part")
+        marker.Shape = Enum.PartType.Ball
+        marker.Material = Enum.Material.Neon
+        marker.Size = Vector3.new(1, 1, 1)
+        marker.Position = targetPosition
+        marker.Anchored = true
+        marker.CanCollide = false
+        marker.Parent = workspace
+        marker.Transparency = 0.5
+        marker.Color = Color3.fromRGB(255, 0, 0) -- Red for failed path
+        
+        -- Auto-delete after some time
+        spawn(function()
+            wait(3)
+            marker:Destroy()
+        end)
     end
+end
+
+-- Keep original teleport function for reference but don't use it
+local function UnsafeTeleport(target)
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return end
     
-    -- Final positioning with extra force
-    if character and humanoidRootPart then
-        -- Use all three methods for maximum effect
-        humanoidRootPart.Anchored = true
-        humanoidRootPart.CFrame = target:GetPivot()
-        task.wait(0.05)
-        humanoidRootPart.Anchored = false
-        humanoid:ChangeState(Enum.HumanoidStateType.Landed)
-    end
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
     
-    -- Update position tracking
-    task.wait(0.1)
-    _G.LastPosition = targetPosition
-    _G.IsTeleporting = false
+    humanoidRootPart.CFrame = target:GetPivot()
 end
  
+-- Add a cancel button for pathfinding
 MainTab:CreateButton({
-    Name = "Teleport to Item",
+    Name = "Cancel Movement",
+    Callback = function()
+        _G.CurrentlyMoving = false
+    end
+})
+
+-- Change teleport buttons to use our new safe pathfinding method
+MainTab:CreateButton({
+    Name = "Walk to Item (Safe)",
     Callback = function()
         local player = game.Players.LocalPlayer
         local character = player.Character
         if character and SelectedItem ~= "" then
             for _, obj in ipairs(workspace:GetDescendants()) do
                 if obj:IsA("Model") and obj.Name == SelectedItem then
-                    SafeTeleport(obj)
+                    GoToItem(obj)
                     break
                 end
             end
@@ -521,15 +471,69 @@ MainTab:CreateButton({
 })
  
 MainTab:CreateButton({
-    Name = "Teleport to All Items",
+    Name = "Walk to All Items (Safe)",
     Callback = function()
         local player = game.Players.LocalPlayer
         local character = player.Character
         if character then
+            -- Instead of teleporting to all items at once, set up a queue
+            local itemQueue = {}
+            
             for _, obj in ipairs(workspace:GetDescendants()) do
                 if obj:IsA("Model") and table.find(Items, obj.Name) then
-                    SafeTeleport(obj)
-                    task.wait(0.5) -- Small delay for safety
+                    table.insert(itemQueue, obj)
+                end
+            end
+            
+            -- Sort by distance to prioritize closest items
+            table.sort(itemQueue, function(a, b)
+                local aDistance = (a:GetPivot().Position - character:GetPivot().Position).Magnitude
+                local bDistance = (b:GetPivot().Position - character:GetPivot().Position).Magnitude
+                return aDistance < bDistance
+            end)
+            
+            -- Start a thread to process the queue one by one
+            spawn(function()
+                for _, item in ipairs(itemQueue) do
+                    -- Check if we should continue
+                    if not _G.CurrentlyMoving then
+                        GoToItem(item)
+                        -- Wait until we reach the item or timeout
+                        local startTime = tick()
+                        while _G.CurrentlyMoving and tick() - startTime < 10 do
+                            wait(0.1)
+                        end
+                    else
+                        -- Wait until previous movement is complete
+                        while _G.CurrentlyMoving do
+                            wait(0.5)
+                        end
+                        GoToItem(item)
+                    end
+                end
+            end)
+        end
+    end
+})
+
+-- Add legacy teleport options (but with warning)
+MainTab:CreateButton({
+    Name = "⚠️ Teleport to Item (Ban Risk)",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if character and SelectedItem ~= "" then
+            -- Show warning notification
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Ban Risk",
+                Text = "This method may get you banned. Use walk method instead.",
+                Duration = 3
+            })
+            
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("Model") and obj.Name == SelectedItem then
+                    UnsafeTeleport(obj)
+                    break
                 end
             end
         end
