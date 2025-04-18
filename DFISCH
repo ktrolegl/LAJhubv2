@@ -1,193 +1,274 @@
 --[[
-    Speed Hub X Script Loader
-    A simple script loader that directly executes Speed Hub X scripts for various games
+    LAJ HUB Speed Hub X Premium
+    Enhanced UI with reliable loading
 ]]
 
--- Create a simple GUI
+-- Variables
+local Library = {}
+local Window = {}
+local Tabs = {}
+local Sections = {}
+local toggles, sliders, dropdowns, colorpickers, keybinds = {}, {}, {}, {}, {}
+
+-- Colors
+local colors = {
+    main = Color3.fromRGB(20, 20, 20),
+    background = Color3.fromRGB(10, 10, 10),
+    accent = Color3.fromRGB(90, 140, 240),
+    text = Color3.fromRGB(255, 255, 255),
+    border = Color3.fromRGB(30, 30, 30),
+    button = Color3.fromRGB(40, 40, 40),
+    buttonHover = Color3.fromRGB(50, 50, 50),
+    buttonActive = Color3.fromRGB(60, 90, 200)
+}
+
+-- Loader function
+local function LoadScript(scriptUrl, gameName)
+    pcall(function()
+        loadstring(game:HttpGet(scriptUrl, true))()
+    end)
+    
+    -- Create success notification
+    local notification = Instance.new("ScreenGui")
+    local notifFrame = Instance.new("Frame")
+    local title = Instance.new("TextLabel")
+    local message = Instance.new("TextLabel")
+    
+    notification.Name = "LAJHUBNotification"
+    notification.Parent = game:GetService("CoreGui")
+    
+    notifFrame.Name = "NotifFrame"
+    notifFrame.Size = UDim2.new(0, 250, 0, 100)
+    notifFrame.Position = UDim2.new(1, -260, 0.5, -50)
+    notifFrame.BackgroundColor3 = colors.background
+    notifFrame.BorderColor3 = colors.accent
+    notifFrame.BorderSizePixel = 1
+    notifFrame.Parent = notification
+    
+    title.Name = "Title"
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundColor3 = colors.accent
+    title.BorderSizePixel = 0
+    title.Font = Enum.Font.GothamBold
+    title.Text = "LAJ HUB"
+    title.TextColor3 = colors.text
+    title.TextSize = 18
+    title.Parent = notifFrame
+    
+    message.Name = "Message"
+    message.Size = UDim2.new(1, 0, 0, 70)
+    message.Position = UDim2.new(0, 0, 0, 30)
+    message.BackgroundColor3 = colors.background
+    message.BorderSizePixel = 0
+    message.Font = Enum.Font.Gotham
+    message.Text = "   Loaded Speed Hub X for\n   " .. gameName
+    message.TextColor3 = colors.text
+    message.TextSize = 14
+    message.TextXAlignment = Enum.TextXAlignment.Left
+    message.TextYAlignment = Enum.TextYAlignment.Center
+    message.Parent = notifFrame
+    
+    -- Animation
+    notifFrame:TweenPosition(UDim2.new(1, -260, 0.5, -50), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.4, true)
+    wait(2.5)
+    notifFrame:TweenPosition(UDim2.new(1, 10, 0.5, -50), Enum.EasingDirection.In, Enum.EasingStyle.Quart, 0.4, true, function()
+        notification:Destroy()
+    end)
+end
+
+-- Create the main UI
 local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local ScrollingFrame = Instance.new("ScrollingFrame")
-local UIListLayout = Instance.new("UIListLayout")
-local CloseButton = Instance.new("TextButton")
-
--- Properties
-ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "LAJHUB_SpeedHub"
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Parent = game:GetService("CoreGui")
 
+local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
-MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.BackgroundColor3 = colors.main
+MainFrame.BorderColor3 = colors.accent
+MainFrame.BorderSizePixel = 1
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -175)
+MainFrame.Size = UDim2.new(0, 400, 0, 350)
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
 
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.BackgroundColor3 = colors.accent
+TopBar.BorderSizePixel = 0
+TopBar.Size = UDim2.new(1, 0, 0, 30)
+TopBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
 Title.Name = "Title"
-Title.Parent = MainFrame
-Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Title.BorderSizePixel = 0
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, -30, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "LAJ HUB - Speed Hub X Loader"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16.000
+Title.Text = "LAJ HUB - Speed Hub X"
+Title.TextColor3 = colors.text
+Title.TextSize = 18
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Parent = TopBar
 
+local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Parent = Title
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
 CloseButton.BorderSizePixel = 0
 CloseButton.Position = UDim2.new(1, -25, 0, 5)
 CloseButton.Size = UDim2.new(0, 20, 0, 20)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 14.000
+CloseButton.TextColor3 = colors.text
+CloseButton.TextSize = 14
+CloseButton.Parent = TopBar
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
-ScrollingFrame.Name = "ScrollingFrame"
-ScrollingFrame.Parent = MainFrame
-ScrollingFrame.Active = true
-ScrollingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ScrollingFrame.BorderSizePixel = 0
-ScrollingFrame.Position = UDim2.new(0, 0, 0, 30)
-ScrollingFrame.Size = UDim2.new(1, 0, 1, -30)
-ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-ScrollingFrame.ScrollBarThickness = 6
+local Content = Instance.new("Frame")
+Content.Name = "Content"
+Content.BackgroundColor3 = colors.background
+Content.BorderSizePixel = 0
+Content.Position = UDim2.new(0, 0, 0, 30)
+Content.Size = UDim2.new(1, 0, 1, -30)
+Content.Parent = MainFrame
 
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Name = "ScrollingFrame"
+ScrollingFrame.BackgroundColor3 = colors.background
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.Position = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ScrollingFrame.ScrollBarThickness = 4
+ScrollingFrame.ScrollBarImageColor3 = colors.accent
+ScrollingFrame.Parent = Content
+
+local UIListLayout = Instance.new("UIListLayout")
 UIListLayout.Parent = ScrollingFrame
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 5)
+UIListLayout.Padding = UDim.new(0, 10)
 
--- Function to create a button
-local function CreateButton(text, callback)
+-- Function to create buttons
+local function CreateButton(text, scriptUrl, gameName)
     local Button = Instance.new("TextButton")
     Button.Name = text
-    Button.Parent = ScrollingFrame
-    Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    Button.BorderSizePixel = 0
-    Button.Size = UDim2.new(1, -10, 0, 40)
-    Button.Position = UDim2.new(0, 5, 0, 0)
+    Button.Size = UDim2.new(1, -20, 0, 45)
+    Button.Position = UDim2.new(0, 10, 0, 0)
+    Button.BackgroundColor3 = colors.button
+    Button.BorderColor3 = colors.border
+    Button.BorderSizePixel = 1
     Button.Font = Enum.Font.Gotham
+    Button.TextColor3 = colors.text
+    Button.TextSize = 14
     Button.Text = text
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.TextSize = 14.000
-    Button.MouseButton1Click:Connect(callback)
+    Button.Parent = ScrollingFrame
+    Button.AutoButtonColor = false
+    
+    -- Hover effects
+    Button.MouseEnter:Connect(function()
+        Button.BackgroundColor3 = colors.buttonHover
+    end)
+    
+    Button.MouseLeave:Connect(function()
+        Button.BackgroundColor3 = colors.button
+    end)
+    
+    Button.MouseButton1Down:Connect(function()
+        Button.BackgroundColor3 = colors.buttonActive
+    end)
+    
+    Button.MouseButton1Up:Connect(function()
+        Button.BackgroundColor3 = colors.buttonHover
+    end)
+    
+    Button.MouseButton1Click:Connect(function()
+        LoadScript(scriptUrl, gameName)
+    end)
     
     return Button
 end
 
--- Function to create a notification
-local function Notify(title, text, duration)
-    local NotifGui = Instance.new("ScreenGui")
-    local NotifFrame = Instance.new("Frame")
-    local NotifTitle = Instance.new("TextLabel")
-    local NotifText = Instance.new("TextLabel")
-    
-    NotifGui.Parent = game:GetService("CoreGui")
-    NotifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    NotifFrame.Name = "NotifFrame"
-    NotifFrame.Parent = NotifGui
-    NotifFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    NotifFrame.BorderSizePixel = 0
-    NotifFrame.Position = UDim2.new(1, -250, 0, 20)
-    NotifFrame.Size = UDim2.new(0, 230, 0, 80)
-    
-    NotifTitle.Name = "NotifTitle"
-    NotifTitle.Parent = NotifFrame
-    NotifTitle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    NotifTitle.BorderSizePixel = 0
-    NotifTitle.Size = UDim2.new(1, 0, 0, 25)
-    NotifTitle.Font = Enum.Font.GothamBold
-    NotifTitle.Text = "  " .. title
-    NotifTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    NotifTitle.TextSize = 14.000
-    NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
-    
-    NotifText.Name = "NotifText"
-    NotifText.Parent = NotifFrame
-    NotifText.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    NotifText.BorderSizePixel = 0
-    NotifText.Position = UDim2.new(0, 0, 0, 25)
-    NotifText.Size = UDim2.new(1, 0, 1, -25)
-    NotifText.Font = Enum.Font.Gotham
-    NotifText.Text = "  " .. text
-    NotifText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    NotifText.TextSize = 14.000
-    NotifText.TextXAlignment = Enum.TextXAlignment.Left
-    NotifText.TextYAlignment = Enum.TextYAlignment.Top
-    
-    -- Tween in
-    NotifFrame:TweenPosition(UDim2.new(1, -250, 0, 20), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.5)
-    
-    task.delay(duration, function()
-        -- Tween out
-        NotifFrame:TweenPosition(UDim2.new(1, 20, 0, 20), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.5, false, function()
-            NotifGui:Destroy()
-        end)
-    end)
+-- Add heading
+local Heading = Instance.new("TextLabel")
+Heading.Name = "Heading"
+Heading.Size = UDim2.new(1, -20, 0, 30)
+Heading.Position = UDim2.new(0, 10, 0, 10)
+Heading.BackgroundColor3 = colors.accent
+Heading.BorderColor3 = colors.border
+Heading.BorderSizePixel = 0
+Heading.Font = Enum.Font.GothamBold
+Heading.TextColor3 = colors.text
+Heading.TextSize = 14
+Heading.Text = "Select a Game to Load"
+Heading.Parent = ScrollingFrame
+
+-- Create buttons for all Speed Hub scripts
+local buttons = {
+    {
+        name = "Speed Hub X - Blox Fruits",
+        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
+        game = "Blox Fruits"
+    },
+    {
+        name = "Speed Hub X - Dead Rails",
+        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
+        game = "Dead Rails"
+    },
+    {
+        name = "Speed Hub X - Muscle Legends",
+        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
+        game = "Muscle Legends"
+    },
+    {
+        name = "Speed Hub X - Fisch",
+        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
+        game = "Fisch"
+    },
+    {
+        name = "Speed Hub X - The Strongest Battlegrounds",
+        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
+        game = "The Strongest Battlegrounds"
+    },
+    {
+        name = "Speed Hub X - Arise Crossover",
+        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
+        game = "Arise Crossover"
+    },
+    {
+        name = "Speed Hub X - Bubble Gum Simulator",
+        url = "https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua",
+        game = "Bubble Gum Simulator"
+    },
+    {
+        name = "Speed Hub X - Anime Reborn",
+        url = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Reborn.lua",
+        game = "Anime Reborn"
+    },
+    {
+        name = "Speed Hub X - Anime Vanguards",
+        url = "https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Vanguards.lua",
+        game = "Anime Vanguards"
+    }
+}
+
+for _, buttonInfo in ipairs(buttons) do
+    CreateButton(buttonInfo.name, buttonInfo.url, buttonInfo.game)
 end
 
--- Load Speed Hub X scripts
-local function LoadBloxFruits()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Blox Fruits...", 3)
-end
-
-local function LoadDeadRails()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Dead Rails...", 3)
-end
-
-local function LoadMuscleLegeneds()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Muscle Legends...", 3)
-end
-
-local function LoadFisch()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Fisch...", 3)
-end
-
-local function LoadStrongestBattlegrounds()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-    Notify("LAJ HUB", "Loading Speed Hub X for The Strongest Battlegrounds...", 3)
-end
-
-local function LoadAriseCrossover()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Arise Crossover...", 3)
-end
-
-local function LoadBubbleGumSimulator()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Bubble Gum Simulator INFINITY...", 3)
-end
-
-local function LoadAnimeReborn()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Reborn.lua"))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Anime Reborn...", 3)
-end
-
-local function LoadAnimeVanguards()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Vanguards.lua"))()
-    Notify("LAJ HUB", "Loading Speed Hub X for Anime Vanguards...", 3)
-end
-
--- Create buttons
-CreateButton("Speed Hub X - Blox Fruits", LoadBloxFruits)
-CreateButton("Speed Hub X - Dead Rails", LoadDeadRails)
-CreateButton("Speed Hub X - Muscle Legends", LoadMuscleLegeneds)
-CreateButton("Speed Hub X - Fisch", LoadFisch)
-CreateButton("Speed Hub X - The Strongest Battlegrounds", LoadStrongestBattlegrounds)
-CreateButton("Speed Hub X - Arise Crossover", LoadAriseCrossover)
-CreateButton("Speed Hub X - Bubble Gum Simulator", LoadBubbleGumSimulator)
-CreateButton("Speed Hub X - Anime Reborn", LoadAnimeReborn)
-CreateButton("Speed Hub X - Anime Vanguards", LoadAnimeVanguards)
+-- Add footer
+local Footer = Instance.new("TextLabel")
+Footer.Name = "Footer"
+Footer.Size = UDim2.new(1, -20, 0, 30)
+Footer.Position = UDim2.new(0, 10, 0, 0)
+Footer.BackgroundTransparency = 1
+Footer.Font = Enum.Font.Gotham
+Footer.TextColor3 = colors.text
+Footer.TextSize = 12
+Footer.Text = "© LAJ HUB - Premium Scripts"
+Footer.Parent = ScrollingFrame
 
 -- Update canvas size
 local function UpdateCanvasSize()
@@ -198,5 +279,68 @@ end
 UpdateCanvasSize()
 UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvasSize)
 
--- Notification on load
-Notify("LAJ HUB", "Speed Hub X Loader has been loaded!", 3)
+-- Add drop shadow effect
+local DropShadow = Instance.new("ImageLabel")
+DropShadow.Name = "DropShadow"
+DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+DropShadow.BackgroundTransparency = 1
+DropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+DropShadow.Size = UDim2.new(1, 30, 1, 30)
+DropShadow.ZIndex = -1
+DropShadow.Image = "rbxassetid://6014257812"
+DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+DropShadow.ImageTransparency = 0.5
+DropShadow.ScaleType = Enum.ScaleType.Slice
+DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
+DropShadow.Parent = MainFrame
+
+-- Load notification
+local function ShowWelcomeNotification()
+    local notification = Instance.new("ScreenGui")
+    local notifFrame = Instance.new("Frame")
+    local title = Instance.new("TextLabel")
+    local message = Instance.new("TextLabel")
+    
+    notification.Name = "LAJHUBWelcomeNotification"
+    notification.Parent = game:GetService("CoreGui")
+    
+    notifFrame.Name = "NotifFrame"
+    notifFrame.Size = UDim2.new(0, 250, 0, 100)
+    notifFrame.Position = UDim2.new(1, 10, 0.5, -50)
+    notifFrame.BackgroundColor3 = colors.background
+    notifFrame.BorderColor3 = colors.accent
+    notifFrame.BorderSizePixel = 1
+    notifFrame.Parent = notification
+    
+    title.Name = "Title"
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundColor3 = colors.accent
+    title.BorderSizePixel = 0
+    title.Font = Enum.Font.GothamBold
+    title.Text = "LAJ HUB"
+    title.TextColor3 = colors.text
+    title.TextSize = 18
+    title.Parent = notifFrame
+    
+    message.Name = "Message"
+    message.Size = UDim2.new(1, 0, 0, 70)
+    message.Position = UDim2.new(0, 0, 0, 30)
+    message.BackgroundColor3 = colors.background
+    message.BorderSizePixel = 0
+    message.Font = Enum.Font.Gotham
+    message.Text = "   Welcome to Speed Hub X!\n   Select a game to begin."
+    message.TextColor3 = colors.text
+    message.TextSize = 14
+    message.TextXAlignment = Enum.TextXAlignment.Left
+    message.TextYAlignment = Enum.TextYAlignment.Center
+    message.Parent = notifFrame
+    
+    -- Animation
+    notifFrame:TweenPosition(UDim2.new(1, -260, 0.5, -50), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.4, true)
+    wait(3)
+    notifFrame:TweenPosition(UDim2.new(1, 10, 0.5, -50), Enum.EasingDirection.In, Enum.EasingStyle.Quart, 0.4, true, function()
+        notification:Destroy()
+    end)
+end
+
+ShowWelcomeNotification()
