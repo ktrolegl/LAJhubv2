@@ -25,9 +25,6 @@ local HomeTab = Window:CreateTab("Home")
 local ScriptsTab = Window:CreateTab("Scripts")
 local SettingsTab = Window:CreateTab("Settings")
 
--- Variable to track the current game tab
-local CurrentGameTab = nil
-
 -- Home Tab Content
 local WelcomeSection = HomeTab:CreateSection("Welcome to LAJHUBv2")
 
@@ -73,6 +70,7 @@ local PopularSection = ScriptsTab:CreateSection("Popular Scripts")
 ScriptsTab:CreateButton({
     Name = "Infinite Yield",
     Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
         Rayfield:Notify({
             Title = "Infinite Yield",
             Content = "Loading Infinite Yield...",
@@ -84,6 +82,7 @@ ScriptsTab:CreateButton({
 ScriptsTab:CreateButton({
     Name = "Dex Explorer",
     Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/peyton2465/Dex/master/out.lua"))()
         Rayfield:Notify({
             Title = "Dex Explorer",
             Content = "Loading Dex Explorer...",
@@ -92,173 +91,95 @@ ScriptsTab:CreateButton({
     end,
 })
 
--- Function to create game-specific tab with scripts
-local function CreateGameTab(gameName)
-    -- Remove the current game tab if it exists
-    if CurrentGameTab then
-        CurrentGameTab:Destroy()
-        CurrentGameTab = nil
-    end
-    
-    -- Create a new tab for the selected game
-    CurrentGameTab = Window:CreateTab(gameName)
-    
-    -- Create sections and buttons based on the selected game
+-- Function to load script based on game selection
+local function LoadGameScript(gameName)
     if gameName == "Blox Fruits" then
-        local MainSection = CurrentGameTab:CreateSection("Blox Fruits Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Blox Fruits",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Blox Fruits...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Blox Fruits...",
+            Duration = 3,
         })
         
-        -- Additional Blox Fruits scripts could be added here
-        
     elseif gameName == "Dead Rails" then
-        local MainSection = CurrentGameTab:CreateSection("Dead Rails Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Dead Rails",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Dead Rails...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Dead Rails...",
+            Duration = 3,
         })
         
     elseif gameName == "Muscle Legends" then
-        local MainSection = CurrentGameTab:CreateSection("Muscle Legends Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Muscle Legends",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Muscle Legends...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Muscle Legends...",
+            Duration = 3,
         })
         
     elseif gameName == "Fisch" then
-        local MainSection = CurrentGameTab:CreateSection("Fisch Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Fisch",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Fisch...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Fisch...",
+            Duration = 3,
         })
         
     elseif gameName == "The Strongest Battlegrounds" then
-        local MainSection = CurrentGameTab:CreateSection("The Strongest Battlegrounds Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - The Strongest Battlegrounds",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for The Strongest Battlegrounds...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for The Strongest Battlegrounds...",
+            Duration = 3,
         })
         
     elseif gameName == "Arise Crossover" then
-        local MainSection = CurrentGameTab:CreateSection("Arise Crossover Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Arise Crossover",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Arise Crossover...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Arise Crossover...",
+            Duration = 3,
         })
         
     elseif gameName == "Bubble Gum Simulator" then
-        local MainSection = CurrentGameTab:CreateSection("Bubble Gum Simulator Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Bubble Gum Simulator INFINITY",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Bubble Gum Simulator INFINITY...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Bubble Gum Simulator INFINITY...",
+            Duration = 3,
         })
         
     elseif gameName == "Anime Reborn" then
-        local MainSection = CurrentGameTab:CreateSection("Anime Reborn Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Anime Reborn",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Reborn.lua"))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Anime Reborn...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Reborn.lua"))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Anime Reborn...",
+            Duration = 3,
         })
         
     elseif gameName == "Anime Vanguards" then
-        local MainSection = CurrentGameTab:CreateSection("Anime Vanguards Scripts")
-        
-        CurrentGameTab:CreateButton({
-            Name = "Speed Hub X - Anime Vanguards",
-            Callback = function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Vanguards.lua"))()
-                Rayfield:Notify({
-                    Title = "Speed Hub X",
-                    Content = "Loading Speed Hub X for Anime Vanguards...",
-                    Duration = 3,
-                })
-            end,
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Script-Games/main/Anime%20Vanguards.lua"))()
+        Rayfield:Notify({
+            Title = "Speed Hub X",
+            Content = "Loading Speed Hub X for Anime Vanguards...",
+            Duration = 3,
         })
         
     else
-        -- For games without specific scripts
-        local MainSection = CurrentGameTab:CreateSection(gameName .. " Scripts")
-        
-        CurrentGameTab:CreateParagraph({
-            Title = "No Scripts Available",
-            Content = "No specific scripts are available for " .. gameName .. " at this time."
+        Rayfield:Notify({
+            Title = "Script Not Found",
+            Content = "No script available for " .. gameName,
+            Duration = 3,
         })
     end
-    
-    return CurrentGameTab
 end
 
-local GamesSection = ScriptsTab:CreateSection("Game Scripts")
+-- Game Scripts Section
+local SpeedHubSection = ScriptsTab:CreateSection("Speed Hub X Scripts")
 
--- Update available games in dropdown
+-- Update available games in dropdown that auto-loads scripts
 ScriptsTab:CreateDropdown({
-    Name = "Select Game",
+    Name = "Select Game to Auto-Load Script",
     Options = {
         "Blox Fruits", 
         "Dead Rails", 
@@ -273,14 +194,8 @@ ScriptsTab:CreateDropdown({
     CurrentOption = "",
     Flag = "GameDropdown",
     Callback = function(Option)
-        -- Create a tab for the selected game
-        CreateGameTab(Option)
-        
-        Rayfield:Notify({
-            Title = "Game Selected",
-            Content = "Created tab for: " .. Option,
-            Duration = 3,
-        })
+        -- Automatically load the script for the selected game
+        LoadGameScript(Option)
     end,
 })
 
