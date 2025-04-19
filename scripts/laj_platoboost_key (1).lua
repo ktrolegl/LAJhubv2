@@ -274,7 +274,7 @@ local function LoadScript()
         
         -- Try loading from Settings as fallback
         pcall(function()
-            local scriptName = Settings.HubScripts[hubVersion] or Settings.HubScripts[Settings.DefaultHubVersion]
+            local scriptName = Settings.HubScripts[Settings.DefaultHubVersion]
             loadstring(game:HttpGet("https://raw.githubusercontent.com/laj-hub/scripts/main/" .. scriptName))()
         end)
     end
